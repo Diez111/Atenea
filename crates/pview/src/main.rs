@@ -349,10 +349,13 @@ impl Loaded {
             }
             if pins.len() == 1 && !["VCC", "GND", "VDD", "VSS"].contains(&id.as_str()) {
                 let role = pins[0].1.as_str();
-                if ["GT", "LBL", "TER"].contains(&role) {
-                    out.push(('W', format!("SINGULAR LABEL: {id}")));
-                } else {
-                    out.push(('W', format!("UNDRIVEN: {id} (1 pin)")));
+                // NC (sdf_etstrings idx 0) = no conectado: ni UNDRIVEN ni label.
+                if role != "NC" {
+                    if ["GT", "LBL", "TER"].contains(&role) {
+                        out.push(('W', format!("SINGULAR LABEL: {id}")));
+                    } else {
+                        out.push(('W', format!("UNDRIVEN: {id} (1 pin)")));
+                    }
                 }
             } else if pins.is_empty() {
                 out.push(('W', format!("net {id}: flotante (0 pines)")));
