@@ -38,13 +38,14 @@ No Labcenter binaries or data are reproduced here.
   file-offset de otra build): emite `*PROPERTIES,XXXXX\n` (conteo como
   placeholder a rellenar), itera props excluyendo `DSN_*`. Patrón writer:
   sección + backpatch de conteo.
-- Export table (515 exports, RVAs): `parse_field` 0x1b850, `parse_map`
-  0x1bcc0, `parse_netprop` 0x1bb90, `parse_define` 0x1d430,
-  `parse_requires` 0x1f460, `parse_script` 0x1c0c0,
-  `read_mappings/models/nets/parts/props/script` 0x185f0–0x18f70,
-  `resolve` 0xbec0, `net_erc` (free fn) 0x2b30, `net_gen` 0xfa00,
-  `bom` 0x94c0, `dxp` 0xd970, `addscript` 0x1a6e0, `writeheader` 0xca70,
-  `propkwd/propsubst/propval`, `validate`, `sortnets`, `gettitle`.
+- Export table (515 exports; RVAs de parse manual NO verificadas —
+  el parseo crudo desalinea `AddressOfFunctions`: Ghidra-por-nombre es la
+  fuente de verdad). Nombres confirmados por string: `parse_field`,
+  `parse_map`, `parse_netprop`, `parse_define`, `parse_requires`,
+  `parse_script`, `read_mappings/models/nets/parts/props/script`,
+  `resolve`, `net_erc`, `net_gen`, `bom`, `dxp`, `addscript`,
+  `writeheader`, `propkwd/propsubst/propval`, `validate`, `sortnets`,
+  `gettitle`, `write`, `setcdbroot`, `setdsnprops`.
 - `net_gen` ×2 (0x1000fa00 ostream / 0x1000fc50 path): despacha por índice
   de formato vía tabla `net_formats` + punteros `PTR_FUN_10030390[i]`;
   genera nombres con `tfngen`/`addext`, abre con `fopen(..."w")`.
