@@ -45,6 +45,8 @@ pub struct Wire {
     pub x2: i32,
     /// End y in internal units.
     pub y2: i32,
+    /// True for `BUS WIRE` records (rendered thick).
+    pub bus: bool,
 }
 
 /// Convert internal units to millimetres.
@@ -110,6 +112,7 @@ pub fn wires(data: &[u8]) -> Vec<Wire> {
             )
         });
         // `n >= 2`, so `prev` is always `Some`.
+        let bus = i >= 4 && data[i - 4..i] == *b"BUS ";
         let mut prev = pts.next().unwrap_or((0, 0));
         for (x, y) in pts {
             out.push(Wire {
@@ -117,6 +120,7 @@ pub fn wires(data: &[u8]) -> Vec<Wire> {
                 y1: prev.1,
                 x2: x,
                 y2: y,
+                bus,
             });
             prev = (x, y);
         }
@@ -428,25 +432,29 @@ mod tests {
                     x1: 0,
                     y1: 0,
                     x2: 254_000,
-                    y2: 0
+                    y2: 0,
+                    bus: false,
                 },
                 Wire {
                     x1: 0,
                     y1: 0,
                     x2: 0,
-                    y2: 508_000
+                    y2: 508_000,
+                    bus: false,
                 },
                 Wire {
                     x1: 0,
                     y1: 508_000,
                     x2: 254_000,
-                    y2: 508_000
+                    y2: 508_000,
+                    bus: false,
                 },
                 Wire {
                     x1: -127_000,
                     y1: 10,
                     x2: -127_000,
-                    y2: 264_000
+                    y2: 264_000,
+                    bus: true,
                 },
             ]
         );

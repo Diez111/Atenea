@@ -91,8 +91,8 @@ struct Loaded {
     nets_full: Vec<(String, Vec<(String, String)>)>,
     /// `.DSN` `{...}` heads.
     blocks: Vec<(String, String)>,
-    /// Real wire geometry in mm: `(x1, y1, x2, y2)` from `plib::dsn`.
-    wires: Vec<(f64, f64, f64, f64)>,
+    /// Real wire geometry in mm: `(x1, y1, x2, y2, bus)` from `plib::dsn`.
+    wires: Vec<(f64, f64, f64, f64, bool)>,
     /// Placed labels in mm: `(text, x, y)`.
     placements: Vec<(String, f64, f64)>,
     /// Source text for `.MDF`/`.SDF` (enables the Simulate tab).
@@ -101,9 +101,9 @@ struct Loaded {
     part_rest: HashMap<String, Vec<String>>,
 }
 
-/// Convert raw DSN wires (internal units) to mm segments.
+/// Convert raw DSN wires (internal units) to mm segments + bus flag.
 #[must_use]
-fn wires_to_mm(raw: &[plib::dsn::Wire]) -> Vec<(f64, f64, f64, f64)> {
+fn wires_to_mm(raw: &[plib::dsn::Wire]) -> Vec<(f64, f64, f64, f64, bool)> {
     raw.iter()
         .map(|w| {
             (
@@ -111,6 +111,7 @@ fn wires_to_mm(raw: &[plib::dsn::Wire]) -> Vec<(f64, f64, f64, f64)> {
                 plib::dsn::to_mm(w.y1),
                 plib::dsn::to_mm(w.x2),
                 plib::dsn::to_mm(w.y2),
+                w.bus,
             )
         })
         .collect()
@@ -126,7 +127,7 @@ fn placements_mm(raw: &[plib::dsn::Placed]) -> Vec<(String, f64, f64)> {
 
 /// Bounding box of mm wires as `(min_x, min_y, max_x, max_y)`.
 #[must_use]
-fn wires_bbox(wires: &[(f64, f64, f64, f64)]) -> Option<(f64, f64, f64, f64)> {
+fn wires_bbox(wires: &[(f64, f64, f64, f64, bool)]) -> Option<(f64, f64, f64, f64)> {
     let mut iter = wires.iter();
     let first = iter.next()?;
     let (mut x0, mut y0, mut x1, mut y1) = (
@@ -135,7 +136,7 @@ fn wires_bbox(wires: &[(f64, f64, f64, f64)]) -> Option<(f64, f64, f64, f64)> {
         first.0.max(first.2),
         first.1.max(first.3),
     );
-    for &(ax, ay, bx, by) in iter {
+    for &(ax, ay, bx, by, _) in iter {
         x0 = x0.min(ax.min(bx));
         y0 = y0.min(ay.min(by));
         x1 = x1.max(ax.max(bx));
@@ -1078,14 +1079,19 @@ impl App {
         if !self.layers.wires {
             return;
         }
-        let color = egui::Color32::from_rgb(20, 20, 120);
-        for (x1, y1, x2, y2) in &self.model.wires {
+        let wire_color = egui::Color32::from_rgb(20, 20, 120);
+        let bus_color = egui::Color32::from_rgb(0, 80, 200);
+        for (x1, y1, x2, y2, bus) in &self.model.wires {
             painter.line_segment(
                 [
                     world_to_screen(mm_to_world(*x1, *y1), pan, zoom, rect.min),
                     world_to_screen(mm_to_world(*x2, *y2), pan, zoom, rect.min),
                 ],
-                egui::Stroke::new(1.5, color),
+                if *bus {
+                    egui::Stroke::new(3.5, bus_color)
+                } else {
+                    egui::Stroke::new(1.5, wire_color)
+                },
             );
         }
         self.paint_measure(ui, rect, pan, zoom);
@@ -1891,12 +1897,14 @@ mod tests {
                 y1: 0,
                 x2: 254_000,
                 y2: 0,
+                bus: false,
             },
             plib::dsn::Wire {
                 x1: 0,
                 y1: 0,
                 x2: 0,
                 y2: -2_540_000,
+                bus: false,
             },
         ];
         let mm = wires_to_mm(&raw);
@@ -1909,7 +1917,7 @@ mod tests {
     #[test]
     fn bbox_covers_all_endpoints() {
         assert_eq!(wires_bbox(&[]), None);
-        let ws = vec![(0.0, 0.0, 2.54, 0.0), (-1.0, 5.0, 3.0, -2.0)];
+        let ws = vec![(0.0, 0.0, 2.54, 0.0, false), (-1.0, 5.0, 3.0, -2.0, true)];
         let bb = wires_bbox(&ws).unwrap_or((0.0, 0.0, 0.0, 0.0));
         assert!((bb.0 - -1.0).abs() < 1e-12);
         assert!((bb.1 - -2.0).abs() < 1e-12);
