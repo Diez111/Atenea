@@ -135,7 +135,7 @@ No Labcenter binaries or data are reproduced here.
 | `.LML` | `MODEL LIBRARY\x1A`, LISA model text | text LISA | `pmodel::lml` (split, shared `pmodel::container`) + `pmodel::parse` |
 | `.pdsprj` | `PK\x03\x04` (`PROJECT.XML`, `ROOT.CDB`, `ROOT.DSN`) | zip | `pproj` (XML + cap 256 MB + `cdb`: 35 comps/120 records en sample) |
 | `.DSN` | `ISIS SCHEMATIC FILE\x1A` + `DESIGN CONFIGURATION DATA` | binary + tokens | `plib::dsn` (99–378 bloques por archivo; `WIRE`/`BUS WIRE`: 101+17 recs / 153 segmentos en `siggen.DSN`, bbox 350.52×147.32 mm) |
-| `.LYT/.LTF` | `PCB LAYOUT FILE\x1A`, bloques `{*VIEW3D}`, padstacks, capas, mismo framing que DSN | mixed | `plib::dsn` (Cpu.LYT: 43 bloques; extractor reutilizado) |
+| `.LYT/.LTF` | `PCB LAYOUT FILE\x1A`, bloques `{*VIEW3D}`, padstacks, capas | mixed | `plib::dsn` (Cpu.LYT: 43 bloques); pads = `02 00 estilo pin`; escala 2.54M verificada (pitch 0.1\"=254000 y row 0.3\"=762000 i32 LE junto a estilos) |
 | `.MDF` MODDLL | `MODDLL=X.DLL` refs into `MODELS/*.DLL` | native PE32 | stub only, no DLL RE in phase 1 |
 
 ## Roadmap (honest)

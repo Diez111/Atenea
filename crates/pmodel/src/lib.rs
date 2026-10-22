@@ -20,6 +20,7 @@ use std::fmt;
 
 /// Shared `.SML`/`.LML` library container splitter.
 pub mod container;
+pub mod emit;
 /// Model library (`.LML`) container splitter.
 pub mod lml;
 pub mod sml;

@@ -163,6 +163,76 @@ pub fn elements(doc: &pmodel::Document) -> Result<Vec<String>, SimError> {
     Ok(out)
 }
 
+/// Build a transient `.cir` netlist from SDF elements (pure, no I/O).
+///
+/// # Errors
+///
+/// Propagates [`SimError`] from [`elements`].
+pub fn to_cir(
+    doc: &pmodel::Document,
+    title: &str,
+    dt: &str,
+    t_end: &str,
+    vars: &[&str],
+) -> Result<String, SimError> {
+    let mut lines = vec![format!("* {title}")];
+    lines.extend(elements(doc)?);
+    lines.extend(vars.iter().map(|v| format!(".print tran {v}")));
+    lines.push(format!(".tran {dt} {t_end} uic"));
+    lines.push(".end".to_owned());
+    Ok(lines.join("\n") + "\n")
+}
+
+/// Write a `.cir` netlist to disk.
+///
+/// # Errors
+///
+/// [`SimError::Io`] on filesystem failure.
+pub fn write_cir(path: &std::path::Path, cir: &str) -> Result<(), SimError> {
+    std::fs::write(path, cir).map_err(|e| SimError::Io(e.to_string()))
+}
+
+/// Quote one CSV field per RFC 4180.
+fn rfc4180(field: &str) -> String {
+    if field.contains([',', '"', '\n']) {
+        format!("\"{}\"", field.replace('"', "\"\""))
+    } else {
+        field.to_owned()
+    }
+}
+
+/// `*PARTLIST` as CSV (`reference,kind,value,extra`) for BOM/debug.
+///
+/// # Errors
+///
+/// [`SimError::BadNetlist`] when the part list is malformed.
+pub fn parts_csv(doc: &pmodel::Document) -> Result<String, SimError> {
+    let mut out = String::from("reference,kind,value,extra\n");
+    for p in doc
+        .partlist()
+        .map_err(|e| SimError::BadNetlist(e.to_string()))?
+    {
+        out.push_str(&rfc4180(&p.reference));
+        out.push(',');
+        out.push_str(&rfc4180(&p.kind));
+        out.push(',');
+        out.push_str(&rfc4180(&p.value));
+        out.push(',');
+        out.push_str(&rfc4180(&p.rest.join(",")));
+        out.push('\n');
+    }
+    Ok(out)
+}
+
+/// Write a parts CSV to disk.
+///
+/// # Errors
+///
+/// [`SimError::Io`] on filesystem failure.
+pub fn write_parts_csv(path: &std::path::Path, csv: &str) -> Result<(), SimError> {
+    std::fs::write(path, csv).map_err(|e| SimError::Io(e.to_string()))
+}
+
 /// Run a full netlist text through `ngspice -b`, returning stdout.
 ///
 /// # Errors
@@ -266,13 +336,8 @@ pub fn simulate_tran(
     t_end: &str,
     vars: &[&str],
 ) -> Result<Trace, SimError> {
-    let mut lines = vec![format!("* {title}")];
-    lines.extend(elements(doc)?);
-    let prints: Vec<String> = vars.iter().map(|v| format!(".print tran {v}")).collect();
-    lines.push(format!(".tran {dt} {t_end} uic"));
-    lines.extend(prints);
-    lines.push(".end".to_owned());
-    let out = run(&lines.join("\n"))?;
+    let netlist = to_cir(doc, title, dt, t_end, vars)?;
+    let out = run(&netlist)?;
     trace(&out, vars.len()).ok_or_else(|| SimError::BadNetlist("no trace table".to_owned()))
 }
 
@@ -348,6 +413,27 @@ L1,PS,2
         let err = elements(&doc).unwrap_err();
         assert_eq!(err, SimError::UnsupportedPart("Q1(kind NPN)".to_owned()));
         assert_eq!(err.to_string(), "unsupported part: Q1(kind NPN)");
+    }
+
+    #[test]
+    fn to_cir_is_golden() {
+        let doc = pmodel::parse(GOLDEN4).unwrap();
+        let cir = to_cir(&doc, "G4", "10u", "5m", &["v(OUT)", "v(MID)"]).unwrap();
+        let expected = "* G4\nV1 IN 0 5\nR1 IN MID 4.7MEG\nC1 MID OUT 100n\nI1 OUT 0 10u\n.print tran v(OUT)\n.print tran v(MID)\n.tran 10u 5m uic\n.end\n";
+        assert_eq!(cir, expected);
+    }
+
+    #[test]
+    fn parts_csv_quotes_commas() {
+        let doc = pmodel::parse(
+            "ISIS SCHEMATIC DESCRIPTION FORMAT 4.5\n====\n*PARTLIST,2\nR1,RES,9k1,EID=6,PACKAGE=RES40,PINSWAP=\"1,2\"\nU1,CA3140,CA3140\n*NETLIST,0\n",
+        )
+        .unwrap();
+        let csv = parts_csv(&doc).unwrap();
+        assert_eq!(
+            csv,
+            "reference,kind,value,extra\nR1,RES,9k1,\"EID=6,PACKAGE=RES40,PINSWAP=\"\"1,2\"\"\"\nU1,CA3140,CA3140,\n"
+        );
     }
 
     #[test]
