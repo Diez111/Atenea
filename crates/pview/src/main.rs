@@ -525,6 +525,25 @@ impl Default for Layers {
     }
 }
 
+/// ISIS chrome: light theme with blue accents, always applied.
+fn isis_visuals() -> egui::Visuals {
+    let mut v = egui::Visuals::light();
+    v.widgets.noninteractive.bg_fill = egui::Color32::from_rgb(214, 224, 236);
+    v.widgets.inactive.bg_fill = egui::Color32::from_rgb(236, 240, 245);
+    v.widgets.hovered.bg_fill = egui::Color32::from_rgb(195, 220, 245);
+    v.widgets.active.bg_fill = egui::Color32::from_rgb(160, 200, 235);
+    v.selection.bg_fill = egui::Color32::from_rgb(0, 90, 180);
+    v.panel_fill = egui::Color32::from_rgb(214, 224, 236);
+    v.window_fill = egui::Color32::from_rgb(240, 244, 248);
+    v
+}
+
+/// ISIS blue banner color.
+const ISIS_BLUE: egui::Color32 = egui::Color32::from_rgb(38, 92, 140);
+
+/// Toolbar action: method pointer on `App`.
+type ToolAct = fn(&mut App);
+
 /// ISIS left-strip tool (view-only: every mode inspects, none edits).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 enum ToolMode {
@@ -626,6 +645,8 @@ struct App {
     panels: Panels,
     /// Active left-strip tool.
     tool: ToolMode,
+    /// Recent files (in-memory, newest first, cap 8).
+    recent: Vec<String>,
 }
 
 impl App {
@@ -653,6 +674,7 @@ impl App {
             sim_hidden: Vec::new(),
             panels: Panels::default(),
             tool: ToolMode::Select,
+            recent: Vec::new(),
         }
     }
 
@@ -677,6 +699,10 @@ impl App {
                 self.model = model;
                 self.file_error = None;
                 self.reset_view();
+                let disp = path.display().to_string();
+                self.recent.retain(|r| r != &disp);
+                self.recent.insert(0, disp);
+                self.recent.truncate(8);
             }
             Err(e) => {
                 self.file_error = Some(format!("{}: {e}", path.display()));
@@ -701,36 +727,90 @@ impl App {
         }
     }
 
-    /// First-run screen: open button + supported formats.
+    /// ISIS-style home: blue banner, cards, recents, state.
     fn show_welcome(&mut self, ui: &mut egui::Ui) {
-        ui.vertical_centered(|ui| {
-            ui.add_space(40.0);
-            ui.heading("Atenea — workbench nativa de electrónica");
-            ui.label("Abrí un proyecto o esquema para empezar.");
-            ui.add_space(12.0);
-            if ui.button("Abrir archivo…").clicked() {
-                self.open_dialog();
-            }
-            ui.add_space(8.0);
-            ui.label("o arrastrá un archivo a esta ventana");
-            ui.monospace(".pdsprj  .MDF  .SDF  .DSN  .LYT  .IDX");
-            ui.add_space(12.0);
-        });
-        ui.horizontal(|ui| {
+        // Blue banner.
+        let banner =
+            ui.allocate_exact_size(egui::vec2(ui.available_width(), 64.0), egui::Sense::hover());
+        let bp = ui.painter_at(banner.0);
+        bp.rect_filled(banner.0, 0.0, ISIS_BLUE);
+        bp.text(
+            banner.0.left_center() + egui::vec2(16.0, 0.0),
+            egui::Align2::LEFT_CENTER,
+            "ATENEA  —  clon nativo interoperable",
+            egui::FontId::proportional(24.0),
+            egui::Color32::WHITE,
+        );
+        ui.add_space(8.0);
+        ui.horizontal_top(|ui| {
+            // Left cards.
             ui.vertical(|ui| {
-                ui.collapsing("Primeros pasos", |ui| {
-                    ui.label("1. Abrí un .pdsprj o un .DSN.");
-                    ui.label("2. Mirá la pestaña Esquema (wires + etiquetas reales).");
-                    ui.label("3. Probá Simulate con un .SDF + ngspice.");
+                ui.set_min_width(220.0);
+                egui::Frame::group(ui.style()).show(ui, |ui| {
+                    ui.strong("Primeros pasos");
+                    if ui.link("Esquema electrónico").clicked() {
+                        self.open_dialog();
+                    }
+                    if ui.link("Diseño PCB (.LYT)").clicked() {
+                        self.open_dialog();
+                    }
+                    if ui.link("Simulación").clicked() {
+                        self.tab = Tab::Simulate;
+                    }
+                });
+                egui::Frame::group(ui.style()).show(ui, |ui| {
+                    ui.strong("Ayuda");
+                    if ui.link("Abrir archivo…").clicked() {
+                        self.open_dialog();
+                    }
+                    ui.label("Docs: docs/01-empezar.md");
+                    ui.label("Log: /tmp/atenea.log");
+                });
+                egui::Frame::group(ui.style()).show(ui, |ui| {
+                    ui.strong("Acerca de");
+                    ui.label("Atenea GPL-3.0-or-later.");
+                    ui.label("RE interoperable, sin binarios vendor.");
                 });
             });
+            // Center cards.
             ui.vertical(|ui| {
-                ui.collapsing("Ayuda", |ui| {
-                    ui.label("Docs: 01-empezar, 02-formatos, 03-simular-y-plugins.");
-                    ui.label("Log de arranque: /tmp/atenea.log");
+                egui::Frame::group(ui.style()).show(ui, |ui| {
+                    ui.strong("Empezar a trabajar");
+                    ui.horizontal(|ui| {
+                        if ui.button("Abrir proyecto").clicked() {
+                            self.open_dialog();
+                        }
+                        if ui.button("Abrir ejemplo").clicked() {
+                            self.open_dialog();
+                        }
+                    });
+                    ui.strong("Proyectos recientes");
+                    if self.recent.is_empty() {
+                        ui.weak("todavía ninguno — abrí un archivo");
+                    }
+                    let recent = self.recent.clone();
+                    for r in recent {
+                        if ui.link(&r).clicked() {
+                            self.open_path(std::path::Path::new(&r));
+                        }
+                    }
                 });
-                ui.collapsing("Acerca de", |ui| {
-                    ui.label("Atenea GPL-3.0-or-later. RE interoperable.");
+                egui::Frame::group(ui.style()).show(ui, |ui| {
+                    ui.strong("Estado del clon");
+                    egui::Grid::new("home_state").striped(true).show(ui, |ui| {
+                        for (k, v) in [
+                            ("DSN/LYT", "23/23 + Cpu.LYT, wires, labels, buses"),
+                            ("MDF/SDF", "145/145, Ppsu.SDF"),
+                            ("SML/LML", "6 decks byte-exactos, 1097 LML"),
+                            ("pdsprj+CDB", "534/534, 35 comps + 120 recs"),
+                            ("SIM", "ngspice LM123 5.0998 V"),
+                            ("VSM", "ABI nativa + NE555/ADC0808"),
+                        ] {
+                            ui.label(k);
+                            ui.monospace(v);
+                            ui.end_row();
+                        }
+                    });
                 });
             });
         });
@@ -1563,6 +1643,9 @@ impl App {
 
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        // ISIS chrome is always light: re-apply every frame so the
+        // desktop theme (COSMIC dark) can never bleed through.
+        ui.ctx().set_visuals(isis_visuals());
         // Drag&drop anywhere: open the first dropped file.
         let dropped: Vec<std::path::PathBuf> = ui.input(|i| {
             i.raw
@@ -1625,7 +1708,40 @@ impl App {
         });
     }
 
-    /// Top menu bar + header (Archivo / Ver / Ayuda + tabs + filter).
+    fn noop(&mut self) {
+        let _ = self;
+    }
+    fn do_open(&mut self) {
+        self.open_dialog();
+    }
+    fn do_export_cir(&mut self) {
+        self.export_cir();
+    }
+    fn do_bom(&mut self) {
+        self.tab = Tab::Tables;
+    }
+    fn do_fit(&mut self) {
+        self.wires_fitted = false;
+    }
+    fn do_zoom_in(&mut self) {
+        self.wires_zoom = (self.wires_zoom * 1.25).clamp(0.05, 100.0);
+        self.tab = Tab::Wires;
+    }
+    fn do_zoom_out(&mut self) {
+        self.wires_zoom = (self.wires_zoom / 1.25).clamp(0.05, 100.0);
+        self.tab = Tab::Wires;
+    }
+    fn do_simulate(&mut self) {
+        self.tab = Tab::Simulate;
+    }
+    fn do_erc(&mut self) {
+        self.tab = Tab::Tables;
+    }
+    fn do_help(&mut self) {
+        self.panels.help = true;
+    }
+
+    /// Top menu bar + header (Archivo / Ver / Herramientas / Ayuda + tabs + filter).
     fn draw_menu(&mut self, ui: &mut egui::Ui) {
         // Menu bar (ISIS-like): Archivo / Ver / Ayuda.
         ui.horizontal(|ui| {
@@ -1691,6 +1807,27 @@ impl App {
             ui.separator();
             ui.label("filter:");
             ui.text_edit_singleline(&mut self.search);
+        });
+        // ISIS icon toolbar: glyph buttons with real extracted tooltips.
+        ui.horizontal(|ui| {
+            ui.spacing_mut().button_padding = egui::vec2(3.0, 1.0);
+            let bar: &[(&str, &str, ToolAct)] = &[
+                ("❐", "Nuevo proyecto", App::noop),
+                ("🗀", "Abrir proyecto (Ctrl+O)", App::do_open),
+                ("💾", "Guardar netlist (.cir)", App::do_export_cir),
+                ("⎙", "Bill of Materials", App::do_bom),
+                ("↺", "Fit esquema (Ctrl+L)", App::do_fit),
+                ("＋", "Acercar", App::do_zoom_in),
+                ("－", "Alejar", App::do_zoom_out),
+                ("▶", "Simular", App::do_simulate),
+                ("✓", "Chequeo eléctrico (ERC)", App::do_erc),
+                ("？", "Primeros pasos (F1)", App::do_help),
+            ];
+            for (glyph, tip, action) in bar {
+                if ui.button(*glyph).on_hover_text(*tip).clicked() {
+                    action(self);
+                }
+            }
         });
         ui.separator();
     }
