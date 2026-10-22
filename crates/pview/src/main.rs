@@ -323,20 +323,27 @@ impl Loaded {
     fn erc(&self) -> Vec<(char, String)> {
         let mut out = Vec::new();
         for (id, pins) in &self.nets_full {
-            // Power rails X+Y in the same net = short (validate.cpp).
-            let mut rails: Vec<&str> = pins
+            // Power rails of different classes in the same net = short
+            // (validate.cpp). Classes follow LIBRARY/PWRRAILS.INI bindings:
+            // VCC≡VDD, GND≡VSS, VEE alone (same-class = default binding, OK).
+            let mut classes: Vec<&str> = pins
                 .iter()
-                .map(|(r, _)| r.as_str())
-                .filter(|r| ["VCC", "GND", "VDD", "VSS", "VEE", "+5V", "-5V"].contains(r))
+                .map(|(r, _)| match r.as_str() {
+                    "VCC" | "VDD" | "+5V" => "VCC/VDD",
+                    "GND" | "VSS" => "GND",
+                    "VEE" | "-5V" => "VEE",
+                    _ => "",
+                })
+                .filter(|c| !c.is_empty())
                 .collect();
-            rails.sort_unstable();
-            rails.dedup();
-            if rails.len() >= 2 {
+            classes.sort_unstable();
+            classes.dedup();
+            if classes.len() >= 2 {
                 out.push((
                     'E',
                     format!(
                         "Power rails '{}' and '{}' interconnected in net {id}",
-                        rails[0], rails[1]
+                        classes[0], classes[1]
                     ),
                 ));
             }

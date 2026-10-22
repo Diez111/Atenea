@@ -10,6 +10,10 @@ No Labcenter binaries or data are reproduced here.
   `PROSPICE`, Qt4 + python35 + lua runtimes, `Tools/` (MPASM, AVRDUDE...).
 - `LIBRARY/`: ~130 `.IDX`+`.LIB` pairs + 7 lone `.LIB` + ~20 `.VML` +
   `PROPDEFS.INI`, `PWRRAILS.INI` (plaintext, property vocabulary).
+  `PWRRAILS.INI` bindings: `VCC=VCC/VDD`, `VDD=VCC/VDD`,
+  `VSS=GND`, `GND=GND`, `VEE=VEE` — rail equivalence classes
+  (VCC≡VDD 5V, GND≡VSS, VEE −5V); ERC `Power rails interconnected`
+  fires only ACROSS classes (same-class = default binding, OK).
 - `MODELS/`: 10× `.MDF`, 37× `.SML`, 35× `.LML`, ~150 VSM `.DLL`.
 - `SAMPLES/`: mostly `.pdsprj`, 23 legacy `.DSN`, `.LYT`, `.SDF`, firmware sources.
 - `Translations/`: 29× Qt `.qm`. `HELP/`: 54× `.chm` (docs, `VSMSDK.chm` most
