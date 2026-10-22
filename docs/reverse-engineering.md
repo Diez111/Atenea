@@ -48,8 +48,16 @@ No Labcenter binaries or data are reproduced here.
   strings Pascal), conteos y luego módulos/hojas (`newmodule`). Confirma
   el diseño de `pproj::cdb` (strings con longitud + records `{...}`).
 
-## VSM + PROSPICE (from extracted CHM docs + community)
+## VSM + PROSPICE (from extracted CHM docs + community + ISIS strings)
 
+- ISIS loads models itself (`ISIS.DLL` strings): `LoadLibrary(%s)` →
+  signature check → `GetProcAddress(createactivemodel)` → create →
+  `authorize(ILICENCESERVER)` (`GLE=0x%08lX` = `GetLastError`);
+  missing `deleteactivemodel` is only a warning. `vsm-host` mirrors
+  exactly this sequence with `libloading`.
+- `dsim_create` lives in `DSIM.DLL` (not ISIS); `MODDLL`,
+  `GETSPICE`/`GETMDF`/`SDFGEN` are external `BIN/*.EXE`, not ISIS
+  imports — ISIS receives an already-resolved path.
 - `VSMSDK.chm` is an NDA contact page only — no VSM C++ ABI documented.
   Community docs (ee-diary, public VSM guides) describe the de-facto ABI:
   ```cpp

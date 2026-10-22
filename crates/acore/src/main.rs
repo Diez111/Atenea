@@ -4,6 +4,7 @@
 //! Rust: `acore <cmd> <file> [--vars ..] [--tstop ..]` prints one JSON
 //! document to stdout. Errors go to stderr with a nonzero exit.
 
+use std::fmt::Write as _;
 use std::path::Path;
 
 fn esc(s: &str) -> String {
@@ -15,7 +16,9 @@ fn esc(s: &str) -> String {
             '\n' => o.push_str("\\n"),
             '\r' => o.push_str("\\r"),
             '\t' => o.push_str("\\t"),
-            c if (c as u32) < 0x20 => o.push_str(&format!("\\u{:04x}", c as u32)),
+            c if (c as u32) < 0x20 => {
+                let _ = write!(o, "\\u{:04x}", c as u32);
+            }
             c => o.push(c),
         }
     }
@@ -106,23 +109,26 @@ fn cmd_summary(path: &str) -> Result<String, String> {
         if i > 0 {
             o.push(',');
         }
-        o.push_str(&format!("\"{}\":\"{}\",", esc(k), esc(v)));
+        let _ = write!(o, "\"{}\":\"{}\",", esc(k), esc(v));
     }
     o.push_str("\"_\":null},\"counts\":{");
     for (i, (k, v)) in counts.iter().enumerate() {
         if i > 0 {
             o.push(',');
         }
-        o.push_str(&format!("\"{k}\":{v}"));
+        let _ = write!(o, "\"{k}\":{v}");
     }
     o.push_str("}}");
     Ok(o)
 }
 
+/// `(reference, pin, extra)` triples of one net.
+type NetPins = Vec<(String, String, String)>;
+
 fn cmd_tables(path: &str) -> Result<String, String> {
     let kind = kind_of(path);
     let mut parts: Vec<(String, String, String, Vec<String>)> = Vec::new();
-    let mut nets: Vec<(String, Vec<(String, String, String)>)> = Vec::new();
+    let mut nets: Vec<(String, NetPins)> = Vec::new();
     match kind {
         "lisa" => {
             let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
@@ -147,8 +153,7 @@ fn cmd_tables(path: &str) -> Result<String, String> {
             for e in &idx {
                 let name = by_key
                     .get(&e.key)
-                    .map(|d| d.name.clone())
-                    .unwrap_or_else(|| format!("key:{:08x}", e.key));
+                    .map_or_else(|| format!("key:{:08x}", e.key), |d| d.name.clone());
                 let mut rest = vec![format!("key={:08x}", e.key), format!("CAT={}", e.cat)];
                 if !e.mfr.is_empty() {
                     rest.push(format!("MFR={}", e.mfr));
@@ -166,17 +171,18 @@ fn cmd_tables(path: &str) -> Result<String, String> {
         if i > 0 {
             o.push(',');
         }
-        o.push_str(&format!(
+        let _ = write!(
+            o,
             "{{\"ref\":\"{}\",\"kind\":\"{}\",\"value\":\"{}\",\"rest\":[",
             esc(r),
             esc(k),
             esc(v)
-        ));
+        );
         for (j, f) in rest.iter().enumerate() {
             if j > 0 {
                 o.push(',');
             }
-            o.push_str(&format!("\"{}\"", esc(f)));
+            let _ = write!(o, "\"{}\"", esc(f));
         }
         o.push_str("]}");
     }
@@ -185,12 +191,12 @@ fn cmd_tables(path: &str) -> Result<String, String> {
         if i > 0 {
             o.push(',');
         }
-        o.push_str(&format!("{{\"id\":\"{}\",\"pins\":[", esc(id)));
+        let _ = write!(o, "{{\"id\":\"{}\",\"pins\":[", esc(id));
         for (j, (r, p, x)) in pins.iter().enumerate() {
             if j > 0 {
                 o.push(',');
             }
-            o.push_str(&format!("[\"{}\",\"{}\",\"{}\"]", esc(r), esc(p), esc(x)));
+            let _ = write!(o, "[\"{}\",\"{}\",\"{}\"]", esc(r), esc(p), esc(x));
         }
         o.push_str("]}");
     }
@@ -214,19 +220,20 @@ fn cmd_wires(path: &str) -> Result<String, String> {
             plib::dsn::to_mm(w.x2),
             plib::dsn::to_mm(w.y2),
         );
-        o.push_str(&format!("[{x1},{y1},{x2},{y2},{}]", w.bus as u8));
+        let _ = write!(o, "[{x1},{y1},{x2},{y2},{}]", u8::from(w.bus));
     }
     o.push_str("],\"placements\":[");
     for (i, p) in placed.iter().enumerate() {
         if i > 0 {
             o.push(',');
         }
-        o.push_str(&format!(
+        let _ = write!(
+            o,
             "[\"{}\",{},{}]",
             esc(&p.text),
             plib::dsn::to_mm(p.x),
             plib::dsn::to_mm(p.y)
-        ));
+        );
     }
     o.push_str("]}");
     Ok(o)
@@ -242,16 +249,16 @@ fn cmd_sim(path: &str, vars: &[&str], tstop: &str) -> Result<String, String> {
         if i > 0 {
             o.push(',');
         }
-        o.push_str(&format!("\"{}\"", esc(v)));
+        let _ = write!(o, "\"{}\"", esc(v));
     }
     o.push_str("],\"rows\":[");
     for (i, (t, vals)) in trace.rows.iter().enumerate() {
         if i > 0 {
             o.push(',');
         }
-        o.push_str(&format!("[{t}"));
+        let _ = write!(o, "[{t}");
         for v in vals {
-            o.push_str(&format!(",{v}"));
+            let _ = write!(o, ",{v}");
         }
         o.push(']');
     }
@@ -286,7 +293,7 @@ fn main() {
         "wires" => cmd_wires(&file),
         "sim" => cmd_sim(
             &file,
-            &vars.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
+            &vars.iter().map(String::as_str).collect::<Vec<_>>(),
             &tstop,
         ),
         _ => usage(),

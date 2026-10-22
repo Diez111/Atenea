@@ -120,6 +120,7 @@ const TOP_SECTIONS: &[&str] = &[
     "NETLIST",
     "GATES",
     "MAPPINGS",
+    "SCRIPT",
 ];
 
 /// Parse a full LISA-family document.
@@ -157,6 +158,13 @@ pub fn parse(text: &str) -> Result<Document, ParseError> {
         if let Some(rest) = line.strip_prefix('*') {
             let (name, _) = rest.split_once(',').unwrap_or((rest, ""));
             let name = name.trim();
+            // `*ENDSCRIPT` closes a `*SCRIPT` block (vendor `NETLIST::write`).
+            if name == "ENDSCRIPT" {
+                if let Some(sec) = current.take() {
+                    sections.push(sec);
+                }
+                continue;
+            }
             let in_netlist = current.as_ref().is_some_and(|s| s.name == "NETLIST");
             if !TOP_SECTIONS.contains(&name) {
                 if in_netlist {
@@ -171,17 +179,22 @@ pub fn parse(text: &str) -> Result<Document, ParseError> {
             if let Some(sec) = current.take() {
                 sections.push(sec);
             }
-            // Header: `NAME,count[,extra...]` — count is the first token.
-            let (name, after) = rest
-                .split_once(',')
-                .ok_or_else(|| ParseError::BadSection(line.to_owned()))?;
-            let count = after
-                .split(',')
-                .next()
-                .unwrap_or("")
-                .trim()
-                .parse()
-                .map_err(|_| ParseError::BadSection(line.to_owned()))?;
+            // Header: `NAME[,count[,extra...]]` — count is the first token.
+            // Vendor reality (`NETLIST::write`): `*MAPPINGS,` has no count,
+            // `*SCRIPT` has no comma at all, and un-backpatched files carry
+            // `XXXXX`; all mean 0.
+            let (name, after) = match rest.split_once(',') {
+                Some((n, a)) => (n, a),
+                None => (rest, ""),
+            };
+            let count_str = after.split(',').next().unwrap_or("").trim();
+            let count = if count_str.is_empty() || count_str == "XXXXX" {
+                0
+            } else {
+                count_str
+                    .parse()
+                    .map_err(|_| ParseError::BadSection(line.to_owned()))?
+            };
             current = Some(Section {
                 name: name.trim().to_owned(),
                 count,
@@ -364,6 +377,23 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn vendor_write_quirks_mappings_and_backpatch() {
+        // `*MAPPINGS,` (no count) and `*MODELDEFS,XXXXX` (un-backpatched).
+        let doc = parse(
+            "LISA MODEL DESCRIPTION FORMAT 6.1\n====\n\
+             *PROPERTIES,1\nTRACE=1\n\
+             *MAPPINGS,\nA=1\n\
+             *MODELDEFS,XXXXX\nTTL : RHI=50\n\
+             *SCRIPT\nLINE1\n*ENDSCRIPT\n\
+             *PARTLIST,0\n*NETLIST,0\n",
+        )
+        .unwrap();
+        assert_eq!(doc.section("MAPPINGS").unwrap().count, 0);
+        assert_eq!(doc.section("MODELDEFS").unwrap().count, 0);
+        assert!(doc.section("SCRIPT").is_some());
+    }
+
     use super::*;
 
     const SAMPLE: &str = "ISIS SCHEMATIC DESCRIPTION FORMAT 4.5
