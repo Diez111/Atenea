@@ -221,8 +221,65 @@ impl Loaded {
             "pdsprj" => Self::open_pdsprj(path, &name),
             "mdf" | "sdf" => Self::open_lisa(path, &name),
             "dsn" | "lyt" => Self::open_dsn(path, &name),
+            "idx" => Self::open_idx(path, &name),
             _ => Err(format!("unsupported extension: .{ext}")),
         }
+    }
+
+    /// Open a `.IDX` device index, joining the sibling `.LIB` by key.
+    /// Parts become `(name, category, description)` rows; extras carry
+    /// key/offset/manufacturer for the inspector.
+    fn open_idx(path: &Path, name: &str) -> Result<Self, String> {
+        let data = std::fs::read(path).map_err(|e| e.to_string())?;
+        let idx = plib::libdir::parse_idx(&data, plib::LibKind::Idx).map_err(|e| e.to_string())?;
+        let lib_path = path.with_extension("LIB");
+        let dirs = std::fs::read(&lib_path)
+            .map(|v| plib::libdir::parse_lib_dir(&v))
+            .unwrap_or_default();
+        let by_key: HashMap<u32, &plib::libdir::DirEntry> =
+            dirs.iter().map(|d| (d.key, d)).collect();
+        let mut parts = Vec::new();
+        let mut part_rest = HashMap::new();
+        for e in &idx {
+            let (r, k, v) = match by_key.get(&e.key) {
+                Some(d) => (d.name.clone(), e.cat.clone(), e.desc.clone()),
+                None => (format!("key:{:08x}", e.key), e.cat.clone(), e.desc.clone()),
+            };
+            let mut rest = vec![format!("key={:08x}", e.key)];
+            if !e.mfr.is_empty() {
+                rest.push(format!("MFR={}", e.mfr));
+            }
+            if let Some(d) = by_key.get(&e.key) {
+                rest.push(format!("offset={}", d.offset));
+                rest.push(format!("seq={}", d.seq));
+            } else {
+                rest.push("sin LIB (stale)".to_owned());
+            }
+            part_rest.insert(r.clone(), rest);
+            parts.push((r, k, v));
+        }
+        let lib_len = std::fs::metadata(&lib_path).map_or(0, |m| m.len());
+        let live = dirs
+            .iter()
+            .filter(|d| u64::from(d.offset) < lib_len)
+            .count();
+        Ok(Self {
+            name: name.to_owned(),
+            summary: vec![
+                ("libreria".to_owned(), name.to_owned()),
+                ("idx_entries".to_owned(), idx.len().to_string()),
+                ("lib_dirs".to_owned(), dirs.len().to_string()),
+                ("lib_vivos".to_owned(), live.to_string()),
+            ],
+            parts,
+            nets: Vec::new(),
+            nets_full: Vec::new(),
+            blocks: Vec::new(),
+            wires: Vec::new(),
+            placements: Vec::new(),
+            sdf_text: None,
+            part_rest,
+        })
     }
 
     /// Empty placeholder shown in the welcome view.
@@ -561,7 +618,7 @@ impl App {
     /// Native open dialog; a missing backend reports instead of hanging.
     fn open_dialog(&mut self) {
         match rfd::FileDialog::new()
-            .add_filter("Proteus", &["pdsprj", "MDF", "SDF", "DSN", "LYT"])
+            .add_filter("Proteus", &["pdsprj", "MDF", "SDF", "DSN", "LYT", "IDX"])
             .add_filter("all", &["*"])
             .pick_file()
         {
@@ -587,7 +644,7 @@ impl App {
             }
             ui.add_space(8.0);
             ui.label("o arrastrá un archivo a esta ventana");
-            ui.monospace(".pdsprj  .MDF  .SDF  .DSN  .LYT");
+            ui.monospace(".pdsprj  .MDF  .SDF  .DSN  .LYT  .IDX");
             ui.add_space(12.0);
         });
         ui.horizontal(|ui| {
@@ -1570,6 +1627,33 @@ impl App {
         });
     }
 
+    /// ERC report section (extracted: keeps `show_tables` short).
+    fn show_erc(&self, ui: &mut egui::Ui) {
+        let issues = self.model.erc();
+        if issues.is_empty() {
+            return;
+        }
+        let (errs, warns) =
+            issues.iter().fold(
+                (0, 0),
+                |(e, w), (sev, _)| {
+                    if *sev == 'E' { (e + 1, w) } else { (e, w + 1) }
+                },
+            );
+        egui::CollapsingHeader::new(format!("Chequeo ({errs}E {warns}W)"))
+            .default_open(errs > 0)
+            .show(ui, |ui| {
+                for (sev, msg) in &issues {
+                    let color = if *sev == 'E' {
+                        egui::Color32::LIGHT_RED
+                    } else {
+                        egui::Color32::YELLOW
+                    };
+                    ui.colored_label(color, format!("{sev}: {msg}"));
+                }
+            });
+    }
+
     /// Left design-explorer tree: parts, nets, blocks with counts.
     fn show_explorer(&mut self, ui: &mut egui::Ui) {
         ui.heading("Explorador");
@@ -1681,29 +1765,15 @@ impl App {
     }
 
     fn show_tables(&mut self, ui: &mut egui::Ui) {
+        let query = self.search.to_lowercase();
+        let hits = |r: &str, k: &str, v: &str| {
+            query.is_empty()
+                || r.to_lowercase().contains(&query)
+                || k.to_lowercase().contains(&query)
+                || v.to_lowercase().contains(&query)
+        };
         egui::ScrollArea::both().show(ui, |ui| {
-            let issues = self.model.erc();
-            if !issues.is_empty() {
-                let (errs, warns) =
-                    issues.iter().fold(
-                        (0, 0),
-                        |(e, w), (sev, _)| {
-                            if *sev == 'E' { (e + 1, w) } else { (e, w + 1) }
-                        },
-                    );
-                egui::CollapsingHeader::new(format!("Chequeo ({errs}E {warns}W)"))
-                    .default_open(errs > 0)
-                    .show(ui, |ui| {
-                        for (sev, msg) in &issues {
-                            let color = if *sev == 'E' {
-                                egui::Color32::LIGHT_RED
-                            } else {
-                                egui::Color32::YELLOW
-                            };
-                            ui.colored_label(color, format!("{sev}: {msg}"));
-                        }
-                    });
-            }
+            self.show_erc(ui);
             egui::CollapsingHeader::new("Summary")
                 .default_open(true)
                 .show(ui, |ui| {
@@ -1725,6 +1795,9 @@ impl App {
                             ui.label("Value");
                             ui.end_row();
                             for (r, k, v) in &self.model.parts {
+                                if !hits(r, k, v) {
+                                    continue;
+                                }
                                 if ui
                                     .selectable_label(
                                         self.selected.as_deref() == Some(r.as_str()),
@@ -1751,6 +1824,9 @@ impl App {
                             ui.label("Pins");
                             ui.end_row();
                             for (id, n) in &self.model.nets {
+                                if !hits(id, &n.to_string(), "") {
+                                    continue;
+                                }
                                 ui.monospace(id);
                                 ui.label(n.to_string());
                                 ui.end_row();
@@ -1785,6 +1861,27 @@ impl App {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn real_tep_idx_joins_lib() {
+        let idx = "/home/diez/Descargas/Proteus-install/Proteus-8.6-SP2-Pro-español/Librerias Arduino/ArduinoTEP/ArduinoTEP.IDX";
+        let Ok(_) = std::fs::metadata(idx) else {
+            return;
+        };
+        let loaded = Loaded::open(std::path::Path::new(idx)).unwrap();
+        assert_eq!(loaded.parts.len(), 7);
+        assert!(loaded.parts.iter().any(|(r, _, _)| r.contains("UNO")));
+        assert!(loaded.summary.iter().any(|(k, _)| k == "lib_vivos"));
+        // Inspector extras carry key + offset for a joined part.
+        let uno = loaded
+            .parts
+            .iter()
+            .find(|(r, _, _)| r.contains("UNO"))
+            .unwrap();
+        let rest = &loaded.part_rest[&uno.0];
+        assert!(rest.iter().any(|f| f.starts_with("key=")));
+        assert!(rest.iter().any(|f| f.starts_with("offset=")));
+    }
 
     #[test]
     fn mm_scale_matches_tenth_inch_grid() {
