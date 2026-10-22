@@ -17,6 +17,22 @@ No Labcenter binaries or data are reproduced here.
 
 ## Ghidra findings (REA + Ghidra 12.1.2)
 
+Decompiled & applied (loop ledger):
+
+- [x] `NETLIST::net_gen` 0x1000fa00 — dispatch tabla 12B, 6 formatos
+- [x] `NETLIST::parse_models` 0x1bb90 — loop preámbulo `:`
+- [x] `NETLIST::write` (por nombre) — orden canónico, backpatch, DSN_
+- [x] `NETLIST::read_parts` — tolerancia VALUE, `=`/`,`
+- [x] `NETLIST::read_nets` — addpin enum, `sdf_etstrings` + remapeo IP
+- [x] `NETLIST::resolve` — MODEL/MODFILE + CDBCORE walk
+- [x] `DSIM::dsim_create` — firma, vtables, lookup primitiva
+- [x] `createdsimmodel` 8155H.dll — factory NULL-si-no-match
+- [ ] `NETLIST::net_erc` — en curso (valida reglas ERC propias)
+- [ ] `NETLIST::read_script/read_models/read_props` — pendientes
+- [ ] `ISIS.DLL` factory loader — verificado a strings, falta función
+- [ ] símbolos COMPONENT vectoriales — records localizados, strokes TBD
+- [ ] pads LYT — records `02 7f` localizados, campos TBD
+
 - `BIN/ISIS.DLL` (PE32, sha256 `e0cec780…`): 3040 procedures, 3108 strings.
   No PDB (`ISIS.pdb` referenced, absent) → recovered names only.
 - Netlisting is delegated to `BIN/NETLIST.dll` (200 KB) via C++ imports:
