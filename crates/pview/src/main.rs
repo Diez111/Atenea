@@ -97,6 +97,8 @@ struct Loaded {
     placements: Vec<(String, f64, f64)>,
     /// Source text for `.MDF`/`.SDF` (enables the Simulate tab).
     sdf_text: Option<String>,
+    /// Extra `*PARTLIST` fields per ref (EID, PACKAGE, PINSWAP, ...).
+    part_rest: HashMap<String, Vec<String>>,
 }
 
 /// Convert raw DSN wires (internal units) to mm segments.
@@ -235,6 +237,7 @@ impl Loaded {
             wires: Vec::new(),
             placements: Vec::new(),
             sdf_text: None,
+            part_rest: HashMap::new(),
         }
     }
 
@@ -306,9 +309,12 @@ impl Loaded {
     }
 
     fn from_lisa(name: &str, doc: &pmodel::Document) -> Self {
-        let parts = doc
-            .partlist()
-            .unwrap_or_default()
+        let plist = doc.partlist().unwrap_or_default();
+        let part_rest = plist
+            .iter()
+            .map(|p| (p.reference.clone(), p.rest.clone()))
+            .collect();
+        let parts = plist
             .into_iter()
             .map(|p| (p.reference, p.kind, p.value))
             .collect();
@@ -332,6 +338,7 @@ impl Loaded {
             wires: Vec::new(),
             placements: Vec::new(),
             sdf_text: None,
+            part_rest,
         }
     }
 
@@ -365,6 +372,7 @@ impl Loaded {
             wires,
             placements,
             sdf_text: None,
+            part_rest: HashMap::new(),
         })
     }
 }
@@ -405,6 +413,24 @@ impl Default for Layers {
     }
 }
 
+/// Visibility flags for chrome panels (keeps `App` bool count low).
+#[derive(Debug, Clone)]
+struct Panels {
+    explorer: bool,
+    inspector: bool,
+    help: bool,
+}
+
+impl Default for Panels {
+    fn default() -> Self {
+        Self {
+            explorer: true,
+            inspector: true,
+            help: false,
+        }
+    }
+}
+
 struct App {
     model: Loaded,
     /// Last file-open error (shown instead of panicking).
@@ -432,6 +458,8 @@ struct App {
     sim_vars: String,
     /// Transient stop time (e.g. `5m`).
     sim_tstop: String,
+    /// Visibility flags for explorer / inspector / help.
+    panels: Panels,
 }
 
 impl App {
@@ -453,6 +481,7 @@ impl App {
             sim_error: None,
             sim_vars: "v(OUT)".to_owned(),
             sim_tstop: "5m".to_owned(),
+            panels: Panels::default(),
         }
     }
 
@@ -1084,20 +1113,8 @@ impl eframe::App for App {
         if let Some(path) = dropped.into_iter().next() {
             self.open_path(&path);
         }
-        ui.horizontal(|ui| {
-            ui.heading(self.model.name.clone());
-            if ui.button("Abrir…").clicked() {
-                self.open_dialog();
-            }
-            ui.separator();
-            ui.selectable_value(&mut self.tab, Tab::Tables, "Tables");
-            ui.selectable_value(&mut self.tab, Tab::Graph, "Graph");
-            ui.selectable_value(&mut self.tab, Tab::Wires, "Esquema");
-            ui.selectable_value(&mut self.tab, Tab::Simulate, "Simulate");
-            ui.separator();
-            ui.label("filter:");
-            ui.text_edit_singleline(&mut self.search);
-        });
+        self.handle_shortcuts(ui);
+        self.draw_menu(ui);
         ui.separator();
         if let Some(err) = self.file_error.clone() {
             ui.colored_label(egui::Color32::LIGHT_RED, err);
@@ -1107,12 +1124,143 @@ impl eframe::App for App {
             self.show_welcome(ui);
             return;
         }
+        self.draw_panels(ui);
+        self.show_tab(ui);
+        self.draw_help(ui);
+        self.draw_status(ui);
+    }
+}
+
+impl App {
+    /// Global shortcuts (Ctrl+O, Ctrl+1..4, Ctrl+L, Esc, F1).
+    fn handle_shortcuts(&mut self, ui: &mut egui::Ui) {
+        // Shortcuts: Ctrl+O open, Ctrl+1..4 tabs, Ctrl+L fit, Esc clear, F1 help.
+        ui.input(|i| {
+            if i.modifiers.ctrl && i.key_pressed(egui::Key::O) {
+                self.open_dialog();
+            }
+            for (n, tab) in [
+                (egui::Key::Num1, Tab::Tables),
+                (egui::Key::Num2, Tab::Graph),
+                (egui::Key::Num3, Tab::Wires),
+                (egui::Key::Num4, Tab::Simulate),
+            ] {
+                if i.modifiers.ctrl && i.key_pressed(n) {
+                    self.tab = tab;
+                }
+            }
+            if i.modifiers.ctrl && i.key_pressed(egui::Key::L) {
+                self.wires_fitted = false;
+            }
+            if i.key_pressed(egui::Key::Escape) {
+                self.selected = None;
+                self.panels.help = false;
+            }
+            if i.key_pressed(egui::Key::F1) {
+                self.panels.help = !self.panels.help;
+            }
+        });
+    }
+
+    /// Top menu bar + header (Archivo / Ver / Ayuda + tabs + filter).
+    fn draw_menu(&mut self, ui: &mut egui::Ui) {
+        // Menu bar (ISIS-like): Archivo / Ver / Ayuda.
+        ui.horizontal(|ui| {
+            ui.menu_button("Archivo", |ui| {
+                if ui.button("Abrir…  (Ctrl+O)").clicked() {
+                    self.open_dialog();
+                }
+                if ui
+                    .add_enabled(!self.model.is_empty(), egui::Button::new("Cerrar"))
+                    .clicked()
+                {
+                    self.model = Loaded::empty();
+                    self.reset_view();
+                }
+                ui.separator();
+                if ui.button("Salir").clicked() {
+                    ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                }
+            });
+            ui.menu_button("Ver", |ui| {
+                ui.selectable_value(&mut self.tab, Tab::Tables, "Tables  (Ctrl+1)");
+                ui.selectable_value(&mut self.tab, Tab::Graph, "Graph  (Ctrl+2)");
+                ui.selectable_value(&mut self.tab, Tab::Wires, "Esquema  (Ctrl+3)");
+                ui.selectable_value(&mut self.tab, Tab::Simulate, "Simulate  (Ctrl+4)");
+                ui.separator();
+                if ui.button("Fit esquema  (Ctrl+L)").clicked() {
+                    self.wires_fitted = false;
+                }
+                ui.checkbox(&mut self.panels.explorer, "Explorador");
+                ui.checkbox(&mut self.panels.inspector, "Inspector");
+                ui.checkbox(&mut self.layers.wires, "Capa wires");
+                ui.checkbox(&mut self.layers.labels, "Capa etiquetas");
+                ui.checkbox(&mut self.layers.grid, "Capa retícula");
+            });
+            ui.menu_button("Ayuda", |ui| {
+                if ui.button("Primeros pasos  (F1)").clicked() {
+                    self.panels.help = true;
+                }
+            });
+            ui.separator();
+            ui.heading(self.model.name.clone());
+            if ui.button("Abrir…").clicked() {
+                self.open_dialog();
+            }
+            if ui.button("Fit").clicked() {
+                self.wires_fitted = false;
+            }
+            ui.separator();
+            ui.label("filter:");
+            ui.text_edit_singleline(&mut self.search);
+        });
+        ui.separator();
+    }
+
+    /// Side explorer / inspector panels.
+    fn draw_panels(&mut self, ui: &mut egui::Ui) {
+        if self.panels.explorer && !self.model.is_empty() {
+            egui::Panel::left("explorer")
+                .resizable(true)
+                .default_size(190.0)
+                .show(ui, |ui| {
+                    self.show_explorer(ui);
+                });
+        }
+        if self.panels.inspector && !self.model.is_empty() {
+            egui::Panel::right("inspector")
+                .resizable(true)
+                .default_size(220.0)
+                .show(ui, |ui| {
+                    self.show_inspector(ui);
+                });
+        }
+    }
+
+    /// Active tab content.
+    fn show_tab(&mut self, ui: &mut egui::Ui) {
         match self.tab {
             Tab::Tables => self.show_tables(ui),
             Tab::Graph => self.draw_graph(ui),
             Tab::Wires => self.draw_wires(ui),
             Tab::Simulate => self.draw_sim(ui),
         }
+    }
+
+    /// Floating help window (F1).
+    fn draw_help(&mut self, ui: &mut egui::Ui) {
+        let mut help = self.panels.help;
+        if help {
+            egui::Window::new("Ayuda — Atenea")
+                .open(&mut help)
+                .show(ui, |ui| {
+                    Self::show_help(ui);
+                });
+        }
+    }
+
+    /// Bottom status bar.
+    fn draw_status(&self, ui: &mut egui::Ui) {
         // Global status bar (ISIS-like): file, position, mode.
         ui.separator();
         ui.horizontal(|ui| {
@@ -1136,9 +1284,117 @@ impl eframe::App for App {
             });
         });
     }
-}
 
-impl App {
+    /// Left design-explorer tree: parts, nets, blocks with counts.
+    fn show_explorer(&mut self, ui: &mut egui::Ui) {
+        ui.heading("Explorador");
+        egui::ScrollArea::both().show(ui, |ui| {
+            egui::CollapsingHeader::new(format!("Partes ({})", self.model.parts.len()))
+                .default_open(true)
+                .show(ui, |ui| {
+                    for (r, k, v) in self.model.parts.clone() {
+                        let label = format!("{r} {k} {v}");
+                        if ui
+                            .selectable_label(self.selected.as_deref() == Some(&r), label)
+                            .clicked()
+                        {
+                            self.selected = Some(r.clone());
+                            self.tab = Tab::Graph;
+                        }
+                    }
+                });
+            egui::CollapsingHeader::new(format!("Nets ({})", self.model.nets.len())).show(
+                ui,
+                |ui| {
+                    for (id, n) in self.model.nets.clone() {
+                        if ui.selectable_label(false, format!("{id} ({n})")).clicked() {
+                            use std::fmt::Write as _;
+                            if !self.sim_vars.contains(&format!("v({id})")) {
+                                if !self.sim_vars.trim().is_empty() {
+                                    self.sim_vars.push(' ');
+                                }
+                                let _ = write!(self.sim_vars, "v({id})");
+                            }
+                            self.tab = Tab::Simulate;
+                        }
+                    }
+                },
+            );
+            if !self.model.blocks.is_empty() {
+                egui::CollapsingHeader::new(format!("Bloques ({})", self.model.blocks.len())).show(
+                    ui,
+                    |ui| {
+                        for (h, _) in self.model.blocks.clone() {
+                            ui.monospace(h);
+                        }
+                    },
+                );
+            }
+        });
+    }
+
+    /// Right property inspector for the selected part.
+    fn show_inspector(&mut self, ui: &mut egui::Ui) {
+        ui.heading("Inspector");
+        let Some(sel) = self.selected.clone() else {
+            ui.label("Sin selección.");
+            ui.label("Click en una parte (Tables, Graph o Explorador).");
+            return;
+        };
+        ui.monospace(&sel);
+        ui.separator();
+        if let Some((_, k, v)) = self.model.parts.iter().find(|(r, _, _)| r == &sel) {
+            egui::Grid::new("insp").show(ui, |ui| {
+                ui.label("Tipo");
+                ui.monospace(k);
+                ui.end_row();
+                ui.label("Valor");
+                ui.monospace(v);
+                ui.end_row();
+            });
+        }
+        if let Some(rest) = self.model.part_rest.get(&sel) {
+            if !rest.is_empty() {
+                ui.separator();
+                ui.strong("Propiedades");
+                for f in rest {
+                    ui.monospace(f);
+                }
+            }
+        }
+        let nets: Vec<String> = self
+            .model
+            .nets_full
+            .iter()
+            .filter(|(_, pins)| pins.iter().any(|(r, _)| r == &sel))
+            .map(|(id, _)| id.clone())
+            .collect();
+        if !nets.is_empty() {
+            ui.separator();
+            ui.strong("Nets");
+            for id in nets {
+                ui.monospace(id);
+            }
+        }
+    }
+
+    /// Help window content (Primeros pasos / Ayuda / Acerca de).
+    fn show_help(ui: &mut egui::Ui) {
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.heading("Primeros pasos");
+            ui.label("1. Abrí un .pdsprj o un .DSN (Archivo > Abrir, Ctrl+O).");
+            ui.label("2. Mirá la pestaña Esquema (wires + etiquetas reales).");
+            ui.label("3. Probá Simulate con un .SDF + ngspice.");
+            ui.separator();
+            ui.heading("Atajos");
+            ui.monospace("Ctrl+O abrir · Ctrl+1/2/3/4 tabs · Ctrl+L fit · Esc limpiar · F1 ayuda");
+            ui.separator();
+            ui.heading("Acerca de");
+            ui.label("Atenea GPL-3.0-or-later. RE interoperable, sin binarios vendor.");
+            ui.monospace("Log: /tmp/atenea.log · Docs: docs/01-empezar.md");
+        });
+    }
+
     fn show_tables(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::both().show(ui, |ui| {
             egui::CollapsingHeader::new("Summary")
