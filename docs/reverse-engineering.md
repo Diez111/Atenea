@@ -76,9 +76,16 @@ No Labcenter binaries or data are reproduced here.
   `authorize(ILICENCESERVER)` (`GLE=0x%08lX` = `GetLastError`);
   missing `deleteactivemodel` is only a warning. `vsm-host` mirrors
   exactly this sequence with `libloading`.
-- `dsim_create` lives in `DSIM.DLL` (not ISIS); `MODDLL`,
-  `GETSPICE`/`GETMDF`/`SDFGEN` are external `BIN/*.EXE`, not ISIS
-  imports — ISIS receives an already-resolved path.
+- `dsim_create` (`DSIM.DLL`, decompilado por nombre via REA/Ghidra):
+  `int __cdecl dsim_create(IINSTANCE*, char* prim, PROPLIST&,
+  IDSIMMODEL*, void** out)`. Sin modelo: lookup por nombre de primitiva
+  (`Unknown DSIM Primitive Model [%s]` si falta); con modelo: alloca
+  `INSTANCE` (0x9c B), instala vtables (`INSTANCE`, `GDIDX<PIN>`,
+  `GDIDX<BUSPIN>`, `GDPA<PINHANDLER>`, `EXTMODEL`), devuelve instancia
+  en `*out`. Log `DSIM creating %s`. Nuestra ABI nativa
+  (`atenea_model_create/step/destroy`) es recepción limpia, no clon binario.
+- `MODDLL`, `GETSPICE`/`GETMDF`/`SDFGEN` son `BIN/*.EXE` externos, no imports
+  de ISIS — ISIS recibe un path ya resuelto.
 - `VSMSDK.chm` is an NDA contact page only — no VSM C++ ABI documented.
   Community docs (ee-diary, public VSM guides) describe the de-facto ABI:
   ```cpp
