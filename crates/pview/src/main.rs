@@ -456,6 +456,8 @@ struct App {
     sim_error: Option<String>,
     /// Variables to print, space separated (e.g. `v(OUT)`).
     sim_vars: String,
+    /// Hidden series indices (legend click toggles).
+    sim_hidden: Vec<bool>,
     /// Transient stop time (e.g. `5m`).
     sim_tstop: String,
     /// Visibility flags for explorer / inspector / help.
@@ -481,6 +483,7 @@ impl App {
             sim_error: None,
             sim_vars: "v(OUT)".to_owned(),
             sim_tstop: "5m".to_owned(),
+            sim_hidden: Vec::new(),
             panels: Panels::default(),
         }
     }
@@ -1005,11 +1008,44 @@ impl App {
             });
             ui.separator();
         }
-        if let Some(trace) = &self.sim_trace {
+        if self.sim_trace.is_some() {
+            let vars: Vec<String> = self
+                .sim_vars
+                .split_whitespace()
+                .map(str::to_owned)
+                .collect();
+            if self.sim_hidden.len() != vars.len() {
+                self.sim_hidden = vec![false; vars.len()];
+            }
+            ui.horizontal_wrapped(|ui| {
+                for (i, v) in vars.iter().enumerate() {
+                    let (r, g, b) = TRACE_HUES[i % TRACE_HUES.len()];
+                    let mut label = egui::RichText::new(v).monospace();
+                    if self.sim_hidden[i] {
+                        label = label.strikethrough().weak();
+                    } else {
+                        label = label.color(egui::Color32::from_rgb(r, g, b));
+                    }
+                    if ui.button(label).clicked() {
+                        self.sim_hidden[i] = !self.sim_hidden[i];
+                    }
+                }
+            });
+            let trace = self.sim_trace.clone().unwrap_or(asim::Trace {
+                vars: Vec::new(),
+                rows: Vec::new(),
+            });
             ui.label(format!("{} rows", trace.rows.len()));
-            Self::paint_trace(ui, trace);
+            if let Some(readout) = Self::paint_trace(ui, &trace, &self.sim_hidden) {
+                ui.monospace(readout);
+            }
+            let shown: Vec<usize> = (0..vars.len()).filter(|i| !self.sim_hidden[*i]).collect();
             if let Some((_, last)) = trace.rows.last() {
-                ui.label(format!("final: {last:?}"));
+                let last_vals: Vec<String> = shown
+                    .iter()
+                    .filter_map(|i| last.get(*i).map(|x| format!("{x:.4}")))
+                    .collect();
+                ui.label(format!("final: [{}]", last_vals.join(", ")));
             }
         } else if self.sim_error.is_none() {
             ui.label("Load an .MDF/.SDF file, set vars + tstop, press Run.");
@@ -1020,8 +1056,8 @@ impl App {
     /// Pixel coordinates are inherently `f32`; precision loss vs `f64`
     /// time/voltage is irrelevant on screen.
     #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
-    fn paint_trace(ui: &mut egui::Ui, trace: &asim::Trace) {
-        let (rect, _) = ui.allocate_exact_size(
+    fn paint_trace(ui: &mut egui::Ui, trace: &asim::Trace, hidden: &[bool]) -> Option<String> {
+        let (rect, response) = ui.allocate_exact_size(
             egui::vec2(ui.available_width(), 260.0),
             egui::Sense::hover(),
         );
@@ -1054,8 +1090,11 @@ impl App {
             [rect.left_bottom(), rect.left_top()],
             egui::Stroke::new(1.0, ui.visuals().weak_text_color()),
         );
-        // One polyline per variable, distinct hues (see TRACE_HUES).
+        // One polyline per visible variable, distinct hues (see TRACE_HUES).
         for col in 0..nvars {
+            if hidden.get(col).copied().unwrap_or(false) {
+                continue;
+            }
             let (r, g, b) = TRACE_HUES[col % TRACE_HUES.len()];
             let mut prev: Option<egui::Pos2> = None;
             for (t, v) in &trace.rows {
@@ -1074,10 +1113,28 @@ impl App {
         painter.text(
             rect.left_top() + egui::vec2(4.0, 2.0),
             egui::Align2::LEFT_TOP,
-            format!("t [0, {t1:.4}]  v [{vmin:.3}, {vmax:.3}]  ({nvars} series)"),
+            format!("t(s) [0, {t1:.4}]  v(V) [{vmin:.3}, {vmax:.3}]  ({nvars} series)"),
             egui::FontId::monospace(11.0),
             ui.visuals().text_color(),
         );
+        // Hover readout: nearest row to the cursor.
+        let hover = response.hover_pos().and_then(|pos| {
+            let frac = f64::from(((pos.x - rect.min.x) / rect.width().max(1.0)).clamp(0.0, 1.0));
+            trace.rows.iter().min_by(|(a, _), (b, _)| {
+                ((a / t1.max(1e-12) - frac).abs())
+                    .partial_cmp(&((b / t1.max(1e-12) - frac).abs()))
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
+        });
+        hover.map(|(t, v)| {
+            let vals: Vec<String> = v
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| !hidden.get(*i).copied().unwrap_or(false))
+                .map(|(_, x)| format!("{x:.4}"))
+                .collect();
+            format!("t={t:.6}s  [{}]", vals.join(", "))
+        })
     }
 
     /// Parse the loaded text and run one transient, returning its trace.
