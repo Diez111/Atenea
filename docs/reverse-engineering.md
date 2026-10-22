@@ -44,6 +44,9 @@ No Labcenter binaries or data are reproduced here.
   file-offset de otra build): emite `*PROPERTIES,XXXXX\n` (conteo como
   placeholder a rellenar), itera props excluyendo `DSN_*`. Patrón writer:
   sección + backpatch de conteo.
+- `read_parts` (Ghidra por nombre): getline loop; `getpropname('=')` +
+  `getstr` → `PROPLIST::add`; `VALUE` defaulteado si falta.
+  `pmodel::partlist` replica la tolerancia (campos faltantes → "").
 - Export table (515 exports; RVAs de parse manual NO verificadas —
   el parseo crudo desalinea `AddressOfFunctions`: Ghidra-por-nombre es la
   fuente de verdad). Nombres confirmados por string: `parse_field`,
