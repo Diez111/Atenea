@@ -450,6 +450,9 @@ struct App {
     layers: Layers,
     /// Cursor position in sheet mm for the status bar.
     wires_cursor: Option<(f64, f64)>,
+    /// Measure anchors in sheet mm (click-click distance).
+    measure_a: Option<(f64, f64)>,
+    measure_b: Option<(f64, f64)>,
     /// Last simulation trace (Simulate tab).
     sim_trace: Option<asim::Trace>,
     /// Last simulation error, if any.
@@ -479,6 +482,8 @@ impl App {
             wires_fitted: false,
             layers: Layers::default(),
             wires_cursor: None,
+            measure_a: None,
+            measure_b: None,
             sim_trace: None,
             sim_error: None,
             sim_vars: "v(OUT)".to_owned(),
@@ -870,6 +875,18 @@ impl App {
         }
         self.wires_zoom = zoom;
         self.wires_pan = pan;
+        // Click-click measure (Esc clears).
+        if response.clicked() {
+            if let Some(ptr) = response.interact_pointer_pos() {
+                let w = screen_to_world(ptr, pan, zoom, rect.min);
+                let pt = (f64::from(w.x), f64::from(w.y));
+                if self.measure_a.is_none() {
+                    self.measure_a = Some(pt);
+                } else {
+                    self.measure_b = Some(pt);
+                }
+            }
+        }
         // Cursor position in sheet mm for the status bar.
         self.wires_cursor = response.hover_pos().map(|ptr| {
             let w = screen_to_world(ptr, pan, zoom, rect.min);
@@ -952,6 +969,7 @@ impl App {
                 egui::Stroke::new(1.5, color),
             );
         }
+        self.paint_measure(ui, rect, pan, zoom);
         // Placed refdes/value/terminal labels.
         if self.layers.labels && zoom > 0.6 {
             for (text, x, y) in &self.model.placements {
@@ -1137,6 +1155,44 @@ impl App {
         })
     }
 
+    /// Measure overlay for the sheet (extracted: keeps `paint_wires` short).
+    fn paint_measure(&self, ui: &mut egui::Ui, rect: egui::Rect, pan: egui::Vec2, zoom: f32) {
+        let painter = ui.painter_at(rect);
+        if let Some((ax, ay)) = self.measure_a {
+            let pa = world_to_screen(mm_to_world(ax, ay), pan, zoom, rect.min);
+            painter.circle_filled(pa, 4.0, egui::Color32::RED);
+            painter.text(
+                pa + egui::vec2(6.0, -6.0),
+                egui::Align2::LEFT_BOTTOM,
+                "A",
+                egui::FontId::monospace(12.0),
+                egui::Color32::RED,
+            );
+            if let Some((bx, by)) = self.measure_b {
+                let pb = world_to_screen(mm_to_world(bx, by), pan, zoom, rect.min);
+                painter.circle_filled(pb, 4.0, egui::Color32::RED);
+                painter.text(
+                    pb + egui::vec2(6.0, -6.0),
+                    egui::Align2::LEFT_BOTTOM,
+                    "B",
+                    egui::FontId::monospace(12.0),
+                    egui::Color32::RED,
+                );
+                painter.line_segment([pa, pb], egui::Stroke::new(1.0, egui::Color32::RED));
+                let dx = bx - ax;
+                let dy = by - ay;
+                let dist = dx.hypot(dy);
+                painter.text(
+                    pa.lerp(pb, 0.5) + egui::vec2(0.0, -8.0),
+                    egui::Align2::CENTER_BOTTOM,
+                    format!("{dist:.2} mm ({:.0} thou)", dist * 39.3701),
+                    egui::FontId::monospace(12.0),
+                    egui::Color32::RED,
+                );
+            }
+        }
+    }
+
     /// Parse the loaded text and run one transient, returning its trace.
     fn run_sim(&self) -> Result<asim::Trace, String> {
         let text = self
@@ -1211,6 +1267,8 @@ impl App {
             }
             if i.key_pressed(egui::Key::Escape) {
                 self.selected = None;
+                self.measure_a = None;
+                self.measure_b = None;
                 self.panels.help = false;
             }
             if i.key_pressed(egui::Key::F1) {
