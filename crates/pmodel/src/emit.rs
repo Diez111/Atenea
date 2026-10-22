@@ -28,11 +28,21 @@ fn quote_csv_field(field: &str) -> String {
 }
 
 /// `*NAME,count` header plus body lines (count always recomputed).
+///
+/// Vendor quirks from `NETLIST::write` decompile: `*MAPPINGS,` carries no
+/// count, and a `*SCRIPT` body is closed by a bare `*ENDSCRIPT` line.
 fn section_to_text(name: &str, lines: &[String]) -> String {
-    let mut out = format!("*{name},{}\n", lines.len());
+    let mut out = if name == "MAPPINGS" {
+        format!("*{name},\n")
+    } else {
+        format!("*{name},{}\n", lines.len())
+    };
     for line in lines {
         out.push_str(line);
         out.push('\n');
+    }
+    if name == "SCRIPT" {
+        out.push_str("*ENDSCRIPT\n");
     }
     out
 }
@@ -119,7 +129,12 @@ pub fn emit(doc: &Document) -> String {
         let _ = writeln!(out, "{} FORMAT {}", doc.format, doc.version);
         out.push_str("=====================================\n");
     }
-    let preamble: BTreeMap<&String, &String> = doc.preamble.iter().collect();
+    // Vendor `NETLIST::write` skips `DSN_*` preamble props (strncmp).
+    let preamble: BTreeMap<&String, &String> = doc
+        .preamble
+        .iter()
+        .filter(|(k, _)| !k.starts_with("DSN_"))
+        .collect();
     for (key, value) in preamble {
         let _ = writeln!(out, "{key}: {value}");
     }
@@ -154,6 +169,29 @@ mod tests {
             super::emit_format(&d, "CIR"),
             Err(super::EmitError::UnsupportedFormat("CIR".into()))
         );
+    }
+
+    #[test]
+    fn vendor_mappings_bare_and_script_end() {
+        let doc = parse("LISA MODEL DESCRIPTION FORMAT 6.1\n====\n*MAPPINGS,\nA=1\n*SCRIPT\nX\n*ENDSCRIPT\n*PARTLIST,0\n").unwrap();
+        let text = super::emit(&doc);
+        assert!(text.contains("*MAPPINGS,\n"), "{text}");
+        assert!(text.contains("*ENDSCRIPT\n"), "{text}");
+        let d2 = parse(&text).unwrap();
+        assert_eq!(
+            d2.section("MAPPINGS").unwrap().lines,
+            vec!["A=1".to_owned()]
+        );
+    }
+
+    #[test]
+    fn vendor_dsn_props_excluded() {
+        let doc =
+            parse("LISA MODEL DESCRIPTION FORMAT 6.1\n====\nDesign: D\nDSN_X: 1\n*PARTLIST,0\n")
+                .unwrap();
+        let text = super::emit(&doc);
+        assert!(text.contains("Design: D\n"));
+        assert!(!text.contains("DSN_X"));
     }
 
     #[test]

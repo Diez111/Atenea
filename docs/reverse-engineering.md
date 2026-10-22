@@ -34,7 +34,13 @@ No Labcenter binaries or data are reproduced here.
   con `*`; `getpropname(ptr,buf,':')` + `skipspaces` →
   `PROPLIST::add(lista+0x9c, nombre, valor)`. Confirma el diseño de
   `pmodel` (preámbulo `Clave: valor`, secciones `*`).
-- `NETLIST::write` (`?write@...`, RVA **0x55f0** — corrección: 0x17af0 era
+- `NETLIST::write` (`?write@...`, decompilado por nombre via REA/Ghidra:
+  `void __thiscall NETLIST::write(NETLIST*, ostream*, int)`): emite en orden
+  `*PROPERTIES,XXXXX` → `*MAPPINGS,` (SIN conteo) → `*MODELDEFS[,XXXXX]` →
+  `*SCRIPT ` … `*ENDSCRIPT` → `*PARTLIST[,XXXXX]` → `*NETLIST[,XXXXX]`
+  (backpatch `XXXXX`, `#%05d`); excluye props `DSN_*` (strncmp); separadores
+  ` : ` y `, `. `pmodel::emit` replica todo (MAPPINGS bare, ENDSCRIPT,
+  filtro DSN_*). (RVA **0x55f0** — corrección: 0x17af0 era
   file-offset de otra build): emite `*PROPERTIES,XXXXX\n` (conteo como
   placeholder a rellenar), itera props excluyendo `DSN_*`. Patrón writer:
   sección + backpatch de conteo.
