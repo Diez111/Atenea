@@ -241,6 +241,33 @@ impl Loaded {
         }
     }
 
+    /// Electrical rule check (read-only): floating nets, dangling pins,
+    /// duplicate refs. Returns `(severity, message)` in file order.
+    fn erc(&self) -> Vec<(char, String)> {
+        let mut out = Vec::new();
+        for (id, pins) in &self.nets_full {
+            if pins.len() < 2 {
+                out.push(('W', format!("net {id}: flotante ({} pin)", pins.len())));
+            }
+        }
+        let mut seen = std::collections::HashSet::new();
+        for (r, _, _) in &self.parts {
+            if !seen.insert(r) {
+                out.push(('E', format!("parte {r}: referencia duplicada")));
+            }
+        }
+        for (r, _, _) in &self.parts {
+            let in_net = self
+                .nets_full
+                .iter()
+                .any(|(_, pins)| pins.iter().any(|(pr, _)| pr == r));
+            if !in_net {
+                out.push(('W', format!("parte {r}: sin pines en netlist")));
+            }
+        }
+        out
+    }
+
     /// `true` when no file is loaded yet.
     fn is_empty(&self) -> bool {
         self.parts.is_empty()
@@ -1512,6 +1539,28 @@ impl App {
 
     fn show_tables(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::both().show(ui, |ui| {
+            let issues = self.model.erc();
+            if !issues.is_empty() {
+                let (errs, warns) =
+                    issues.iter().fold(
+                        (0, 0),
+                        |(e, w), (sev, _)| {
+                            if *sev == 'E' { (e + 1, w) } else { (e, w + 1) }
+                        },
+                    );
+                egui::CollapsingHeader::new(format!("Chequeo ({errs}E {warns}W)"))
+                    .default_open(errs > 0)
+                    .show(ui, |ui| {
+                        for (sev, msg) in &issues {
+                            let color = if *sev == 'E' {
+                                egui::Color32::LIGHT_RED
+                            } else {
+                                egui::Color32::YELLOW
+                            };
+                            ui.colored_label(color, format!("{sev}: {msg}"));
+                        }
+                    });
+            }
             egui::CollapsingHeader::new("Summary")
                 .default_open(true)
                 .show(ui, |ui| {
