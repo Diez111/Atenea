@@ -1101,6 +1101,14 @@ impl App {
                 },
             );
         }
+        // Title block (ISIS-like): design name + sheet size, bottom-right.
+        painter.text(
+            egui::pos2(rect.max.x - 8.0, rect.max.y - 8.0),
+            egui::Align2::RIGHT_BOTTOM,
+            format!("{}  |  Atenea", self.model.name),
+            egui::FontId::monospace(12.0),
+            egui::Color32::from_rgb(0, 0, 150),
+        );
         self.paint_measure(ui, rect, pan, zoom);
         // Placed refdes/value/terminal labels.
         if self.layers.labels && zoom > 0.6 {
