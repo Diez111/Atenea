@@ -29,13 +29,22 @@ No Labcenter binaries or data are reproduced here.
   `net_gen`, `net_erc`, `write`/`writeheader`, `mdf_id`.
 - Strings: `SPICEMODEL`, `MODFILE`, `VSM DLL Model [%s]`, `DSNCVT40.DLL`,
   `dsn_editdesign`, `Complile Netlist` [sic].
-- `NETLIST::parse_models` descompilado (0x1bb90, `?parse_models@...`): lee
-  líneas hasta EOF o línea que empiece con `*`; `getpropname(ptr,buf,':')`
-  + `skipspaces` → `PROPLIST::add(lista+0x9c, nombre, valor)`. Confirma el
-  diseño de `pmodel` (preámbulo `Clave: valor`, secciones `*`).
-- `NETLIST::write` (0x17af0, `?write@...`, 500 bytes): emite
-  `*PROPERTIES,XXXXX\n` (conteo como placeholder a rellenar), itera
-  props excluyendo `DSN_*`. Patrón writer: sección + backpatch de conteo.
+- `NETLIST::parse_models` (`?parse_models@...`, RVA **0x1b9b0** — corrección:
+  0x1bb90 es `parse_netprop`): lee líneas hasta EOF o línea que empiece
+  con `*`; `getpropname(ptr,buf,':')` + `skipspaces` →
+  `PROPLIST::add(lista+0x9c, nombre, valor)`. Confirma el diseño de
+  `pmodel` (preámbulo `Clave: valor`, secciones `*`).
+- `NETLIST::write` (`?write@...`, RVA **0x55f0** — corrección: 0x17af0 era
+  file-offset de otra build): emite `*PROPERTIES,XXXXX\n` (conteo como
+  placeholder a rellenar), itera props excluyendo `DSN_*`. Patrón writer:
+  sección + backpatch de conteo.
+- Export table (515 exports, RVAs): `parse_field` 0x1b850, `parse_map`
+  0x1bcc0, `parse_netprop` 0x1bb90, `parse_define` 0x1d430,
+  `parse_requires` 0x1f460, `parse_script` 0x1c0c0,
+  `read_mappings/models/nets/parts/props/script` 0x185f0–0x18f70,
+  `resolve` 0xbec0, `net_erc` (free fn) 0x2b30, `net_gen` 0xfa00,
+  `bom` 0x94c0, `dxp` 0xd970, `addscript` 0x1a6e0, `writeheader` 0xca70,
+  `propkwd/propsubst/propval`, `validate`, `sortnets`, `gettitle`.
 - `net_gen` ×2 (0x1000fa00 ostream / 0x1000fc50 path): despacha por índice
   de formato vía tabla `net_formats` + punteros `PTR_FUN_10030390[i]`;
   genera nombres con `tfngen`/`addext`, abre con `fopen(..."w")`.
