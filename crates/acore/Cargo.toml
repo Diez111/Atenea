@@ -1,0 +1,19 @@
+[package]
+name = "acore"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "JSON sidecar over the Atenea Rust engine for the Go UI"
+
+[[bin]]
+name = "acore"
+path = "src/main.rs"
+
+[dependencies]
+plib = { path = "../plib" }
+pmodel = { path = "../pmodel" }
+pproj = { path = "../pproj" }
+asim = { path = "../asim" }
+
+[lints]
+workspace = true

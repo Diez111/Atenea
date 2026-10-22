@@ -127,6 +127,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "acore"
+version = "0.1.0"
+dependencies = [
+ "asim",
+ "plib",
+ "pmodel",
+ "pproj",
+]
+
+[[package]]
 name = "adc0808"
 version = "0.1.0"
 dependencies = [
