@@ -279,19 +279,24 @@ impl Document {
     /// # Errors
     ///
     /// [`ParseError::BadPart`] on rows with fewer than 3 fields.
+    /// Parse `*PARTLIST` rows (`REF,TYPE,VALUE,extra...`).
+    ///
+    /// Vendor `read_parts` never fails a row: short rows get empty
+    /// fields (`VALUE` defaulted when absent). We mirror that tolerance.
     pub fn partlist(&self) -> Result<Vec<Part>, ParseError> {
         let mut out = Vec::new();
         if let Some(sec) = self.section("PARTLIST") {
             for line in &sec.lines {
                 let fields = split_csv(line);
-                if fields.len() < 3 {
+                if fields.is_empty() {
                     return Err(ParseError::BadPart(line.clone()));
                 }
+                let get = |i: usize| fields.get(i).cloned().unwrap_or_default();
                 out.push(Part {
-                    reference: fields[0].clone(),
-                    kind: fields[1].clone(),
-                    value: fields[2].clone(),
-                    rest: fields[3..].to_vec(),
+                    reference: get(0),
+                    kind: get(1),
+                    value: get(2),
+                    rest: fields.get(3..).unwrap_or(&[]).to_vec(),
                 });
             }
         }
@@ -420,6 +425,17 @@ U1,OP,6
         assert_eq!(doc.version, "4.5");
         assert_eq!(doc.preamble["Design"], "PPSU DESIGN");
         assert_eq!(doc.preamble["Author"], "Labcenter");
+    }
+
+    #[test]
+    fn partlist_short_rows_tolerated_like_vendor() {
+        // read_parts never fails a row: missing fields default to empty.
+        let doc =
+            parse("LISA MODEL DESCRIPTION FORMAT 6.1\n====\n*PARTLIST,2\nR1,RES\nU1\n").unwrap();
+        let p = doc.partlist().unwrap();
+        assert_eq!(p.len(), 2);
+        assert_eq!(p[0].value, "");
+        assert_eq!(p[1].kind, "");
     }
 
     #[test]
