@@ -539,6 +539,8 @@ struct App {
     wires_zoom: f32,
     /// Wires-view pan in mm.
     wires_pan: egui::Vec2,
+    /// Last main canvas size (for minimap click-to-center).
+    wires_view: egui::Vec2,
     /// Auto-fit done once per file (reset via the "fit" button).
     wires_fitted: bool,
     /// Sheet layer toggles (wires/labels/grid).
@@ -574,6 +576,7 @@ impl App {
             pan: egui::Vec2::ZERO,
             wires_zoom: 1.0,
             wires_pan: egui::Vec2::ZERO,
+            wires_view: egui::vec2(800.0, 600.0),
             wires_fitted: false,
             layers: Layers::default(),
             wires_cursor: None,
@@ -939,6 +942,9 @@ impl App {
                 ui.checkbox(&mut self.layers.wires, "wires");
                 ui.checkbox(&mut self.layers.labels, "etiquetas");
                 ui.checkbox(&mut self.layers.grid, "reticula");
+                ui.separator();
+                ui.label("vista");
+                self.paint_minimap(ui, bbox);
             });
             ui.separator();
             ui.vertical(|ui| {
@@ -951,6 +957,7 @@ impl App {
                     self.wires_zoom = zoom;
                     self.wires_fitted = true;
                 }
+                self.wires_view = rect.size();
                 self.interact_wires(ui, rect, &response);
                 self.paint_wires(ui, rect);
             });
@@ -1393,6 +1400,64 @@ impl App {
         }
         asim::to_cir(&doc, &self.model.name, "10u", &self.sim_tstop, &vars)
             .map_err(|e| format!("cir: {e}"))
+    }
+
+    /// Minimap overview: scaled wires + viewport rect, click centers.
+    #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
+    fn paint_minimap(&mut self, ui: &mut egui::Ui, bbox: (f64, f64, f64, f64)) {
+        let (mrect, response) =
+            ui.allocate_exact_size(egui::vec2(150.0, 110.0), egui::Sense::click());
+        let painter = ui.painter_at(mrect);
+        painter.rect_filled(mrect, 0.0, egui::Color32::from_rgb(30, 30, 30));
+        let (mpan, mzoom) = fit_view(bbox, mrect.size());
+        for (x1, y1, x2, y2, bus) in &self.model.wires {
+            painter.line_segment(
+                [
+                    world_to_screen(mm_to_world(*x1, *y1), mpan, mzoom, mrect.min),
+                    world_to_screen(mm_to_world(*x2, *y2), mpan, mzoom, mrect.min),
+                ],
+                egui::Stroke::new(
+                    if *bus { 2.0 } else { 1.0 },
+                    egui::Color32::from_rgb(120, 160, 255),
+                ),
+            );
+        }
+        // Viewport rect of the main canvas.
+        let v0 = world_to_screen(
+            mm_to_world(f64::from(self.wires_pan.x), f64::from(self.wires_pan.y)),
+            mpan,
+            mzoom,
+            mrect.min,
+        );
+        let v1 = world_to_screen(
+            mm_to_world(
+                f64::from(self.wires_pan.x)
+                    + f64::from(self.wires_view.x) / f64::from(self.wires_zoom),
+                f64::from(self.wires_pan.y)
+                    + f64::from(self.wires_view.y) / f64::from(self.wires_zoom),
+            ),
+            mpan,
+            mzoom,
+            mrect.min,
+        );
+        painter.rect_stroke(
+            egui::Rect::from_min_max(
+                egui::pos2(v0.x.min(v1.x), v0.y.min(v1.y)),
+                egui::pos2(v0.x.max(v1.x), v0.y.max(v1.y)),
+            ),
+            0.0,
+            egui::Stroke::new(1.0, egui::Color32::YELLOW),
+            egui::StrokeKind::Inside,
+        );
+        if response.clicked() {
+            if let Some(ptr) = response.interact_pointer_pos() {
+                let w = screen_to_world(ptr, mpan, mzoom, mrect.min);
+                self.wires_pan = egui::vec2(
+                    w.x - self.wires_view.x / (2.0 * self.wires_zoom),
+                    w.y - self.wires_view.y / (2.0 * self.wires_zoom),
+                );
+            }
+        }
     }
 
     /// Parse the loaded text and run one transient, returning its trace.
