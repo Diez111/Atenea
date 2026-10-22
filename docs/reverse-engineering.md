@@ -76,6 +76,13 @@ No Labcenter binaries or data are reproduced here.
   `authorize(ILICENCESERVER)` (`GLE=0x%08lX` = `GetLastError`);
   missing `deleteactivemodel` is only a warning. `vsm-host` mirrors
   exactly this sequence with `libloading`.
+- `createdsimmodel` (`MODELS/8155H.dll`, 0x4520, Ghidra via REA):
+  `undefined4* __cdecl createdsimmodel(u32, host_cb*)`: llama al host
+  `(cb(0x80808080, 0x8f))`, compara el nombre pedido con `"8155H"`
+  (memcmp 6 chars); si coincide hace `operator_new(0x3b8)` + constructor,
+  si no devuelve NULL. `deletedsimmodel` co-exportado. Patrón exacto que
+  espeja `vsm-host::Plugin::load` (versión + create + destroy), con ABI
+  propia limpia en vez de C++ vendor.
 - `dsim_create` (`DSIM.DLL`, decompilado por nombre via REA/Ghidra):
   `int __cdecl dsim_create(IINSTANCE*, char* prim, PROPLIST&,
   IDSIMMODEL*, void** out)`. Sin modelo: lookup por nombre de primitiva
