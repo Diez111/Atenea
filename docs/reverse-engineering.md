@@ -88,6 +88,21 @@ No Labcenter binaries or data are reproduced here.
   ODB++, Pick&Place CSV, testpoint file, IDF/STEP/IGES/STL, DXF, panels.
 - `.LYT`/`.DSN` are pre-v8 legacy (import wizard only); v8 works inside
   `.PDSPRJ`. No `.DTF`/`.LTF` mentioned anywhere.
+- Outputs detail (ARES.DLL strings, 2026-10-22): `*.PKP` Pick&Place
+  (fields `Part ID, Value, Package, Layer, Rotation, X, Y` + optional
+  `Stock Code`, units thou/mm), `*.TPI` Testpoint Information
+  (`LABCENTER PROTEUS TESTPOINT INFORMATION FILE`,
+  `Testpoint positions for %s`). Gerber X2 needs a valid layer stackup;
+  RS274X/X2 selector; NC drill literal
+  `Format: Excellon, ASCII, %s, %s, absolute, eob=<CR><LF>, no zero suppression.`
+- Layer stackup: `0=TOP, 15=BOTTOM, 1-14=INNER` + pseudo-layer `Drill Layer`
+  (hole-only pads); drill X,Y relative to Output Origin.
+- Router rules DSL (Electra-DSN style): `(layer_rule`, `(use_layer`,
+  `(circuit`, `(use_net`, `(type signal/power/mixed)`, `(flip_style`,
+  `(cost high (type length))`, `(direction off/vertical/horizontal/orthogonal)`;
+  9 `clearance` pairs (area_via, area_wire, via_smd, via_via, via_pin,
+  wire_wire, wire_pin, wire_smd, wire_via).
+- Optimizer: gate-swap (`Ratsnest reduced by %g inches in %d passes`).
 
 ## Third-party tools (native replacement path)
 
