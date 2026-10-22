@@ -305,9 +305,19 @@ impl Loaded {
                     .unwrap_or_else(|| "(workspace)".to_owned()),
             ),
         );
+        loaded.summary.insert(
+            1,
+            (
+                "timestamp".to_owned(),
+                format!(
+                    "rel {} filever {} modified {}",
+                    proj.timestamp.release, proj.timestamp.filever, proj.timestamp.modified
+                ),
+            ),
+        );
         loaded
             .summary
-            .insert(1, ("dsn_bytes".to_owned(), dsn_text.len().to_string()));
+            .insert(2, ("dsn_bytes".to_owned(), dsn_text.len().to_string()));
         if let Some(ref dsn) = proj.dsn {
             loaded.wires = wires_to_mm(&plib::dsn::wires(dsn));
             loaded.placements = placements_mm(&plib::dsn::placements(dsn));
@@ -1058,6 +1068,20 @@ impl App {
                     Err(e) => self.sim_error = Some(e),
                 }
             }
+            if ui
+                .button("Export .cir")
+                .on_hover_text("Guardar netlist ngspice")
+                .clicked()
+            {
+                self.export_cir();
+            }
+            if ui
+                .button("Export .csv")
+                .on_hover_text("Guardar traza como CSV")
+                .clicked()
+            {
+                self.export_csv();
+            }
         });
         ui.separator();
         if let Some(err) = &self.sim_error {
@@ -1119,6 +1143,50 @@ impl App {
             }
         } else if self.sim_error.is_none() {
             ui.label("Load an .MDF/.SDF file, set vars + tstop, press Run.");
+        }
+    }
+
+    /// Save the current `.cir` netlist via a file dialog.
+    fn export_cir(&mut self) {
+        match self.cir_text() {
+            Ok(cir) => {
+                if let Some(path) = rfd::FileDialog::new()
+                    .add_filter("ngspice", &["cir"])
+                    .set_file_name("atenea.cir")
+                    .save_file()
+                {
+                    self.file_error = std::fs::write(&path, cir).err().map(|e| e.to_string());
+                }
+            }
+            Err(e) => self.file_error = Some(e),
+        }
+    }
+
+    /// Save the current trace as CSV via a file dialog.
+    fn export_csv(&mut self) {
+        use std::fmt::Write as _;
+        let Some(trace) = self.sim_trace.clone() else {
+            self.file_error = Some("nada que exportar: corré la simulación primero".to_owned());
+            return;
+        };
+        let mut csv = String::from("t");
+        for i in 0..trace.vars.len() {
+            let _ = write!(csv, ",v{i}");
+        }
+        csv.push('\n');
+        for (t, v) in &trace.rows {
+            let _ = write!(csv, "{t}");
+            for x in v {
+                let _ = write!(csv, ",{x}");
+            }
+            csv.push('\n');
+        }
+        if let Some(path) = rfd::FileDialog::new()
+            .add_filter("CSV", &["csv"])
+            .set_file_name("trace.csv")
+            .save_file()
+        {
+            self.file_error = std::fs::write(&path, csv).err().map(|e| e.to_string());
         }
     }
 
@@ -1243,6 +1311,25 @@ impl App {
                 );
             }
         }
+    }
+
+    /// Build the transient `.cir` for the current doc/vars (no ngspice run).
+    fn cir_text(&self) -> Result<String, String> {
+        let text = self
+            .model
+            .sdf_text
+            .as_deref()
+            .ok_or_else(|| "no SDF/MDF loaded — open a .sdf or .mdf file".to_owned())?;
+        let doc = pmodel::parse(text).map_err(|e| format!("parse: {e}"))?;
+        let vars: Vec<&str> = self.sim_vars.split_whitespace().collect();
+        if vars.is_empty() {
+            return Err("no vars (e.g. v(OUT))".to_owned());
+        }
+        if self.sim_tstop.trim().is_empty() {
+            return Err("empty tstop (e.g. 5m)".to_owned());
+        }
+        asim::to_cir(&doc, &self.model.name, "10u", &self.sim_tstop, &vars)
+            .map_err(|e| format!("cir: {e}"))
     }
 
     /// Parse the loaded text and run one transient, returning its trace.
