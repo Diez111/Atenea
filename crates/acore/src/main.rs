@@ -67,7 +67,10 @@ fn cmd_summary(path: &str) -> Result<String, String> {
             (
                 vec![
                     ("format".to_owned(), doc.format),
-                    ("design".to_owned(), doc.preamble.get("Design").cloned().unwrap_or_default()),
+                    (
+                        "design".to_owned(),
+                        doc.preamble.get("Design").cloned().unwrap_or_default(),
+                    ),
                 ],
                 vec![("parts".to_owned(), parts), ("nets".to_owned(), nets)],
             )
@@ -89,16 +92,16 @@ fn cmd_summary(path: &str) -> Result<String, String> {
         }
         "idx" => {
             let data = std::fs::read(path).map_err(|e| e.to_string())?;
-            let idx = plib::libdir::parse_idx(&data, plib::LibKind::Idx)
-                .map_err(|e| e.to_string())?;
-            (
-                vec![],
-                vec![("entries".to_owned(), idx.len())],
-            )
+            let idx =
+                plib::libdir::parse_idx(&data, plib::LibKind::Idx).map_err(|e| e.to_string())?;
+            (vec![], vec![("entries".to_owned(), idx.len())])
         }
         _ => return Err(format!("unsupported file: {path}")),
     };
-    let mut o = format!("{{\"file\":\"{}\",\"kind\":\"{kind}\",\"summary\":{{", esc(path));
+    let mut o = format!(
+        "{{\"file\":\"{}\",\"kind\":\"{kind}\",\"summary\":{{",
+        esc(path)
+    );
     for (i, (k, v)) in pairs.iter().enumerate() {
         if i > 0 {
             o.push(',');
@@ -133,8 +136,8 @@ fn cmd_tables(path: &str) -> Result<String, String> {
         }
         "idx" => {
             let data = std::fs::read(path).map_err(|e| e.to_string())?;
-            let idx = plib::libdir::parse_idx(&data, plib::LibKind::Idx)
-                .map_err(|e| e.to_string())?;
+            let idx =
+                plib::libdir::parse_idx(&data, plib::LibKind::Idx).map_err(|e| e.to_string())?;
             let libp = Path::new(path).with_extension("LIB");
             let dirs = std::fs::read(&libp)
                 .map(|v| plib::libdir::parse_lib_dir(&v))
@@ -232,8 +235,8 @@ fn cmd_wires(path: &str) -> Result<String, String> {
 fn cmd_sim(path: &str, vars: &[&str], tstop: &str) -> Result<String, String> {
     let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
     let doc = pmodel::parse(&text).map_err(|e| e.to_string())?;
-    let trace = asim::simulate_tran(&doc, "acore", "10u", tstop, vars)
-        .map_err(|e| format!("{e:?}"))?;
+    let trace =
+        asim::simulate_tran(&doc, "acore", "10u", tstop, vars).map_err(|e| format!("{e:?}"))?;
     let mut o = String::from("{\"vars\":[");
     for (i, v) in trace.vars.iter().enumerate() {
         if i > 0 {
@@ -281,7 +284,11 @@ fn main() {
         "summary" => cmd_summary(&file),
         "tables" => cmd_tables(&file),
         "wires" => cmd_wires(&file),
-        "sim" => cmd_sim(&file, &vars.iter().map(|s| s.as_str()).collect::<Vec<_>>(), &tstop),
+        "sim" => cmd_sim(
+            &file,
+            &vars.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
+            &tstop,
+        ),
         _ => usage(),
     };
     match out {

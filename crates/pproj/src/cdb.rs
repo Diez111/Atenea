@@ -72,6 +72,32 @@ fn pstring(data: &[u8], at: usize, allow_empty: bool) -> Option<(PString, usize)
     Some((PString { offset: at, text }, at + 1 + len))
 }
 
+/// Heuristic component probe at `at`: `PString + u32 n<=128 + 2N PStrings`.
+/// Pushes on success. Returns the offset just past the pins.
+fn scan_component(data: &[u8], at: usize, out: &mut Vec<Component>) -> Option<usize> {
+    let (name, after_name) = pstring(data, at, false)?;
+    let n = u32le(data, after_name)?;
+    if n > 128 {
+        return None;
+    }
+    let mut pins = Vec::new();
+    let mut j = after_name + 4;
+    for _ in 0..n {
+        let (pn, j1) = pstring(data, j, false)?;
+        let (num, j2) = pstring(data, j1, true)?;
+        pins.push((pn.text, num.text));
+        j = j2;
+    }
+    if pins.is_empty() {
+        return None;
+    }
+    out.push(Component {
+        name: name.text,
+        pins,
+    });
+    Some(j)
+}
+
 /// Parse a database blob. Never fails outright; unknown regions are skipped.
 #[must_use]
 pub fn parse(data: &[u8]) -> Cdb {
@@ -82,38 +108,76 @@ pub fn parse(data: &[u8]) -> Cdb {
 
     let mut components = Vec::new();
     let mut i = 16usize;
-    while i < data.len() {
-        // Component candidate: PString + u32 count + 2N PStrings.
-        if let Some((name, after_name)) = pstring(data, i, false) {
-            if let Some(n) = u32le(data, after_name) {
-                if n <= 128 {
-                    let mut pins = Vec::new();
-                    let mut j = after_name + 4;
-                    let mut ok = true;
-                    for _ in 0..n {
-                        let Some((pn, j1)) = pstring(data, j, false) else {
-                            ok = false;
-                            break;
-                        };
-                        let Some((num, j2)) = pstring(data, j1, true) else {
-                            ok = false;
-                            break;
-                        };
-                        pins.push((pn.text, num.text));
-                        j = j2;
-                    }
-                    if ok && !pins.is_empty() {
-                        components.push(Component {
-                            name: name.text,
-                            pins,
-                        });
-                        i = j;
-                        continue;
-                    }
+    while i + 4 <= data.len() {
+        // VFILE framing first: `u32` length + exactly that many bytes
+        // holding `PString name + u32 pin-count + 2N PStrings`. The strict
+        // form validates synthetic fixtures; real `ROOT.CDB` pin tables
+        // (e.g. 7-pin `U1`) carry extra per-pin bytes, so a bounded
+        // heuristic rescan covers what framing rejects.
+        let mut consumed = false;
+        if let Some(frame_len) = u32le(data, i)
+            && let frame_len = frame_len as usize
+            && (8..=1 << 20).contains(&frame_len)
+            && let end = i.saturating_add(4).saturating_add(frame_len)
+            && end <= data.len()
+            && let Some((name, after_name)) = pstring(data, i + 4, false)
+            && after_name < end
+            && let Some(n) = u32le(data, after_name)
+            && n <= 128
+        {
+            let mut pins = Vec::new();
+            let mut j = after_name + 4;
+            let mut ok = true;
+            for _ in 0..n {
+                let Some((pn, j1)) = pstring(data, j, false) else {
+                    ok = false;
+                    break;
+                };
+                let Some((num, j2)) = pstring(data, j1, true) else {
+                    ok = false;
+                    break;
+                };
+                if j2 > end {
+                    ok = false;
+                    break;
+                }
+                pins.push((pn.text, num.text));
+                j = j2;
+            }
+            // Exact frame: pins consume the whole window.
+            if ok && !pins.is_empty() && j == end {
+                components.push(Component {
+                    name: name.text,
+                    pins,
+                });
+                i = end;
+                continue;
+            }
+            consumed = true;
+        }
+        if consumed {
+            // Framed but not a strict component (sheet name, padding,
+            // complex pin table): advance past the length word; the
+            // heuristic below rescans the window for simple records.
+            let end = i
+                .saturating_add(4)
+                .saturating_add(u32le(data, i).unwrap_or(0) as usize);
+            let mut k = i + 4;
+            while k + 4 <= end.min(data.len()) {
+                if let Some(past) = scan_component(data, k, &mut components) {
+                    k = past;
+                } else {
+                    k += 1;
                 }
             }
+            i = end.min(data.len()).max(i + 1);
+            continue;
         }
-        i += 1;
+        if let Some(past) = scan_component(data, i, &mut components) {
+            i = past;
+        } else {
+            i += 1;
+        }
     }
 
     // Brace records, same shape as DSN blocks.
@@ -158,7 +222,7 @@ mod tests {
     /// Synthetic record mirroring the observed `U1` layout.
     fn sample() -> Vec<u8> {
         let mut v = vec![4u8, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-        v.extend_from_slice(&[0x28, 0, 0, 0]); // length (advisory)
+        v.extend_from_slice(&[0x13, 0, 0, 0]); // length: exact frame
         v.push(2);
         v.extend_from_slice(b"U1");
         v.extend_from_slice(&[2u8, 0, 0, 0]); // 2 pins
@@ -201,7 +265,7 @@ mod tests {
     #[test]
     fn two_components_and_records() {
         let mut v = vec![4u8, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-        v.extend_from_slice(&[0x28, 0, 0, 0]); // length (advisory)
+        v.extend_from_slice(&[0x0f, 0, 0, 0]); // length: exact frame
         v.push(2);
         v.extend_from_slice(b"R1");
         v.extend_from_slice(&[2u32.to_le_bytes()].concat());
