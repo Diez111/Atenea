@@ -1,9 +1,76 @@
-# Atenea
+# Atenea ⚡
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-edition_2024-orange.svg)](Cargo.toml)
+[![Linux](https://img.shields.io/badge/platform-linux_x86__64-lightgrey.svg)](docs/01-empezar.md)
 
 Reimplementación nativa para Linux de los formatos y herramientas del
 ecosistema Labcenter Proteus (ingeniería inversa con fines de
 interoperabilidad). No incluye ni distribuye ningún binario ni dato
 propietario de Labcenter: solo parsers y herramientas escritas desde cero.
+
+> Estado: visor nativo + parsers verificados + simulación batch real.
+> No es un clon funcional completo — ver [Roadmap](#roadmap).
+
+## Quickstart (60 segundos)
+
+Requisitos: Linux x86_64, Rust 1.85+, `ngspice` (solo para simular).
+
+```bash
+git clone https://github.com/Diez111/Atenea.git && cd Atenea
+cargo run -p atenea -- --help
+cargo run -p atenea -- <archivo> [--tab Esquema|Simulate|Tables|Graph] [--gl]
+# Sin archivo abre igual (bienvenida + Abrir + drag&drop). Doble-click en
+# .pdsprj/.DSN/.LYT/.SDF/.MDF abre Atenea (MIME registrado). Log: /tmp/atenea.log
+```
+
+Sin Vulkan/VM: agregá `--gl`. Release instalado: `~/.local/bin/atenea` +
+`atenea.desktop`. Detalles en [docs/01-empezar.md](docs/01-empezar.md).
+
+## Arquitectura
+
+```text
+                    ┌─────────────┐
+                    │   atenea    │  egui+GPU: Tables|Graph|Esquema|Simulate
+                    │  (binario)  │  --tab --gl, autofit, plot propio
+                    └──────┬──────┘
+        ┌─────────┬────────┴────────┬──────────────┐
+        │         │                 │              │
+   ┌────▼───┐ ┌───▼────┐      ┌─────▼─────┐  ┌────▼─────┐
+   │  plib  │ │ pmodel │      │   pproj   │  │   asim   │
+   │DSN/LYT │ │MDF/SDF │      │ pdsprj    │  │SDF->ngspice│
+   │IDX/LIB │ │SML/LML │      │ PROJECT.XML│ │ngspice -b │
+   │wires   │ │SPICE   │      │ ROOT.CDB  │  │Trace parse│
+   └────────┘ └────────┘      └───────────┘  └────┬─────┘
+        │         │                 │              │
+        └─────────┴────────┬────────┴──────────────┘
+                           │
+                    ┌──────▼──────┐
+                    │  vsm +      │  espejo ABI VSM + dlopen atenea_model_*
+                    │  vsm-host   │  (+nullmodel, ne555, adc0808)
+                    └─────────────┘
+```
+
+| Crate | Hace | Evidencia |
+|---|---|---|
+| `plib` | magics IDX/LIB, extractor DSN/LYT, wires, placements, join IDX↔LIB | 23/23 DSN, Cpu.LYT 43 bloques, join 6/7 |
+| `pmodel` | LISA MDF/SDF, splitters SML/LML, spice (R/C/D/E/F/G/H/I/V) | 145/145 MDF, 1097 LML, 6 SML byte-exactos |
+| `pproj` | ZIP pdsprj + PROJECT.XML + ROOT.CDB | 534/534 pdsprj, 2 sabores, 35 comps/120 recs |
+| `vsm` | traits Spice/Dsim/Active + exports verificados | `createactivemodel` en ISIS.DLL |
+| `asim` | SDF→netlist, `ngspice -b`, `Trace` | LM123 5.0998 V; RC tau=0.91ms |
+| `vsm-host`+models | dlopen ABI propia + ne555/adc0808 | demo 10×1000ps, NE555 4.8kHz, ADC 128/255 |
+| `atenea` | visor GPU: hoja ISIS, plot, Simulate | release 28-30 MB + tarball |
+
+## Roadmap
+
+- [x] Parsers: IDX/LIB join, SML/LML, LISA, pdsprj+CDB, DSN wires+labels
+- [x] Conformidad: 568/568 en-scope, 145/145 MDF, 534/534 pdsprj, 1097 LML
+- [x] Visor: hoja estilo ISIS, plot propio, `--gl`, MIME+desktop, log
+- [x] Sim batch: ngspice LM123 5.0998 V + plugins dlopen + NE555/ADC0808
+- [ ] Simulación interactiva paso a paso + sondas en vivo
+- [ ] Editor esquemático/PCB + router (hoy solo visor)
+- [ ] Geometría vectorial pads/trazos/símbolos (hoy: posiciones + wires)
+- [ ] Empaquetado distro (PKGBUILD/AUR; hoy tarball + install.sh)
 
 ## Estado
 
