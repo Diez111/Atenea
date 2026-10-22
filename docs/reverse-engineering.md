@@ -160,6 +160,15 @@ DSNCVT`, magics `ISIS CIRCUIT FILE\x1A`, `ISIS SECTION V3.5`,
 `ROOT%02d/REF/SUBSHEET%02d` (multi-sheet naming). `plib::dsn`
 recognizes the CIRCUIT magic (framing family).
 
+.NETLIST::net_gen dispatch (Ghidra 12.1.2 via REA, 2026-10-22):
+`?net_gen@@YAXAAVNETLIST@@AAV?$basic_ostream@DU?$char_traits@D@std@@@std@@HPAD2@Z`
+= `void net_gen(NETLIST&, ostream&, int, char*, char*)` @0x1000fa00.
+Format table @0x10030388: 12-byte entries `{u32 key, u32 subkey, writer fn}`;
+inline 3-letter codes `SDF NET CPT CMP CIR MDF` (+`NET` subkey on one entry),
+writers @0xfd90..0x11c10. Failure path pushes error `0xa002`.
+`pmodel::emit` mirrors the registry (`NETLIST_FORMATS` + `emit_format`);
+only LISA (`SDF`/`MDF`) has a native writer.
+
 ### `.DSN` wire records (verified 2026-10-22, `plib::dsn`)
 
 - Geometry: `WIRE 00 00 00 <n> 00` + `n` points of `(x, y)` little-endian

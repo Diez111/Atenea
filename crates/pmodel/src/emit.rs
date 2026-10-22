@@ -1,5 +1,11 @@
 //! Canonical LISA writer: `Document` back to text.
 //!
+//! Mirrors `NETLIST::net_gen` dispatch (`NETLIST.dll` 0x1000fa00): a
+//! 12-byte format table `{u32 key, u32 subkey, writer fn}` keyed by
+//! 3-letter codes (`SDF`, `NET`, `CPT`, `CMP`, `CIR`, `MDF`). Only the
+//! LISA family (`SDF`/`MDF`) is implemented; the rest is an explicit
+//! [`EmitError::UnsupportedFormat`], never silent output.
+//!
 //! The writer recomputes every `*NAME,count` from the actual body lines
 //! (mirroring `NETLIST::write`, which emits a placeholder count and
 //! backpatches it). Roundtrip is defined at the typed level:
@@ -74,6 +80,38 @@ pub fn net_to_lines(net: &Net) -> Vec<String> {
 /// are recomputed from the actual body lines (mirroring how
 /// `NETLIST::write` backpatches its placeholder count). Preamble order
 /// is normalized (sorted keys) for determinism.
+/// Format codes from the `NETLIST::net_gen` dispatch table.
+pub const NETLIST_FORMATS: &[&str] = &["SDF", "NET", "CPT", "CMP", "CIR", "MDF"];
+
+/// Writer error: only LISA (`SDF`/`MDF`) is implemented natively.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EmitError {
+    /// Format code from [`NETLIST_FORMATS`] without a native writer.
+    UnsupportedFormat(String),
+}
+
+impl std::fmt::Display for EmitError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::UnsupportedFormat(code) => write!(f, "unsupported netlist format: {code}"),
+        }
+    }
+}
+
+impl std::error::Error for EmitError {}
+
+/// Emit `doc` in the given `NETLIST::net_gen` format code.
+///
+/// # Errors
+///
+/// [`EmitError::UnsupportedFormat`] for any code but `SDF`/`MDF`.
+pub fn emit_format(doc: &Document, code: &str) -> Result<String, EmitError> {
+    match code {
+        "SDF" | "MDF" => Ok(emit(doc)),
+        other => Err(EmitError::UnsupportedFormat(other.to_owned())),
+    }
+}
+
 #[must_use]
 pub fn emit(doc: &Document) -> String {
     let mut out = String::new();
@@ -103,6 +141,19 @@ mod tests {
         let d1 = parse(SAMPLE).unwrap();
         let d2 = parse(&super::emit(&d1)).unwrap();
         assert_eq!(d1, d2);
+    }
+
+    #[test]
+    fn registry_lists_vendor_codes() {
+        assert_eq!(super::NETLIST_FORMATS.len(), 6);
+        assert!(super::NETLIST_FORMATS.contains(&"MDF"));
+        assert!(super::NETLIST_FORMATS.contains(&"SDF"));
+        let d = parse("ISIS SCHEMATIC DESCRIPTION FORMAT 4.5\n====\nDesign: D\n").unwrap();
+        assert!(super::emit_format(&d, "SDF").is_ok());
+        assert_eq!(
+            super::emit_format(&d, "CIR"),
+            Err(super::EmitError::UnsupportedFormat("CIR".into()))
+        );
     }
 
     #[test]
