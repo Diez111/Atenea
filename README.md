@@ -31,9 +31,10 @@ Sin Vulkan/VM: agregá `--gl`. Release instalado: `~/.local/bin/atenea` +
 
 ```text
                     ┌─────────────┐
-                    │   atenea    │  egui+GPU: Tables|Graph|Esquema|Simulate
-                    │  (binario)  │  --tab --gl, autofit, plot propio
+                    │  aui/atenea │  UI Slint 100% Rust (roadmap)
+                    │  (binario)  │  hoy: egui+GPU Tables|Graph|Esquema|Simulate
                     └──────┬──────┘
+                           │  fachada async aengine (sin UI lag)
         ┌─────────┬────────┴────────┬──────────────┐
         │         │                 │              │
    ┌────▼───┐ ┌───▼────┐      ┌─────▼─────┐  ┌────▼─────┐
