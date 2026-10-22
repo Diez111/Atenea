@@ -51,6 +51,10 @@ No Labcenter binaries or data are reproduced here.
   `getnzstr("\\n,")`, luego `addpin(net, ref, extra, 0, EVar3-enum, 0)` y
   `addnet()` al final. `pmodel::netlist` preserva los roles como strings
   (`PS/GT/Q1/1/...`), equivalente sin tipar el enum.
+- Tabla `sdf_etstrings` (NETLIST.dll @0x22f28, slots NUL + pad a 4B):
+  `[NC MOD PR BT OT IT GT LBL PP PD PU TS IO OP IP PS DEFNET …]`
+  (índices 0–16). Rol `0xe`=IP se remapea a `0xd`=OP y va a `addlabel`
+  en vez de `addpin`. Roles <8 → pin, <0xf → net.
 - Export table (515 exports; RVAs de parse manual NO verificadas —
   el parseo crudo desalinea `AddressOfFunctions`: Ghidra-por-nombre es la
   fuente de verdad). Nombres confirmados por string: `parse_field`,
