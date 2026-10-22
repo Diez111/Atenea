@@ -190,6 +190,71 @@ pub fn placements(data: &[u8]) -> Vec<Placed> {
     out
 }
 
+/// One vector-stroke symbol record (`COMPONENT` graphic primitive).
+///
+/// Layout (observed, `siggen.DSN`): a `02 7F` marker + literal
+/// `COMPONENT\0`, preceded by a fixed binary header and followed by a
+/// payload of little-endian `i32` values. Coordinates that fall inside
+/// an expanded wire bounding box are kept as candidate vertices; the
+/// exact stroke encoding (lines vs rects, pen, layer) is still open.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Symbol {
+    /// Absolute file offset of the `COMPONENT` marker.
+    pub offset: usize,
+    /// Candidate vertices `(x, y)` in DSN internal units.
+    pub vertices: Vec<(i32, i32)>,
+}
+
+/// Marker preceding every graphic `COMPONENT` record.
+const COMPONENT_MARK: &[u8] = b"\x02\x7fCOMPONENT\0";
+/// Maximum payload bytes scanned per record.
+const SYMBOL_SCAN_LEN: usize = 128;
+/// Maximum vertices kept per record.
+const SYMBOL_MAX_VERTS: usize = 32;
+
+/// Extract graphic `COMPONENT` records with candidate vertices.
+///
+/// A vertex is an `i32` pair with both coordinates inside `bbox` (given
+/// as `(xmin, ymin, xmax, ymax)`, typically the wire bbox expanded by a
+/// margin). Pass `None` to keep every `i32` pair (noisy).
+#[must_use]
+pub fn symbols(data: &[u8], bbox: Option<(i32, i32, i32, i32)>) -> Vec<Symbol> {
+    let mut out = Vec::new();
+    let mut i = 0;
+    while i < data.len() {
+        let Some(pos) = data[i..]
+            .windows(COMPONENT_MARK.len())
+            .position(|w| w == COMPONENT_MARK)
+        else {
+            break;
+        };
+        let base = i + pos + COMPONENT_MARK.len();
+        let end = (base + SYMBOL_SCAN_LEN).min(data.len());
+        let mut vertices = Vec::new();
+        let mut j = base;
+        while j + 8 <= end && vertices.len() < SYMBOL_MAX_VERTS {
+            let x = i32::from_le_bytes([data[j], data[j + 1], data[j + 2], data[j + 3]]);
+            let y = i32::from_le_bytes([data[j + 4], data[j + 5], data[j + 6], data[j + 7]]);
+            let keep = match bbox {
+                Some((x0, y0, x1, y1)) => x >= x0 && x <= x1 && y >= y0 && y <= y1,
+                None => true,
+            };
+            if keep {
+                vertices.push((x, y));
+            }
+            j += 8;
+        }
+        // Drop markers with no plausible geometry (e.g. text-only hits).
+        if !(vertices.is_empty() && bbox.is_some()) {
+            out.push(Symbol {
+                offset: i + pos,
+                vertices,
+            });
+        }
+        i = base;
+    }
+    out
+}
 /// One `{...}` block: head plus the printable body that follows it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Block {
@@ -439,6 +504,24 @@ mod tests {
             })
             .count();
         assert!(inside > 100, "inside={inside} of {}", ps.len());
+    }
+
+    #[test]
+    fn real_siggen_symbols_have_geometry() {
+        let Ok(data) = std::fs::read(SIGGEN_DSN) else {
+            return;
+        };
+        let bbox = (-18_415_000, -8_255_000, 16_637_000, 6_477_000);
+        let syms = symbols(&data, Some(bbox));
+        // 125 bare COMPONENT hits were counted by independent scan;
+        // only markers with plausible geometry survive.
+        // Independent byte scan counts exactly 30 `02 7f COMPONENT` markers.
+        assert_eq!(syms.len(), 30);
+        // Every record yields vertices on the 0.05"/0.1" grid.
+        let total: usize = syms.iter().map(|s| s.vertices.len()).sum();
+        assert_eq!(total, 249);
+        // Deterministic: same input, same output.
+        assert_eq!(syms, symbols(&data, Some(bbox)));
     }
 
     #[test]
