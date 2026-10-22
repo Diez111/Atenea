@@ -30,7 +30,11 @@ Decompiled & applied (loop ledger):
 - [ ] `NETLIST::net_erc` — en curso (valida reglas ERC propias)
 - [ ] `NETLIST::read_script/read_models/read_props` — pendientes
 - [ ] `ISIS.DLL` factory loader — verificado a strings, falta función
-- [ ] símbolos COMPONENT vectoriales — records localizados, strokes TBD
+- [ ] símbolos COMPONENT vectoriales — records `02 7f COMPONENT\0` (30 en
+  siggen, `plib::symbols` v0: 249 vértices); diferencial 2026-10-22:
+  payloads se repiten por template, posible `u32 count` primero
+  (ej. `04 00 00 00` + pares i32 en grilla 0.05"/0.1"), registrador
+  siguiente `00 02 22 …`. Strokes/pen aún TBD.
 - [ ] pads LYT — records `02 7f` localizados, campos TBD
 
 - `BIN/ISIS.DLL` (PE32, sha256 `e0cec780…`): 3040 procedures, 3108 strings.
