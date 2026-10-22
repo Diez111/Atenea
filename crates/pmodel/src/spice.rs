@@ -210,6 +210,24 @@ pub fn parse_value(text: &str) -> Option<f64> {
         }
     }
     let (num_str, suffix) = trimmed.split_at(pos);
+    // Infix form `9k1`/`4u7`: scale letter between digit runs means
+    // `9.1k`/`4.7u`. Without this the trailing digits silently vanish
+    // (`9k1` -> 9000 instead of 9100). Bare `M` after digits is Proteus
+    // mega (`4M7`); lowercase `m` stays SPICE milli (`4m7`).
+    let mut suffix_chars = suffix.chars();
+    if let Some(letter) = suffix_chars.next() {
+        let rest: String = suffix_chars.collect();
+        if letter.is_ascii_alphabetic()
+            && !rest.is_empty()
+            && rest.bytes().all(|b| b.is_ascii_digit())
+        {
+            if letter == 'M' {
+                return parse_value(&format!("{num_str}.{rest}MEG"));
+            }
+            let dotted = format!("{num_str}.{rest}{letter}");
+            return parse_value(&dotted);
+        }
+    }
     let num: f64 = num_str.parse().ok()?;
     let suffix = suffix.trim_start().to_ascii_lowercase();
     let mult = if suffix.starts_with("meg") {
@@ -513,6 +531,16 @@ V2 1 2 1.56
         let m = sub.models.iter().find(|m| m.name == "RQ").unwrap();
         assert_eq!(m.kind, "RES");
         assert!(m.params.contains(&"TC1=0.0008".to_owned()));
+    }
+
+    #[test]
+    fn infix_values_not_silently_truncated() {
+        // Regression: infix `9k1` must be 9100, not 9000.
+        assert_eq!(parse_value("9k1"), Some(9100.0));
+        assert_eq!(parse_value("4u7"), Some(4.7e-6));
+        assert_eq!(parse_value("2K2"), Some(2200.0));
+        assert_eq!(parse_value("4M7"), Some(4.7e6));
+        assert!((parse_value("4m7").unwrap() - 4.7e-3).abs() < 1e-12);
     }
 
     #[test]
