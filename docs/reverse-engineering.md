@@ -29,7 +29,7 @@ No Labcenter binaries or data are reproduced here.
   `net_gen`, `net_erc`, `write`/`writeheader`, `mdf_id`.
 - Strings: `SPICEMODEL`, `MODFILE`, `VSM DLL Model [%s]`, `DSNCVT40.DLL`,
   `dsn_editdesign`, `Complile Netlist` [sic].
-- `NETLIST::parse_models` (`?parse_models@...`, RVA **0x1b9b0** — corrección:
+- `NETLIST::parse_models` (`?parse_models@...`, RVA **0x1bb90** (368 B, Ghidra 12.1.2 verifica nombre+body) — corrección:
   0x1bb90 es `parse_netprop`): lee líneas hasta EOF o línea que empiece
   con `*`; `getpropname(ptr,buf,':')` + `skipspaces` →
   `PROPLIST::add(lista+0x9c, nombre, valor)`. Confirma el diseño de
