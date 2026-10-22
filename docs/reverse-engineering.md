@@ -126,6 +126,12 @@ No Labcenter binaries or data are reproduced here.
   `Format: Excellon, ASCII, %s, %s, absolute, eob=<CR><LF>, no zero suppression.`
 - Layer stackup: `0=TOP, 15=BOTTOM, 1-14=INNER` + pseudo-layer `Drill Layer`
   (hole-only pads); drill X,Y relative to Output Origin.
+- ARES imports `CDBCORE` API (`?createcdb@@YAPAVCDBCORE@@XZ`,
+  `releasecdb`, `beginsyncboard`/`endsyncboard`, `tagpart`, `getpart`,
+  sheet/module walkers) — live netlisting ISIS→ARES confirmed at string
+  level (ARES.DLL 0xf3042/0xf3179). Pin role codes:
+  `VCC IP OP IO PU PD PP LBL GT IT OT BT PT PR MOD` (+ `*NETLIST`,
+  `*PARTLIST`, `DEVICE` section vocabulary).
 - Router rules DSL (Electra-DSN style): `(layer_rule`, `(use_layer`,
   `(circuit`, `(use_net`, `(type signal/power/mixed)`, `(flip_style`,
   `(cost high (type length))`, `(direction off/vertical/horizontal/orthogonal)`;
