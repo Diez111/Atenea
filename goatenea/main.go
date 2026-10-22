@@ -11,6 +11,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
@@ -88,6 +89,102 @@ func (s *state) openFile(path string) {
 	}
 	s.setStatus(fmt.Sprintf("%s · %s", filepath.Base(path), sum.Kind))
 	s.showTables(path)
+	s.showEsquema(path)
+}
+
+type wiresDoc struct {
+	File       string      `json:"file"`
+	Wires      [][]float64 `json:"wires"`
+	Placements [][]any     `json:"placements"`
+}
+
+func (s *state) showEsquema(path string) {
+	out, err := runAcore("wires", path)
+	if err != nil {
+		return // no wire geometry (MDF/IDX/pdsprj): leave placeholder
+	}
+	var doc wiresDoc
+	if err := json.Unmarshal(out, &doc); err != nil || len(doc.Wires) == 0 {
+		return
+	}
+	var x0, y0, x1, y1 float64
+	for i, w := range doc.Wires {
+		if len(w) < 4 {
+			continue
+		}
+		xs := []float64{w[0], w[2]}
+		ys := []float64{w[1], w[3]}
+		if i == 0 {
+			x0, x1, y0, y1 = xs[0], xs[1], ys[0], ys[1]
+			if x0 > x1 {
+				x0, x1 = x1, x0
+			}
+			if y0 > y1 {
+				y0, y1 = y1, y0
+			}
+			continue
+		}
+		for _, x := range xs {
+			if x < x0 {
+				x0 = x
+			}
+			if x > x1 {
+				x1 = x
+			}
+		}
+		for _, y := range ys {
+			if y < y0 {
+				y0 = y
+			}
+			if y > y1 {
+				y1 = y
+			}
+		}
+	}
+	const W, H = 1200.0, 800.0
+	bw, bh := x1-x0, y1-y0
+	if bw < 1e-9 {
+		bw = 1
+	}
+	if bh < 1e-9 {
+		bh = 1
+	}
+	sc := min(W/bw, H/bh) * 0.95
+	if sc > 8 {
+		sc = 8
+	}
+	mp := func(x, y float64) (float32, float32) {
+		return float32((x-x0)*sc + 20), float32((y-y0)*sc + 20)
+	}
+	objs := []fyne.CanvasObject{}
+	paper := canvas.NewRectangle(fyne.CurrentApp().Settings().Theme().Color("background", 0))
+	paper.Resize(fyne.NewSize(float32(W+40), float32(H+40)))
+	objs = append(objs, paper)
+	for _, w := range doc.Wires {
+		if len(w) < 5 {
+			continue
+		}
+		x1s, y1s := mp(w[0], w[1])
+		x2s, y2s := mp(w[2], w[3])
+		ln := canvas.NewLine(fyne.CurrentApp().Settings().Theme().Color("foreground", 0))
+		ln.Position1 = fyne.NewPos(x1s, y1s)
+		ln.Position2 = fyne.NewPos(x2s, y2s)
+		if w[4] != 0 {
+			ln.StrokeWidth = 3
+		} else {
+		ln.StrokeWidth = 1
+		}
+		objs = append(objs, ln)
+	}
+	box := container.NewWithoutLayout(objs...)
+	box.Resize(fyne.NewSize(float32(W+40), float32(H+40)))
+	for _, tab := range s.tabs.Items {
+		if tab.Text == "Esquema" {
+			tab.Content = container.NewScroll(box)
+		s.tabs.Refresh()
+		return
+		}
+	}
 }
 
 func (s *state) showTables(path string) {
