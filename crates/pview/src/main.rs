@@ -369,7 +369,7 @@ impl Loaded {
     }
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 enum Tab {
     Tables,
     Graph,
@@ -504,7 +504,7 @@ impl App {
     /// First-run screen: open button + supported formats.
     fn show_welcome(&mut self, ui: &mut egui::Ui) {
         ui.vertical_centered(|ui| {
-            ui.add_space(60.0);
+            ui.add_space(40.0);
             ui.heading("Atenea — workbench nativa de electrónica");
             ui.label("Abrí un proyecto o esquema para empezar.");
             ui.add_space(12.0);
@@ -514,6 +514,25 @@ impl App {
             ui.add_space(8.0);
             ui.label("o arrastrá un archivo a esta ventana");
             ui.monospace(".pdsprj  .MDF  .SDF  .DSN  .LYT");
+            ui.add_space(12.0);
+        });
+        ui.horizontal(|ui| {
+            ui.vertical(|ui| {
+                ui.collapsing("Primeros pasos", |ui| {
+                    ui.label("1. Abrí un .pdsprj o un .DSN.");
+                    ui.label("2. Mirá la pestaña Esquema (wires + etiquetas reales).");
+                    ui.label("3. Probá Simulate con un .SDF + ngspice.");
+                });
+            });
+            ui.vertical(|ui| {
+                ui.collapsing("Ayuda", |ui| {
+                    ui.label("Docs: 01-empezar, 02-formatos, 03-simular-y-plugins.");
+                    ui.label("Log de arranque: /tmp/atenea.log");
+                });
+                ui.collapsing("Acerca de", |ui| {
+                    ui.label("Atenea GPL-3.0-or-later. RE interoperable.");
+                });
+            });
         });
     }
 
@@ -942,6 +961,21 @@ impl App {
         if let Some(err) = &self.sim_error {
             ui.colored_label(egui::Color32::LIGHT_RED, err);
         }
+        if !self.model.nets.is_empty() {
+            ui.horizontal_wrapped(|ui| {
+                ui.label("nets:");
+                for (id, _) in &self.model.nets {
+                    let v = format!("v({id})");
+                    if ui.button(&v).clicked() && !self.sim_vars.contains(&v) {
+                        if !self.sim_vars.trim().is_empty() {
+                            self.sim_vars.push(' ');
+                        }
+                        self.sim_vars.push_str(&v);
+                    }
+                }
+            });
+            ui.separator();
+        }
         if let Some(trace) = &self.sim_trace {
             ui.label(format!("{} rows", trace.rows.len()));
             Self::paint_trace(ui, trace);
@@ -1079,11 +1113,33 @@ impl eframe::App for App {
             Tab::Wires => self.draw_wires(ui),
             Tab::Simulate => self.draw_sim(ui),
         }
+        // Global status bar (ISIS-like): file, position, mode.
+        ui.separator();
+        ui.horizontal(|ui| {
+            ui.monospace(&self.model.name);
+            ui.separator();
+            if let Some((x, y)) = self.wires_cursor {
+                ui.monospace(format!(
+                    "X:{x:.1} Y:{y:.1} mm  ({:.0} : {:.0} thou)",
+                    x * 39.3701,
+                    y * 39.3701
+                ));
+            } else {
+                ui.monospace("X:— Y:—");
+            }
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.monospace(format!(
+                    "zoom {:.0}% | {:?}",
+                    self.wires_zoom * 100.0,
+                    self.tab
+                ));
+            });
+        });
     }
 }
 
 impl App {
-    fn show_tables(&self, ui: &mut egui::Ui) {
+    fn show_tables(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::both().show(ui, |ui| {
             egui::CollapsingHeader::new("Summary")
                 .default_open(true)
@@ -1106,7 +1162,16 @@ impl App {
                             ui.label("Value");
                             ui.end_row();
                             for (r, k, v) in &self.model.parts {
-                                ui.monospace(r);
+                                if ui
+                                    .selectable_label(
+                                        self.selected.as_deref() == Some(r.as_str()),
+                                        r,
+                                    )
+                                    .clicked()
+                                {
+                                    self.selected = Some(r.clone());
+                                    self.tab = Tab::Graph;
+                                }
                                 ui.monospace(k);
                                 ui.monospace(v);
                                 ui.end_row();
