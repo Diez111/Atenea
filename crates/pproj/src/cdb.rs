@@ -46,6 +46,9 @@ pub struct Component {
 pub struct Cdb {
     /// First four header `u32` values, little-endian.
     pub header: [u32; 4],
+    /// Sheet names (`ROOT`, `ROOT%02d`, `SUBSHEET%02d`, ...) found before
+    /// the first component record.
+    pub sheets: Vec<String>,
     /// Components found by structural scan.
     pub components: Vec<Component>,
     /// `{...}` text records.
@@ -100,6 +103,18 @@ fn scan_component(data: &[u8], at: usize, out: &mut Vec<Component>) -> Option<us
     if pins.is_empty() {
         return None;
     }
+    // Footer: zero padding, flag words, then an `ffffffff` sentinel.
+    // Consumed (not validated) so the rescan continues after the record.
+    while j < data.len() && data[j] == 0 && j - after_name < 4096 {
+        // Bound the zero run: stop at the sentinel or non-zero word.
+        if data.get(j..j + 4) == Some(&[0xff, 0xff, 0xff, 0xff]) {
+            break;
+        }
+        j += 1;
+    }
+    if data.get(j..j + 4) == Some(&[0xff, 0xff, 0xff, 0xff]) {
+        j += 4;
+    }
     out.push(Component {
         seq: u32le(data, at.saturating_sub(4)).unwrap_or(0),
         name: name.text,
@@ -118,14 +133,37 @@ pub fn parse(data: &[u8]) -> Cdb {
 
     let mut components = Vec::new();
     let mut i = 16usize;
+    let mut first_component_at = data.len();
     while i < data.len() {
         // Records: `u32 seq | PString name | u32 pin-count | 2N PStrings |
         // footer`. The scanner validates structure; `seq` is captured
         // from the 4 bytes before the name.
         if let Some(past) = scan_component(data, i, &mut components) {
+            first_component_at = first_component_at.min(i);
             i = past;
         } else {
             i += 1;
+        }
+    }
+
+    // Sheet names live before the first component record.
+    let mut sheets = Vec::new();
+    {
+        let mut k = 16usize;
+        let end = first_component_at.min(data.len());
+        while k < end {
+            if let Some((ps, next)) = pstring(data, k, false) {
+                if ps.text == "ROOT"
+                    || ps.text.starts_with("ROOT")
+                    || ps.text.contains("SUBSHEET")
+                    || ps.text.contains("REF")
+                {
+                    sheets.push(ps.text);
+                }
+                k = next;
+            } else {
+                k += 1;
+            }
         }
     }
 
@@ -159,6 +197,7 @@ pub fn parse(data: &[u8]) -> Cdb {
 
     Cdb {
         header,
+        sheets,
         components,
         records,
     }
@@ -201,6 +240,25 @@ mod tests {
             ]
         );
         assert_eq!(cdb.records, vec!["UE,OPAMP".to_owned()]);
+    }
+
+    #[test]
+    fn sheets_before_first_component() {
+        let mut v = vec![4u8, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+        v.push(4);
+        v.extend_from_slice(b"ROOT");
+        v.extend_from_slice(&[0x42, 0, 0, 0]); // seq
+        v.push(2);
+        v.extend_from_slice(b"R1");
+        v.extend_from_slice(&[1u8, 0, 0, 0]);
+        v.push(1);
+        v.extend_from_slice(b"A");
+        v.push(1);
+        v.extend_from_slice(b"1");
+        let cdb = parse(&v);
+        assert_eq!(cdb.sheets, vec!["ROOT".to_owned()]);
+        assert_eq!(cdb.components.len(), 1);
+        assert_eq!(cdb.components[0].seq, 0x42);
     }
 
     #[test]
