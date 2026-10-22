@@ -70,11 +70,28 @@ fn main() -> eframe::Result<()> {
             _ => Tab::Tables,
         };
     }
-    let mut native = eframe::NativeOptions::default();
+    let mut native = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([1280.0, 800.0]),
+        ..Default::default()
+    };
     if use_gl {
         native.renderer = eframe::Renderer::Glow;
     }
-    eframe::run_native("Atenea", native, Box::new(|_| Ok(Box::new(app))))
+    eframe::run_native(
+        "Atenea",
+        native,
+        Box::new(|cc| {
+            // ISIS is a light-theme app: paper sheets, grey chrome, blue accents.
+            let mut visuals = egui::Visuals::light();
+            visuals.widgets.noninteractive.bg_fill = egui::Color32::from_rgb(225, 225, 225);
+            visuals.widgets.inactive.bg_fill = egui::Color32::from_rgb(240, 240, 240);
+            visuals.widgets.hovered.bg_fill = egui::Color32::from_rgb(205, 225, 245);
+            visuals.widgets.active.bg_fill = egui::Color32::from_rgb(170, 205, 240);
+            visuals.selection.bg_fill = egui::Color32::from_rgb(0, 90, 180);
+            cc.egui_ctx.set_visuals(visuals);
+            Ok(Box::new(app))
+        }),
+    )
 }
 
 /// One loaded artifact.
@@ -508,6 +525,51 @@ impl Default for Layers {
     }
 }
 
+/// ISIS left-strip tool (view-only: every mode inspects, none edits).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+enum ToolMode {
+    #[default]
+    Select,
+    Wire,
+    Bus,
+    Label,
+    Probe,
+    Measure,
+}
+
+impl ToolMode {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Select => "Sel",
+            Self::Wire => "Wire",
+            Self::Bus => "Bus",
+            Self::Label => "Lbl",
+            Self::Probe => "Prb",
+            Self::Measure => "Med",
+        }
+    }
+    fn hint(self) -> &'static str {
+        match self {
+            Self::Select => "arrastrar: pan, rueda: zoom",
+            Self::Wire => "click: resaltar segmento, Esc limpia",
+            Self::Bus => "click: resaltar bus, Esc limpia",
+            Self::Label => "click: leer etiqueta, Esc limpia",
+            Self::Probe => "click: medir punto, Esc limpia",
+            Self::Measure => "click-click: distancia, Esc limpia",
+        }
+    }
+    fn all() -> [Self; 6] {
+        [
+            Self::Select,
+            Self::Wire,
+            Self::Bus,
+            Self::Label,
+            Self::Probe,
+            Self::Measure,
+        ]
+    }
+}
+
 /// Visibility flags for chrome panels (keeps `App` bool count low).
 #[derive(Debug, Clone)]
 struct Panels {
@@ -562,6 +624,8 @@ struct App {
     sim_tstop: String,
     /// Visibility flags for explorer / inspector / help.
     panels: Panels,
+    /// Active left-strip tool.
+    tool: ToolMode,
 }
 
 impl App {
@@ -588,6 +652,7 @@ impl App {
             sim_tstop: "5m".to_owned(),
             sim_hidden: Vec::new(),
             panels: Panels::default(),
+            tool: ToolMode::Select,
         }
     }
 
@@ -935,8 +1000,16 @@ impl App {
         // Left tool strip (ISIS-like) + canvas.
         ui.horizontal(|ui| {
             ui.vertical(|ui| {
-                ui.heading("✏");
-                if ui.button("Fit").on_hover_text("Encuadrar hoja").clicked() {
+                // ISIS left tool strip: pointer, wire, bus, label, probe.
+                for mode in ToolMode::all() {
+                    ui.selectable_value(&mut self.tool, mode, mode.label());
+                }
+                ui.separator();
+                if ui
+                    .button("Fit")
+                    .on_hover_text("Encuadrar hoja (Ctrl+L)")
+                    .clicked()
+                {
                     self.wires_fitted = false;
                 }
                 ui.checkbox(&mut self.layers.wires, "wires");
@@ -979,7 +1052,7 @@ impl App {
                 ui.label("X:— Y:—");
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.label("arrastrar: pan, rueda: zoom");
+                ui.label(self.tool.hint());
             });
         });
     }
@@ -1587,6 +1660,21 @@ impl App {
                 ui.checkbox(&mut self.layers.labels, "Capa etiquetas");
                 ui.checkbox(&mut self.layers.grid, "Capa retícula");
             });
+            ui.menu_button("Herramientas", |ui| {
+                if ui.button("Compilar netlist (.cir)").clicked() {
+                    self.export_cir();
+                }
+                if ui.button("Bill of Materials").clicked() {
+                    self.tab = Tab::Tables;
+                }
+                if ui.button("Chequeo eléctrico (ERC)").clicked() {
+                    self.tab = Tab::Tables;
+                }
+                ui.separator();
+                if ui.button("Simular").clicked() {
+                    self.tab = Tab::Simulate;
+                }
+            });
             ui.menu_button("Ayuda", |ui| {
                 if ui.button("Primeros pasos  (F1)").clicked() {
                     self.panels.help = true;
@@ -1698,8 +1786,9 @@ impl App {
             }
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.monospace(format!(
-                    "zoom {:.0}% | {:?}",
+                    "zoom {:.0}% | {} | {:?}",
                     self.wires_zoom * 100.0,
+                    self.tool.label(),
                     self.tab
                 ));
             });
