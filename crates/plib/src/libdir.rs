@@ -33,6 +33,11 @@ pub struct IdxEntry {
 }
 
 /// One `.LIB` directory entry (80 bytes).
+///
+/// The body offset is absolute in Labcenter-shipped libraries (verified
+/// live in `ArduinoTEP`). Third-party TEP packs may carry stale offsets
+/// past EOF (observed: `VibrationSensorTEP` → 56084 in a 37678-byte
+/// file) — treat as advisory and always bounds-check.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DirEntry {
     /// Device name (`ARDUINO MEGA 2560`).
@@ -214,6 +219,66 @@ mod tests {
         assert_eq!(dirs[0].seq, 3);
         assert_eq!(dirs[0].key, 11);
         assert_eq!(dirs[0].offset, 4096);
+    }
+
+    #[test]
+    fn synthetic_join_three_devices() {
+        // Self-contained IDX+LIB pair: no wine prefix needed.
+        let mut idx = Vec::from(b"DEVICE LIBRARY INDEX\x1a".as_slice());
+        idx.extend_from_slice(&[0u8; 11]);
+        idx.extend_from_slice(&102u32.to_le_bytes());
+        idx.extend_from_slice(&3u32.to_le_bytes());
+        for (key, fields) in [
+            (0x1001u32, vec!["Arduino", "www.x", "Arduino UNO"]),
+            (0x1002u32, vec!["Arduino", "Arduino NANO"]),
+            (0x1003u32, vec!["Analog ICs", "Texas", "LM358"]),
+        ] {
+            idx.extend_from_slice(&key.to_le_bytes());
+            for f in fields {
+                idx.extend_from_slice(f.as_bytes());
+                idx.push(0);
+            }
+            idx.extend_from_slice(super::IDX_TERM);
+        }
+        idx.extend_from_slice(&0x1234_5678u32.to_le_bytes());
+        let mut lib = vec![0u8; 32 + 3 * 80 + 4];
+        for (i, (name, key, off)) in [
+            ("ARDUINO UNO", 0x1001u32, 4096u32),
+            ("ARDUINO NANO", 0x1002u32, 8192u32),
+            ("LM358", 0x1003u32, 12288u32),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let b = 32 + i * 80;
+            lib[b..b + name.len()].copy_from_slice(name.as_bytes());
+            lib[b + 64..b + 68]
+                .copy_from_slice(&u32::try_from(i).unwrap_or(u32::MAX).to_le_bytes());
+            lib[b + 68..b + 72].copy_from_slice(&key.to_le_bytes());
+            lib[b + 72..b + 76].copy_from_slice(&off.to_le_bytes());
+        }
+        // Bodies live past the directory; pad so offsets stay in-bounds.
+        lib.resize(12288 + 4, 0);
+        for off in [4096usize, 8192, 12288] {
+            lib[off] = 0xAB;
+        }
+        let entries = super::parse_idx(&idx, LibKind::Idx).unwrap();
+        assert_eq!(entries.len(), 3);
+        assert_eq!(entries[1].mfr, "");
+        let dirs = super::parse_lib_dir(&lib);
+        assert_eq!(dirs.len(), 3);
+        assert_eq!(dirs[0].name, "ARDUINO UNO");
+        for e in &entries {
+            assert_eq!(
+                dirs.iter().filter(|d| d.key == e.key).count(),
+                1,
+                "key {:08x}",
+                e.key
+            );
+        }
+        for d in &dirs {
+            assert_ne!(lib[d.offset as usize], 0, "live {}", d.name);
+        }
     }
 
     #[test]

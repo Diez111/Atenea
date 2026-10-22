@@ -204,11 +204,21 @@ pub fn run(netlist: &str) -> Result<Output, SimError> {
 
 /// Last value of the `var_index`-th `print` variable in batch stdout.
 /// Column 0 is the sweep variable (time); variables follow it. Only real
-/// data rows count (first field is the integer row index), so footer
-/// lines like `Stack = 0 bytes.` are ignored.
+/// data rows count (first field parses as integer), so headers and the
+/// trailing `Stack = ...` footer are ignored. Unlike [`trace`], this
+/// accepts rows with any column count.
 #[must_use]
 pub fn last_printed(output: &Output, var_index: usize) -> Option<f64> {
-    trace(output, 1).and_then(|t| t.rows.last().and_then(|(_, v)| v.get(var_index).copied()))
+    output
+        .stdout
+        .lines()
+        .filter_map(|line| {
+            let fields: Vec<&str> = line.split_whitespace().collect();
+            fields.first()?.parse::<usize>().ok()?;
+            fields.get(1)?.parse::<f64>().ok()?;
+            fields.get(var_index + 2)?.parse::<f64>().ok()
+        })
+        .next_back()
 }
 
 /// Parse `print tran` tables with exactly `nvars` variables.
@@ -290,6 +300,67 @@ GND,2
 V1,PS,2
 C1,PS,2
 ";
+
+    const GOLDEN4: &str = "ISIS SCHEMATIC DESCRIPTION FORMAT 4.5
+=====================================
+Design:   GOLDEN4
+
+*PARTLIST,4
+V1,VSRC,5
+R1,RES,4M7
+C1,CAP,100n
+L1,IND,10u
+
+*NETLIST,4
+IN,2
+V1,PS,1
+R1,PS,1
+MID,2
+R1,PS,2
+C1,PS,1
+OUT,2
+C1,PS,2
+L1,PS,1
+GND,2
+V1,PS,2
+L1,PS,2
+";
+
+    #[test]
+    fn golden_four_parts_exact() {
+        let doc = pmodel::parse(GOLDEN4).unwrap();
+        let els = elements(&doc).unwrap();
+        assert_eq!(
+            els,
+            vec![
+                "V1 IN 0 5".to_owned(),
+                "R1 IN MID 4.7MEG".to_owned(),
+                "C1 MID OUT 100n".to_owned(),
+                "I1 OUT 0 10u".to_owned(),
+            ]
+        );
+    }
+
+    #[test]
+    fn unsupported_part_names_part() {
+        let bad = GOLDEN4.replace("L1,IND,10u", "Q1,NPN,BC184");
+        let doc = pmodel::parse(&bad).unwrap();
+        let err = elements(&doc).unwrap_err();
+        assert_eq!(err, SimError::UnsupportedPart("Q1(kind NPN)".to_owned()));
+        assert_eq!(err.to_string(), "unsupported part: Q1(kind NPN)");
+    }
+
+    #[test]
+    fn trace_parses_fabricated_stdout() {
+        let out = Output {
+            stdout: "bla bla\n0 1e-05 4.9 0.1\n1 2e-05 5.0 0.2\nStack = 0 bytes.\n".to_owned(),
+            data_rows: 2,
+        };
+        let t = trace(&out, 2).unwrap();
+        assert_eq!(t.rows.len(), 2);
+        assert_eq!(last_printed(&out, 0), Some(5.0));
+        assert_eq!(last_printed(&out, 1), Some(0.2));
+    }
 
     #[test]
     fn values_normalize() {

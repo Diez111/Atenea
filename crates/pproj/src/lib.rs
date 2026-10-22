@@ -304,4 +304,30 @@ mod tests {
         let _ = &mut raw;
         assert!(parse_project_xml(b"<broken").is_err());
     }
+
+    #[test]
+    fn firmware_workspace_has_no_title_but_firmware_xml() {
+        const WS: &str = r#"<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<PROJECT>
+ <TIMESTAMP RELEASE="802" MODIFIED="1415714307" FILEVER="805" CREATED="1371464270"/>
+ <SCRIPTS/>
+</PROJECT>"#;
+        const FW: &str = "<?xml version='1.0'?><FIRMWARE><FILE NAME=\"main.asm\"/></FIRMWARE>";
+        let mut buf = Cursor::new(Vec::new());
+        {
+            let mut zip = zip::ZipWriter::new(&mut buf);
+            let opts = zip::write::SimpleFileOptions::default();
+            zip.start_file("PROJECT.XML", opts).unwrap();
+            zip.write_all(WS.as_bytes()).unwrap();
+            zip.start_file("FIRMWARE.XML", opts).unwrap();
+            zip.write_all(FW.as_bytes()).unwrap();
+            zip.finish().unwrap();
+        }
+        let proj = open(Cursor::new(buf.into_inner())).unwrap();
+        assert_eq!(proj.title, None);
+        assert_eq!(proj.timestamp.release, "802");
+        assert!(proj.dsn.is_none() && proj.cdb.is_none());
+        assert!(proj.firmware_xml.is_some());
+        assert!(proj.members.contains(&"FIRMWARE.XML".to_owned()));
+    }
 }

@@ -195,5 +195,36 @@ mod tests {
         let cdb = parse(&[]);
         assert_eq!(cdb.components.len(), 0);
         assert_eq!(cdb.records.len(), 0);
+        assert_eq!(cdb.header, [0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn two_components_and_records() {
+        let mut v = vec![4u8, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+        v.extend_from_slice(&[0x28, 0, 0, 0]); // length (advisory)
+        v.push(2);
+        v.extend_from_slice(b"R1");
+        v.extend_from_slice(&[2u32.to_le_bytes()].concat());
+        for (n, p) in [("A", "1"), ("B", "2")] {
+            v.push(u8::try_from(n.len()).unwrap());
+            v.extend_from_slice(n.as_bytes());
+            v.push(u8::try_from(p.len()).unwrap());
+            v.extend_from_slice(p.as_bytes());
+        }
+        v.extend_from_slice(b"{PACKAGE=RES40}{CODE=WX51F}");
+        let cdb = parse(&v);
+        assert_eq!(cdb.components.len(), 1);
+        assert_eq!(cdb.components[0].name, "R1");
+        assert_eq!(
+            cdb.components[0].pins,
+            vec![
+                ("A".to_owned(), "1".to_owned()),
+                ("B".to_owned(), "2".to_owned())
+            ]
+        );
+        assert_eq!(
+            cdb.records,
+            vec!["PACKAGE=RES40".to_owned(), "CODE=WX51F".to_owned()]
+        );
     }
 }

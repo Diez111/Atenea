@@ -127,8 +127,8 @@ No Labcenter binaries or data are reproduced here.
 
 | Format | Magic/head | Kind | Parser |
 |---|---|---|---|
-| `.IDX` | `DEVICE LIBRARY INDEX\x1A` | binary index + ASCII | `plib` v0 |
-| `.LIB` | `DEVICE LIBRARY\x1A`, `{*DEVICE}/{*COMPONENT}` blocks | binary + text frags | `plib` v0 (strings only) |
+| `.IDX` | `DEVICE LIBRARY INDEX\x1A`, count u32@36, records `key+CAT[/MFR]/DESC` split by `01 00 00 00` + `12345678` sentinel | binary index + ASCII | `plib::libdir` (ArduinoTEP: 7 entries) |
+| `.LIB` | `DEVICE LIBRARY\x1A`, dir@32 stride 80: `name[64]+seq+key+offset+flags`; `{*DEVICE}/{*COMPONENT}` blocks | binary + text frags | `plib::libdir::parse_lib_dir` + strings; join IDX↔LIB by key (6/7; UNO dup, Rev3 sin slot) |
 | `.MDF` | `LISA MODEL DESCRIPTION FORMAT x.y` | text, `*SECTION,n` | `pmodel` |
 | `.SDF` | `ISIS SCHEMATIC DESCRIPTION FORMAT x.y` | text, `*PARTLIST/*NETLIST` | `pmodel` |
 | `.SML` | `SPICE LIBRARY\x1A`, `.SUBCKT/.MODEL/.ENDS` | text SPICE | `pmodel::sml` (split) + `pmodel::spice` (decks) |

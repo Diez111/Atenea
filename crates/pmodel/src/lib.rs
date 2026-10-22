@@ -438,6 +438,18 @@ U1,OP,6
     }
 
     #[test]
+    fn mappings_and_starred_net_subheaders() {
+        let doc = parse("LISA MODEL DESCRIPTION FORMAT 6.1\n====\n*MODELDEFS,1\nTTL : RHI=50, RLO=5\n*MAPPINGS,2,COMPARATOR\nA=1\nB=2\n*NETLIST,2\n*VCC,1\n*VCC,GT\n*GND,1\nGND,GT\n").unwrap();
+        assert_eq!(doc.section("MAPPINGS").unwrap().lines, vec!["A=1", "B=2"]);
+        assert_eq!(doc.modeldefs()[0].name, "TTL");
+        let nets = doc.netlist().unwrap();
+        assert_eq!(nets.len(), 2);
+        assert_eq!(nets[0].id, "VCC");
+        assert_eq!(nets[0].pins, Vec::new());
+        assert_eq!(nets[1].id, "GND");
+    }
+
+    #[test]
     fn bad_title_rejected() {
         assert_eq!(parse("garbage\n").unwrap_err(), ParseError::BadTitle);
         assert_eq!(parse("FORMAT\n").unwrap_err(), ParseError::BadTitle);
