@@ -47,6 +47,10 @@ No Labcenter binaries or data are reproduced here.
 - `read_parts` (Ghidra por nombre): getline loop; `getpropname('=')` +
   `getstr` → `PROPLIST::add`; `VALUE` defaulteado si falta.
   `pmodel::partlist` replica la tolerancia (campos faltantes → "").
+- `read_nets` (Ghidra por nombre): por línea `getpropname('=')` +
+  `getnzstr("\\n,")`, luego `addpin(net, ref, extra, 0, EVar3-enum, 0)` y
+  `addnet()` al final. `pmodel::netlist` preserva los roles como strings
+  (`PS/GT/Q1/1/...`), equivalente sin tipar el enum.
 - Export table (515 exports; RVAs de parse manual NO verificadas —
   el parseo crudo desalinea `AddressOfFunctions`: Ghidra-por-nombre es la
   fuente de verdad). Nombres confirmados por string: `parse_field`,
