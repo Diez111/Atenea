@@ -644,7 +644,18 @@ impl App {
                 }
             }
         }
-        let matching: Vec<bool> = names
+        // Topological order (greedy BFS): connected parts land on adjacent cells.
+        let order = Self::graph_order(names.len(), &edges);
+        let pos: Vec<usize> = {
+            let mut p = vec![0; names.len()];
+            for (new, old) in order.iter().enumerate() {
+                p[*old] = new;
+            }
+            p
+        };
+        let mut names2: Vec<(String, String)> = vec![(String::new(), String::new()); names.len()];
+        let mut matching2 = vec![false; names.len()];
+        let base_matching: Vec<bool> = names
             .iter()
             .map(|(r, k)| {
                 query.is_empty()
@@ -652,13 +663,27 @@ impl App {
                     || k.to_lowercase().contains(&query)
             })
             .collect();
+        for (old, (r, k)) in names.iter().enumerate() {
+            names2[pos[old]] = (r.clone(), k.clone());
+            matching2[pos[old]] = base_matching[old];
+        }
+        let mut index2: HashMap<String, usize> = HashMap::new();
+        for (i, (r, _)) in names2.iter().enumerate() {
+            index2.insert(r.clone(), i);
+        }
+        let edges2: Vec<(usize, usize, u8)> = edges
+            .iter()
+            .map(|(a, b, c)| (pos[*a], pos[*b], *c))
+            .collect();
+        let part_nets2: HashMap<usize, Vec<String>> =
+            part_nets.into_iter().map(|(i, v)| (pos[i], v)).collect();
         Some(GraphData {
-            names,
+            names: names2,
             cols,
-            index,
-            edges,
-            part_nets,
-            matching,
+            index: index2,
+            edges: edges2,
+            part_nets: part_nets2,
+            matching: matching2,
         })
     }
 
@@ -1377,6 +1402,37 @@ impl App {
                     self.show_inspector(ui);
                 });
         }
+    }
+
+    /// Greedy topological order: BFS from the highest-degree part over
+    /// the edge adjacency, so connected parts land on adjacent grid cells.
+    fn graph_order(n: usize, edges: &[(usize, usize, u8)]) -> Vec<usize> {
+        let mut adj: Vec<Vec<usize>> = vec![Vec::new(); n];
+        for (a, b, _) in edges {
+            adj[*a].push(*b);
+            adj[*b].push(*a);
+        }
+        let mut degree: Vec<usize> = adj.iter().map(Vec::len).collect();
+        let mut order: Vec<usize> = Vec::with_capacity(n);
+        let mut seen = vec![false; n];
+        while order.len() < n {
+            let start = (0..n).filter(|i| !seen[*i]).max_by_key(|i| degree[*i]);
+            let Some(mut stack) = start.map(|i| vec![i]) else {
+                break;
+            };
+            while let Some(i) = stack.pop() {
+                if seen[i] {
+                    continue;
+                }
+                seen[i] = true;
+                order.push(i);
+                degree[i] = 0;
+                let mut next: Vec<usize> = adj[i].iter().copied().filter(|j| !seen[*j]).collect();
+                next.sort_by_key(|j| std::cmp::Reverse(degree[*j]));
+                stack.extend(next);
+            }
+        }
+        order
     }
 
     /// Active tab content.
