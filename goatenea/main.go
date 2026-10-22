@@ -90,6 +90,7 @@ func (s *state) openFile(path string) {
 	s.setStatus(fmt.Sprintf("%s · %s", filepath.Base(path), sum.Kind))
 	s.showTables(path)
 	s.showEsquema(path)
+	s.showSimulate(path)
 }
 
 type wiresDoc struct {
@@ -172,7 +173,7 @@ func (s *state) showEsquema(path string) {
 		if w[4] != 0 {
 			ln.StrokeWidth = 3
 		} else {
-		ln.StrokeWidth = 1
+			ln.StrokeWidth = 1
 		}
 		objs = append(objs, ln)
 	}
@@ -181,8 +182,54 @@ func (s *state) showEsquema(path string) {
 	for _, tab := range s.tabs.Items {
 		if tab.Text == "Esquema" {
 			tab.Content = container.NewScroll(box)
-		s.tabs.Refresh()
+			s.tabs.Refresh()
+			return
+		}
+	}
+}
+
+type simDoc struct {
+	Vars []string    `json:"vars"`
+	Rows [][]float64 `json:"rows"`
+}
+
+func (s *state) showSimulate(path string) {
+	out, err := runAcore("sim", path, "--vars", "v(OUT)", "--tstop", "5m")
+	if err != nil {
+		for _, tab := range s.tabs.Items {
+			if tab.Text == "Simulate" {
+				tab.Content = widget.NewLabel("sin ngspice o sin SDF: " + err.Error())
+				s.tabs.Refresh()
+				return
+			}
+		}
 		return
+	}
+	var doc simDoc
+	if err := json.Unmarshal(out, &doc); err != nil || len(doc.Rows) == 0 {
+		return
+	}
+	rows := [][]string{append([]string{"t"}, doc.Vars...)}
+	for _, r := range doc.Rows {
+		row := make([]string, len(r))
+		for i, v := range r {
+			row[i] = fmt.Sprintf("%.6g", v)
+		}
+		rows = append(rows, row)
+	}
+	t := widget.NewTable(
+		func() (int, int) { return len(rows), len(rows[0]) },
+		func() fyne.CanvasObject { return widget.NewLabel("") },
+		func(id widget.TableCellID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(rows[id.Row][id.Col])
+		},
+	)
+	for _, tab := range s.tabs.Items {
+		if tab.Text == "Simulate" {
+			title := widget.NewLabel(fmt.Sprintf("%d filas", len(doc.Rows)))
+			tab.Content = container.NewBorder(title, nil, nil, nil, container.NewScroll(t))
+			s.tabs.Refresh()
+			return
 		}
 	}
 }
