@@ -11,7 +11,7 @@
 | `.MDF`/`.SDF` | `... FORMAT x.y` + `*SECCIÓN,conteo` | `pmodel` | 145/145 MDF (+ `*RED,n` anidadas, variante sin título SPICELNK), Ppsu.SDF |
 | `.SML`/`.LML` | `SPICE/MODEL LIBRARY\x1a`, TOC 32 B + chunks con longitud | `pmodel::sml/lml` | 6 decks SML **byte-idénticos** a GETSPICE oficial; 1097 LML parsean |
 | `.VML`/`.3DS` | magics `MM`/`LX` | clasificados (sin geometría) | 33 archivos |
-|ува `.qm`/`.chm`/firmware | varios | no parseados | 63+136 páginas HTML extraídas y leídas |
+| `.qm`/`.chm`/firmware | varios | no parseados | 63+136 páginas HTML extraídas y leídas |
 
 ## Dumps de verificación (cada uno prueba un formato real)
 
