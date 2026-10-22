@@ -1633,6 +1633,56 @@ impl App {
         });
     }
 
+    /// BOM section: grouped by (kind, value) with counts + CSV export.
+    fn show_bom(&mut self, ui: &mut egui::Ui) {
+        use std::fmt::Write as _;
+        if self.model.parts.is_empty() {
+            return;
+        }
+        let mut groups: std::collections::BTreeMap<(&str, &str), Vec<&str>> =
+            std::collections::BTreeMap::new();
+        for (r, k, v) in &self.model.parts {
+            groups
+                .entry((k.as_str(), v.as_str()))
+                .or_default()
+                .push(r.as_str());
+        }
+        egui::CollapsingHeader::new(format!(
+            "BOM ({} grupos, {} partes)",
+            groups.len(),
+            self.model.parts.len()
+        ))
+        .show(ui, |ui| {
+            if ui.button("Exportar BOM .csv").clicked() {
+                let mut csv = String::from("cantidad,tipo,valor,refs\n");
+                for ((k, v), refs) in &groups {
+                    let _ = writeln!(csv, "{},{},{},\"{}\"", refs.len(), k, v, refs.join(" "));
+                }
+                if let Some(path) = rfd::FileDialog::new()
+                    .add_filter("CSV", &["csv"])
+                    .set_file_name("bom.csv")
+                    .save_file()
+                {
+                    self.file_error = std::fs::write(&path, csv).err().map(|e| e.to_string());
+                }
+            }
+            egui::Grid::new("bom").striped(true).show(ui, |ui| {
+                ui.label("Cant");
+                ui.label("Tipo");
+                ui.label("Valor");
+                ui.label("Refs");
+                ui.end_row();
+                for ((k, v), refs) in &groups {
+                    ui.monospace(refs.len().to_string());
+                    ui.monospace(*k);
+                    ui.monospace(*v);
+                    ui.monospace(refs.join(" "));
+                    ui.end_row();
+                }
+            });
+        });
+    }
+
     /// ERC report section (extracted: keeps `show_tables` short).
     fn show_erc(&self, ui: &mut egui::Ui) {
         let issues = self.model.erc();
@@ -1780,6 +1830,7 @@ impl App {
         };
         egui::ScrollArea::both().show(ui, |ui| {
             self.show_erc(ui);
+            self.show_bom(ui);
             egui::CollapsingHeader::new("Summary")
                 .default_open(true)
                 .show(ui, |ui| {
