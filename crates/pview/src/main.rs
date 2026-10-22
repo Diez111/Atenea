@@ -1643,8 +1643,9 @@ impl App {
 
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        // ISIS chrome is always light: re-apply every frame so the
-        // desktop theme (COSMIC dark) can never bleed through.
+        // ISIS chrome is always light: pin the theme preference AND the
+        // visuals every frame so the desktop theme can never bleed through.
+        ui.ctx().set_theme(egui::Theme::Light);
         ui.ctx().set_visuals(isis_visuals());
         // Drag&drop anywhere: open the first dropped file.
         let dropped: Vec<std::path::PathBuf> = ui.input(|i| {
