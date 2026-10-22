@@ -106,6 +106,34 @@ No Labcenter binaries or data are reproduced here.
 
 ## Third-party tools (native replacement path)
 
+### ELECTRA router (ELECTRA.DLL, strings dump)
+
+- Specctra-compatible CLI: `-design <file> -do <file> -w <routes> [-nog] [-quit]`;
+  `.ses` sessions, `.do` scripts, `log.sts`.
+- Report: `Completion / Total Pins / Power Layers / Signal Layers /
+  Routed Length / Vias / Connections / Components`.
+- Commands: fit/grid/off/max_total_vias/bend/limit_bends/cross/via/way/star/
+  starburst/daisy_chain/term/limit/max_stub/junction/tjunction/reorder/
+  max_stagger/via_on_pin/via_at_smd/clearance; costs
+  `C@Max cost def/for/hig/med/low/free`; `route (share_len/max_len/
+  via_share/pin_share/direction in/out)`; `rule pcb (via_at_smd on/off)
+  (grid on/off) (fit on/off)`; `bus diagonal`, `squeeze/side_exit/off_center`.
+- Protection: `Protect/Lock/UnProtect/Unlock All Wires`.
+
+### SDFGEN / DXFCVT / DSNCVT40 / CONSOLE (strings dumps)
+
+- `SDFGEN <file> <format>` converts to SDF 3.0 (`MULTIWIRE`, `TANGO`);
+  emits `ISIS SCHEMATIC DESCRIPTION FORMAT 2.0` + Design/Doc.no./Revision/
+  Created/Modified + `*PARTLIST,%d` (`%s,%s,%s,PACKAGE=%s`) + `*NETLIST,%d`;
+  pin codes `PS IP OP IO TS OE OC PP LBL GT IT OT BT PR MOD`;
+  `... too long (max %d) - clipped` warnings.
+- DXFCVT exports `convert endmsg getinfo initialise terminate`; DXF
+  `AC1009/1012/1014/1500` (release 12-15 ASCII, `HEADER/ENTITIES/BLOCKS/
+  OBJECTS/LAYERS`); output `ARES REGION FILE` (`RGN`, `*HEADER`);
+  units `Unitless..Parsecs`, `LX_REFERENCE_LAYER`.
+- CONSOLE.EXE = PROSPICE runner (`simulate`, `dumptables`; PROSPICE.dll +
+  LICENCE.dll, build 8.4.21720).
+
 - `Tools/ARDUINO/`: Arduino IDE 1.8.1 copy (avr-gcc 4.9.2, avrdude 6.3.0,
   core 1.6.17). Native: `avr-gcc`, `avr-libc`, `avrdude`, `make` (Arch
   packages, certain). Windows-only bits (`dpinst`, `giveio.sys`, `msys-1.0.dll`)
@@ -118,6 +146,12 @@ No Labcenter binaries or data are reproduced here.
   format (PCRE, max 64 rules) — cheap to reimplement.
 
 ## Formats
+
+.DSNCVT40 identity (strings dump): `ISIS IV Design Converter /
+DSNCVT`, magics `ISIS CIRCUIT FILE\x1A`, `ISIS SECTION V3.5`,
+`DESIGN CONFIGURATION DATA\x1A`, `CCT%03d OBJECT DATA`,
+`ROOT%02d/REF/SUBSHEET%02d` (multi-sheet naming). `plib::dsn`
+recognizes the CIRCUIT magic (framing family).
 
 ### `.DSN` wire records (verified 2026-10-22, `plib::dsn`)
 

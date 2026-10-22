@@ -1746,7 +1746,7 @@ impl App {
     fn draw_menu(&mut self, ui: &mut egui::Ui) {
         // Menu bar (ISIS-like): Archivo / Ver / Ayuda.
         ui.horizontal(|ui| {
-            ui.menu_button("Archivo", |ui| {
+            ui.menu_button("File", |ui| {
                 if ui.button("Abrir…  (Ctrl+O)").clicked() {
                     self.open_dialog();
                 }
@@ -1762,7 +1762,7 @@ impl App {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
             });
-            ui.menu_button("Ver", |ui| {
+            ui.menu_button("View", |ui| {
                 ui.selectable_value(&mut self.tab, Tab::Tables, "Tables  (Ctrl+1)");
                 ui.selectable_value(&mut self.tab, Tab::Graph, "Graph  (Ctrl+2)");
                 ui.selectable_value(&mut self.tab, Tab::Wires, "Esquema  (Ctrl+3)");
@@ -1777,7 +1777,7 @@ impl App {
                 ui.checkbox(&mut self.layers.labels, "Capa etiquetas");
                 ui.checkbox(&mut self.layers.grid, "Capa retícula");
             });
-            ui.menu_button("Herramientas", |ui| {
+            ui.menu_button("Tool", |ui| {
                 if ui.button("Compilar netlist (.cir)").clicked() {
                     self.export_cir();
                 }
@@ -1792,7 +1792,17 @@ impl App {
                     self.tab = Tab::Simulate;
                 }
             });
-            ui.menu_button("Ayuda", |ui| {
+            ui.menu_button("Library", |ui| {
+                if ui.button("Open library (.IDX)").clicked() {
+                    self.open_dialog();
+                }
+            });
+            ui.menu_button("Graph", |ui| {
+                if ui.button("Show connectivity graph").clicked() {
+                    self.tab = Tab::Graph;
+                }
+            });
+            ui.menu_button("Help", |ui| {
                 if ui.button("Primeros pasos  (F1)").clicked() {
                     self.panels.help = true;
                 }

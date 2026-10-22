@@ -21,6 +21,8 @@ use super::{MAGIC_TERM, ParseError};
 pub const DSN_MAGIC: &[u8] = b"ISIS SCHEMATIC FILE";
 /// Magic of `.LYT` layouts (without trailing `0x1A`).
 pub const LYT_MAGIC: &[u8] = b"PCB LAYOUT FILE";
+/// ISIS IV circuit magic handled by `DSNCVT40` (same framing family).
+pub const CCT_MAGIC: &[u8] = b"ISIS CIRCUIT FILE";
 
 /// Internal coordinate units per inch (1 unit = 10 nm).
 ///
@@ -284,7 +286,7 @@ pub fn check_magic(data: &[u8]) -> Result<usize, ParseError> {
     if data.len() < LYT_MAGIC.len() + 1 {
         return Err(ParseError::Truncated);
     }
-    for magic in [DSN_MAGIC, LYT_MAGIC] {
+    for magic in [DSN_MAGIC, LYT_MAGIC, CCT_MAGIC] {
         if data.len() > magic.len()
             && &data[..magic.len()] == magic
             && data[magic.len()] == MAGIC_TERM
@@ -293,7 +295,7 @@ pub fn check_magic(data: &[u8]) -> Result<usize, ParseError> {
         }
     }
     Err(ParseError::BadMagic {
-        expected: "ISIS SCHEMATIC FILE or PCB LAYOUT FILE",
+        expected: "ISIS SCHEMATIC FILE, PCB LAYOUT FILE or ISIS CIRCUIT FILE",
     })
 }
 
@@ -385,6 +387,8 @@ mod tests {
     #[test]
     fn real_dsn_head_validates() {
         assert!(check_magic(b"ISIS SCHEMATIC FILE\x1aSignal").is_ok());
+        // DSNCVT40 identity: ISIS IV circuit magic shares the framing.
+        assert!(check_magic(b"ISIS CIRCUIT FILE\x1aCCT001").is_ok());
         assert!(check_magic(b"PCB LAYOUT FILE\x1a technolog").is_ok());
         // 16 bytes (LYT-sized) of garbage is BadMagic, not Truncated.
         assert!(matches!(
