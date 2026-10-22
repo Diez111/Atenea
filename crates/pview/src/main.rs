@@ -317,14 +317,29 @@ impl Loaded {
     }
 
     /// Electrical rule check (read-only): floating nets, dangling pins,
-    /// duplicate refs. Mirrors `NETLIST::net_erc` vocabulary (`UNDRIVEN`,
-    /// `SINGULAR LABEL`): 1-pin nets on power rails are skipped, label
-    /// roles (`GT`/`LBL`/`TER`) report `SINGULAR LABEL`, other 1-pin nets
-    /// report `UNDRIVEN` (vendor checks driver types; roles here are the
-    /// raw `sdf_etstrings` keywords).
+    /// duplicate refs, power-rail shorts. Mirrors `NETLIST::net_erc`
+    /// vocabulary (`UNDRIVEN`, `SINGULAR LABEL`) and `NETLIST::validate`
+    /// (`Power rails '%s' and '%s' are interconnected in net {N:%s}`).
     fn erc(&self) -> Vec<(char, String)> {
         let mut out = Vec::new();
         for (id, pins) in &self.nets_full {
+            // Power rails X+Y in the same net = short (validate.cpp).
+            let mut rails: Vec<&str> = pins
+                .iter()
+                .map(|(r, _)| r.as_str())
+                .filter(|r| ["VCC", "GND", "VDD", "VSS", "VEE", "+5V", "-5V"].contains(r))
+                .collect();
+            rails.sort_unstable();
+            rails.dedup();
+            if rails.len() >= 2 {
+                out.push((
+                    'E',
+                    format!(
+                        "Power rails '{}' and '{}' interconnected in net {id}",
+                        rails[0], rails[1]
+                    ),
+                ));
+            }
             if pins.len() == 1 && !["VCC", "GND", "VDD", "VSS"].contains(&id.as_str()) {
                 let role = pins[0].1.as_str();
                 if ["GT", "LBL", "TER"].contains(&role) {
