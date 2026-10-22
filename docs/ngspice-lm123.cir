@@ -1,0 +1,16 @@
+* LM123 smoke testbench — Proteus ANALOG.SML deck, ngspice batch (P3)
+* Subckt pins (.SUBCKT LM123 3 1 2): 3=IN 1=OUT 2=GND (node 2 is the
+* internal common reference; pin-1 current is mirrored from IN via F3/V2)
+* Deck extraction: see docs/reverse-engineering.md; save deck as lm123.mod
+* next to this file, then: ngspice -b -o out.log ngspice-lm123.cir
+.include lm123.mod
+V1 in 0 DC 8
+Rload out 0 5
+X1 in out 0 LM123
+.control
+op
+print v(in) v(out) i(V1)
+dc V1 5 12 0.25
+print v(out)
+.endc
+.end

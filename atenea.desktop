@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Atenea
+Comment=Workbench nativa de electrónica (netlists, simulación, visor)
+Exec=atenea
+Icon=applications-electronics
+Terminal=false
+Type=Application
+Categories=Science;Electronics;Engineering;
+StartupWMClass=atenea

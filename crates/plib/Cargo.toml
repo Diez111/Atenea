@@ -1,0 +1,10 @@
+[package]
+name = "plib"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Parsers for Labcenter Proteus library formats (.IDX/.LIB), native Linux reimplementation"
+
+[lints]
+workspace = true

@@ -1,0 +1,15 @@
+[package]
+name = "pproj"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Readers for Proteus .pdsprj project containers (ZIP + PROJECT.XML + DSN)"
+
+[dependencies]
+plib = { path = "../plib" }
+zip = "2"
+quick-xml = "0.37"
+
+[lints]
+workspace = true
