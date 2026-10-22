@@ -24,12 +24,16 @@ Decompiled & applied (loop ledger):
 - [x] `NETLIST::write` (por nombre) — orden canónico, backpatch, DSN_
 - [x] `NETLIST::read_parts` — tolerancia VALUE, `=`/`,`
 - [x] `NETLIST::read_nets` — addpin enum, `sdf_etstrings` + remapeo IP
+- [x] `NETLIST::read_script` 0x10018b60 — getline hasta `*ENDSCRIPT`
+- [x] `NETLIST::validate` — rails interconectados, hide-common-pins
+- [x] `NETLIST::net_erc` — UNDRIVEN / SINGULAR LABEL / connected to
 - [x] `NETLIST::resolve` — MODEL/MODFILE + CDBCORE walk
 - [x] `DSIM::dsim_create` — firma, vtables, lookup primitiva
 - [x] `createdsimmodel` 8155H.dll — factory NULL-si-no-match
-- [ ] `NETLIST::net_erc` — en curso (valida reglas ERC propias)
-- [ ] `NETLIST::read_script/read_models/read_props` — pendientes
-- [ ] `ISIS.DLL` factory loader — verificado a strings, falta función
+- [x] `CDBCORE` API + pin roles (strings ARES)
+- [ ] `NETLIST::read_models/read_props/sortnets` — pendientes menores
+- [ ] `ISIS.DLL` factory loader — es GetProcAddress (sin función única);
+  mecanismo documentado + espejado en `vsm-host` ✓
 - [ ] símbolos COMPONENT vectoriales — records `02 7f COMPONENT\0` (30 en
   siggen, `plib::symbols` v0: 249 vértices); diferencial 2026-10-22:
   payloads se repiten por template, posible `u32 count` primero
@@ -49,21 +53,18 @@ Decompiled & applied (loop ledger):
   `net_gen`, `net_erc`, `write`/`writeheader`, `mdf_id`.
 - Strings: `SPICEMODEL`, `MODFILE`, `VSM DLL Model [%s]`, `DSNCVT40.DLL`,
   `dsn_editdesign`, `Complile Netlist` [sic].
-- `NETLIST::parse_models` (`?parse_models@...`, RVA **0x1bb90** (368 B, Ghidra 12.1.2 verifica nombre+body) — corrección:
-  0x1bb90 es `parse_netprop`): lee líneas hasta EOF o línea que empiece
+- `NETLIST::parse_models` (`?parse_models@...`, 0x1bb90, 368 B,
+  Ghidra verifica nombre+body): lee líneas hasta EOF o línea que empiece
   con `*`; `getpropname(ptr,buf,':')` + `skipspaces` →
   `PROPLIST::add(lista+0x9c, nombre, valor)`. Confirma el diseño de
   `pmodel` (preámbulo `Clave: valor`, secciones `*`).
 - `NETLIST::write` (`?write@...`, decompilado por nombre via REA/Ghidra:
-  `void __thiscall NETLIST::write(NETLIST*, ostream*, int)`): emite en orden
+  `void __thiscall NETLIST::write(NETLIST*, ostream*, int)`)
   `*PROPERTIES,XXXXX` → `*MAPPINGS,` (SIN conteo) → `*MODELDEFS[,XXXXX]` →
   `*SCRIPT ` … `*ENDSCRIPT` → `*PARTLIST[,XXXXX]` → `*NETLIST[,XXXXX]`
   (backpatch `XXXXX`, `#%05d`); excluye props `DSN_*` (strncmp); separadores
   ` : ` y `, `. `pmodel::emit` replica todo (MAPPINGS bare, ENDSCRIPT,
-  filtro DSN_*). (RVA **0x55f0** — corrección: 0x17af0 era
-  file-offset de otra build): emite `*PROPERTIES,XXXXX\n` (conteo como
-  placeholder a rellenar), itera props excluyendo `DSN_*`. Patrón writer:
-  sección + backpatch de conteo.
+  filtro DSN_*).
 - `read_parts` (Ghidra por nombre): getline loop; `getpropname('=')` +
   `getstr` → `PROPLIST::add`; `VALUE` defaulteado si falta.
   `pmodel::partlist` replica la tolerancia (campos faltantes → "").
@@ -100,9 +101,6 @@ Decompiled & applied (loop ledger):
   v1: records = `u32 seq | PString name | u32 pin-count | 2N PStrings |
   footer` — el `u32` previo es **secuencia** (0x28,0x29,0x2A… por record),
   no longitud; tablas de pines son pares planos (U1 = 7 pares).
-  descompilados: I/O por `VFILE` virtual (`vfgetstr`/`vfputstr` para
-  strings Pascal), conteos y luego módulos/hojas (`newmodule`). Confirma
-  el diseño de `pproj::cdb` (strings con longitud + records `{...}`).
 
 ## VSM + PROSPICE (from extracted CHM docs + community + ISIS strings)
 
