@@ -54,6 +54,11 @@ No Labcenter binaries or data are reproduced here.
   `setcdbroot` ↔ `ROOT.CDB` in `pproj`.
 - `CDBCORE::save/load` (`NETLIST.dll`, 0x100088a0/0x100083f0, 442/304 B)
   descompilados: I/O por `VFILE` virtual (`vfgetstr`/`vfputstr` para
+  strings Pascal), conteos y luego módulos/hojas (`newmodule`). `pproj::cdb`
+  v1: records = `u32 seq | PString name | u32 pin-count | 2N PStrings |
+  footer` — el `u32` previo es **secuencia** (0x28,0x29,0x2A… por record),
+  no longitud; tablas de pines son pares planos (U1 = 7 pares).
+  descompilados: I/O por `VFILE` virtual (`vfgetstr`/`vfputstr` para
   strings Pascal), conteos y luego módulos/hojas (`newmodule`). Confirma
   el diseño de `pproj::cdb` (strings con longitud + records `{...}`).
 

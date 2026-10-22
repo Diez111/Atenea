@@ -23,9 +23,18 @@ pub struct PString {
     pub text: String,
 }
 
-/// One component entry.
+/// One component entry: sequence number + refdes + pin table.
+///
+/// Verified on real `ROOT.CDB` (`Isistut.pdsprj`, 5371 B): records are
+/// `u32 seq | PString name | u32 pin-count | 2N PStrings | footer` where
+/// `seq` increments per record (`0x28, 0x29, 0x2a, …` — a sequence
+/// number, NOT a VFILE length), pin tables are plain `(name, number)`
+/// pairs (e.g. 7-pin `U1`: `POS IP=3 NEG IP=2 OP=6 V+=7 V-=4 ON1=1
+/// ON2=5`), and footers hold `00`-padding + flags + `ffffffff`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Component {
+    /// Record sequence number (`u32` immediately before the name).
+    pub seq: u32,
     /// Reference designator (`U1`, `R3`).
     pub name: String,
     /// `(pin name, pin number)` pairs; number may be empty.
@@ -92,6 +101,7 @@ fn scan_component(data: &[u8], at: usize, out: &mut Vec<Component>) -> Option<us
         return None;
     }
     out.push(Component {
+        seq: u32le(data, at.saturating_sub(4)).unwrap_or(0),
         name: name.text,
         pins,
     });
@@ -108,71 +118,10 @@ pub fn parse(data: &[u8]) -> Cdb {
 
     let mut components = Vec::new();
     let mut i = 16usize;
-    while i + 4 <= data.len() {
-        // VFILE framing first: `u32` length + exactly that many bytes
-        // holding `PString name + u32 pin-count + 2N PStrings`. The strict
-        // form validates synthetic fixtures; real `ROOT.CDB` pin tables
-        // (e.g. 7-pin `U1`) carry extra per-pin bytes, so a bounded
-        // heuristic rescan covers what framing rejects.
-        let mut consumed = false;
-        if let Some(frame_len) = u32le(data, i)
-            && let frame_len = frame_len as usize
-            && (8..=1 << 20).contains(&frame_len)
-            && let end = i.saturating_add(4).saturating_add(frame_len)
-            && end <= data.len()
-            && let Some((name, after_name)) = pstring(data, i + 4, false)
-            && after_name < end
-            && let Some(n) = u32le(data, after_name)
-            && n <= 128
-        {
-            let mut pins = Vec::new();
-            let mut j = after_name + 4;
-            let mut ok = true;
-            for _ in 0..n {
-                let Some((pn, j1)) = pstring(data, j, false) else {
-                    ok = false;
-                    break;
-                };
-                let Some((num, j2)) = pstring(data, j1, true) else {
-                    ok = false;
-                    break;
-                };
-                if j2 > end {
-                    ok = false;
-                    break;
-                }
-                pins.push((pn.text, num.text));
-                j = j2;
-            }
-            // Exact frame: pins consume the whole window.
-            if ok && !pins.is_empty() && j == end {
-                components.push(Component {
-                    name: name.text,
-                    pins,
-                });
-                i = end;
-                continue;
-            }
-            consumed = true;
-        }
-        if consumed {
-            // Framed but not a strict component (sheet name, padding,
-            // complex pin table): advance past the length word; the
-            // heuristic below rescans the window for simple records.
-            let end = i
-                .saturating_add(4)
-                .saturating_add(u32le(data, i).unwrap_or(0) as usize);
-            let mut k = i + 4;
-            while k + 4 <= end.min(data.len()) {
-                if let Some(past) = scan_component(data, k, &mut components) {
-                    k = past;
-                } else {
-                    k += 1;
-                }
-            }
-            i = end.min(data.len()).max(i + 1);
-            continue;
-        }
+    while i < data.len() {
+        // Records: `u32 seq | PString name | u32 pin-count | 2N PStrings |
+        // footer`. The scanner validates structure; `seq` is captured
+        // from the 4 bytes before the name.
         if let Some(past) = scan_component(data, i, &mut components) {
             i = past;
         } else {
@@ -222,7 +171,7 @@ mod tests {
     /// Synthetic record mirroring the observed `U1` layout.
     fn sample() -> Vec<u8> {
         let mut v = vec![4u8, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-        v.extend_from_slice(&[0x13, 0, 0, 0]); // length: exact frame
+        v.extend_from_slice(&[0x13, 0, 0, 0]); // seq (record sequence number)
         v.push(2);
         v.extend_from_slice(b"U1");
         v.extend_from_slice(&[2u8, 0, 0, 0]); // 2 pins
@@ -265,7 +214,7 @@ mod tests {
     #[test]
     fn two_components_and_records() {
         let mut v = vec![4u8, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
-        v.extend_from_slice(&[0x0f, 0, 0, 0]); // length: exact frame
+        v.extend_from_slice(&[0x0f, 0, 0, 0]); // seq (record sequence number)
         v.push(2);
         v.extend_from_slice(b"R1");
         v.extend_from_slice(&[2u32.to_le_bytes()].concat());
