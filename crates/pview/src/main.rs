@@ -1668,6 +1668,11 @@ impl App {
 }
 
 impl eframe::App for App {
+    fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
+        // Window clear color: ISIS light chrome, never the dark default.
+        egui::Color32::from_rgb(214, 224, 236).to_normalized_gamma_f32()
+    }
+
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         // ISIS chrome is always light: pin the theme preference AND the
         // visuals every frame so the desktop theme can never bleed through.
