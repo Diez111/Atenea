@@ -38,11 +38,12 @@ Decompiled & applied (loop ledger):
 - [ ] `NETLIST::read_models/read_props/sortnets` — pendientes menores
 - [ ] `ISIS.DLL` factory loader — es GetProcAddress (sin función única);
   mecanismo documentado + espejado en `vsm-host` ✓
-- [ ] símbolos COMPONENT vectoriales — records `02 7f COMPONENT\0` (30 en
-  siggen, `plib::symbols` v0: 249 vértices); diferencial 2026-10-22:
-  payloads se repiten por template, posible `u32 count` primero
-  (ej. `04 00 00 00` + pares i32 en grilla 0.05"/0.1"), registrador
-  siguiente `00 02 22 …`. Strokes/pen aún TBD.
+- [x] símbolos: directorio completo `02 7F 00 LEN NAME 01 19`
+  (298 records, 11 templates: COMPONENT/WIRE/BUS/TAPE/GENERATOR/
+  TERMINAL/PIN/PORT/MARKER/Panel/VPROBE; 1627 vértices) —
+  `plib::symbols` generalizado a todos los templates; familias
+  `02 22` (primitiva) vs `02 1B-23` (markers/pins/ports); ref `7F`
+  vs instancia `67/7B/7D/7E`. Strokes/pen aún TBD.
 - [ ] pads LYT — records `02 7f` localizados, campos TBD
 
 - `BIN/ISIS.DLL` (PE32, sha256 `e0cec780…`): 3040 procedures, 3108 strings.

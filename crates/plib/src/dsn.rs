@@ -196,29 +196,32 @@ pub fn placements(data: &[u8]) -> Vec<Placed> {
     out
 }
 
-/// One vector-stroke symbol record (`COMPONENT` graphic primitive).
+/// One graphic symbol record: template name + candidate vertices.
 ///
-/// Layout (observed, `siggen.DSN`): a `02 7F` marker + literal
-/// `COMPONENT\0`, preceded by a fixed binary header and followed by a
-/// payload of little-endian `i32` values. Coordinates that fall inside
-/// an expanded wire bounding box are kept as candidate vertices; the
-/// exact stroke encoding (lines vs rects, pen, layer) is still open.
+/// Template directory form (verified `siggen.DSN`): `02 7F 00 LEN NAME
+/// 01 19` enumerates `COMPONENT/PIN/PORT/MARKER/ACTUATOR/INDICATOR/
+/// VPROBE/IPROBE/TAPE/GENERATOR/TERMINAL/SUBCIRCUIT/2D GRAPHIC/WIRE
+/// DOT/WIRE/BUS WIRE/Panel/SUBCKT`. Records carry `02 7F <NAME>\0`
+/// (template ref) or `02 7B/67/7D/7E <NAME>\0` (placed instance).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Symbol {
-    /// Absolute file offset of the `COMPONENT` marker.
+    /// Template name (`COMPONENT`, `GENERATOR`, `TERMINAL`, ...).
+    pub template: String,
+    /// Absolute file offset of the record marker.
     pub offset: usize,
     /// Candidate vertices `(x, y)` in DSN internal units.
     pub vertices: Vec<(i32, i32)>,
 }
 
-/// Marker preceding every graphic `COMPONENT` record.
-const COMPONENT_MARK: &[u8] = b"\x02\x7fCOMPONENT\0";
+/// Marker prefix preceding every graphic template record.
+const SYMBOL_MARK: &[u8] = b"\x02\x7f";
 /// Maximum payload bytes scanned per record.
 const SYMBOL_SCAN_LEN: usize = 128;
 /// Maximum vertices kept per record.
 const SYMBOL_MAX_VERTS: usize = 32;
 
-/// Extract graphic `COMPONENT` records with candidate vertices.
+/// Extract graphic template records (`02 7F <NAME>\0`) with candidate
+/// vertices.
 ///
 /// A vertex is an `i32` pair with both coordinates inside `bbox` (given
 /// as `(xmin, ymin, xmax, ymax)`, typically the wire bbox expanded by a
@@ -227,14 +230,28 @@ const SYMBOL_MAX_VERTS: usize = 32;
 pub fn symbols(data: &[u8], bbox: Option<(i32, i32, i32, i32)>) -> Vec<Symbol> {
     let mut out = Vec::new();
     let mut i = 0;
-    while i < data.len() {
+    while i + 3 < data.len() {
         let Some(pos) = data[i..]
-            .windows(COMPONENT_MARK.len())
-            .position(|w| w == COMPONENT_MARK)
+            .windows(SYMBOL_MARK.len())
+            .position(|w| w == SYMBOL_MARK)
         else {
             break;
         };
-        let base = i + pos + COMPONENT_MARK.len();
+        let at = i + pos + SYMBOL_MARK.len();
+        // Template name: ASCII up to NUL, 1..=24 chars.
+        let name_end = (at..(at + 25).min(data.len()))
+            .find(|&k| data[k] == 0)
+            .unwrap_or(at);
+        let name = &data[at..name_end];
+        if name.is_empty()
+            || name.len() > 24
+            || !name.iter().all(|b| *b == 0x20 || (0x21..=0x7E).contains(b))
+        {
+            i = at;
+            continue;
+        }
+        let template = String::from_utf8_lossy(name).into_owned();
+        let base = name_end + 1;
         let end = (base + SYMBOL_SCAN_LEN).min(data.len());
         let mut vertices = Vec::new();
         let mut j = base;
@@ -250,13 +267,11 @@ pub fn symbols(data: &[u8], bbox: Option<(i32, i32, i32, i32)>) -> Vec<Symbol> {
             }
             j += 8;
         }
-        // Drop markers with no plausible geometry (e.g. text-only hits).
-        if !(vertices.is_empty() && bbox.is_some()) {
-            out.push(Symbol {
-                offset: i + pos,
-                vertices,
-            });
-        }
+        out.push(Symbol {
+            template,
+            offset: i + pos,
+            vertices,
+        });
         i = base;
     }
     out
@@ -525,13 +540,18 @@ mod tests {
         };
         let bbox = (-18_415_000, -8_255_000, 16_637_000, 6_477_000);
         let syms = symbols(&data, Some(bbox));
-        // 125 bare COMPONENT hits were counted by independent scan;
-        // only markers with plausible geometry survive.
-        // Independent byte scan counts exactly 30 `02 7f COMPONENT` markers.
-        assert_eq!(syms.len(), 30);
-        // Every record yields vertices on the 0.05"/0.1" grid.
+        // Full template directory, not just COMPONENT: 298 records in
+        // 11 template kinds (independent byte scan agrees).
+        let mut kinds = std::collections::BTreeMap::new();
+        for s in &syms {
+            *kinds.entry(s.template.clone()).or_insert(0) += 1;
+        }
+        assert_eq!(syms.len(), 298);
+        assert_eq!(kinds.get("COMPONENT"), Some(&30));
+        assert_eq!(kinds.get("WIRE"), Some(&120));
+        assert_eq!(kinds.len(), 11);
         let total: usize = syms.iter().map(|s| s.vertices.len()).sum();
-        assert_eq!(total, 249);
+        assert_eq!(total, 1627);
         // Deterministic: same input, same output.
         assert_eq!(syms, symbols(&data, Some(bbox)));
     }
