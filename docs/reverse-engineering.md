@@ -55,6 +55,10 @@ No Labcenter binaries or data are reproduced here.
   `[NC MOD PR BT OT IT GT LBL PP PD PU TS IO OP IP PS DEFNET …]`
   (índices 0–16). Rol `0xe`=IP se remapea a `0xd`=OP y va a `addlabel`
   en vez de `addpin`. Roles <8 → pin, <0xf → net.
+- `resolve` (`void NETLIST::resolve(char const*)`, Ghidra): recorre partes,
+  lee props `MODEL`/`MODFILE` y resuelve contra la DB de modelos;
+  usa `CDBCORE` en stack para el walk. Nuestra `asim` hoy rechaza
+  `Q/D/U` (futura vía: resolver `MODEL`/`MODFILE` con `pmodel::modeldefs`).
 - Export table (515 exports; RVAs de parse manual NO verificadas —
   el parseo crudo desalinea `AddressOfFunctions`: Ghidra-por-nombre es la
   fuente de verdad). Nombres confirmados por string: `parse_field`,
