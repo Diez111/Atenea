@@ -104,6 +104,13 @@ No Labcenter binaries or data are reproduced here.
   wire_wire, wire_pin, wire_smd, wire_via).
 - Optimizer: gate-swap (`Ratsnest reduced by %g inches in %d passes`).
 
+.UI icons (negative result, 2026-10-22): PE resource sections in
+PDS.EXE/ISIS.DLL/ARES.DLL are 1536 bytes each (version info only, no
+`RT_ICON`/`RT_BITMAP` gallery); no `.rcc`/`.qrc`/toolbar PNGs ship with
+the product (Qt4 `QtGui4.dll` draws chrome/icons in code). Conclusion:
+no extractable icon set exists — native UI draws its own glyphs
+(recepción limpia, no copied assets).
+
 ## Third-party tools (native replacement path)
 
 ### ELECTRA router (ELECTRA.DLL, strings dump)
