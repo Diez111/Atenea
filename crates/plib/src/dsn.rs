@@ -515,7 +515,7 @@ mod tests {
         assert_eq!(t[0].group, [0xcc, 0xff, 0x00]);
         // Different groups do not chain.
         v[2] = 0x01;
-        assert!(super::lyt_tracks(&v).is_empty());
+        assert!(super::lyt_tracks(&v).is_empty(), "groups");
     }
 
     #[test]
