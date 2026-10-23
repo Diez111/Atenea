@@ -177,6 +177,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   public, @0x10012930): hoja vía tabla `+0xf0` (índice `*(sheet+8)`),
   módulo en `+0x19c`, flags `+0x34`, `+0x38`; vacía SLIST `+0x1a0`
   (staging de netprops).
+- `NETLIST::getpwrnets` (`?getpwrnets@NETLIST@@QAEXAAV?$GDPA@UNET@@@@@Z`,
+  public, @0x10015f00): recorre array de nets (`+0x184`, count
+  `+0x180`); por net escanea pines (stride `0x48`) buscando
+  `ELECTYPES==0xd` (OP) → `DPA::add`. Vendor define power-net por
+  ROL (pines OP de terminales POWER), no por nombre — nuestro
+  `validate` usa heurística de nombres (`PWRRAILS.INI`); equivalencia
+  documentada, no identidad.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
