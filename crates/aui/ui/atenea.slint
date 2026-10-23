@@ -54,16 +54,16 @@ export component Atenea inherits Window {
             HorizontalBox {
                 padding: 2px;
                 spacing: 0;
-                Button { text: "File"; height: 26px; clicked => { root.open-file(""); } }
-                Button { text: "View"; height: 26px; clicked => { root.tool-selected("view-tables"); } }
-                Button { text: "Edit"; height: 26px; clicked => { root.tool-selected("edit"); } }
-                Button { text: "Design"; height: 26px; clicked => { root.tool-selected("sheet-props"); } }
-                Button { text: "Graph"; height: 26px; clicked => { root.tool-selected("view-sim"); } }
-                Button { text: "Debug"; height: 26px; clicked => { root.tool-selected("debug"); } }
-                Button { text: "Library"; height: 26px; clicked => { root.pick-device(); } }
-                Button { text: "Template"; height: 26px; clicked => { root.tool-selected("template"); } }
-                Button { text: "System"; height: 26px; clicked => { root.tool-selected("system"); } }
-                Button { text: "Help"; height: 26px; clicked => { root.tool-selected("about"); } }
+                Button { text: "File"; height: 26px; width: 86px; clicked => { root.open-file(""); } }
+                Button { text: "View"; height: 26px; width: 86px; clicked => { root.tool-selected("view-tables"); } }
+                Button { text: "Edit"; height: 26px; width: 86px; clicked => { root.tool-selected("edit"); } }
+                Button { text: "Design"; height: 26px; width: 86px; clicked => { root.tool-selected("sheet-props"); } }
+                Button { text: "Graph"; height: 26px; width: 86px; clicked => { root.tool-selected("view-sim"); } }
+                Button { text: "Debug"; height: 26px; width: 86px; clicked => { root.tool-selected("debug"); } }
+                Button { text: "Library"; height: 26px; width: 86px; clicked => { root.pick-device(); } }
+                Button { text: "Template"; height: 26px; width: 86px; clicked => { root.tool-selected("template"); } }
+                Button { text: "System"; height: 26px; width: 86px; clicked => { root.tool-selected("system"); } }
+                Button { text: "Help"; height: 26px; width: 86px; clicked => { root.tool-selected("about"); } }
             }
         }
         // Row 1: toolbar with real ISIS icons.
@@ -73,10 +73,10 @@ export component Atenea inherits Window {
             HorizontalBox {
                 padding: 2px;
                 spacing: 2px;
-                Button { text: "Open"; icon: @image-url("../assets/i1_16x16.png"); height: 28px; clicked => { root.open-file(""); } }
-                Button { text: "Pick"; icon: @image-url("../assets/i11_16x16.png"); height: 28px; clicked => { root.pick-device(); } }
-                Button { text: "ERC"; icon: @image-url("../assets/i13_16x16.png"); height: 28px; clicked => { root.run-erc(); } }
-                Button { text: "Sim"; icon: @image-url("../assets/i15_16x16.png"); height: 28px; clicked => { root.run-sim(); } }
+                Button { text: "Open"; icon: @image-url("../assets/i1_16x16.png"); height: 28px; width: 84px; clicked => { root.open-file(""); } }
+                Button { text: "Pick"; icon: @image-url("../assets/i11_16x16.png"); height: 28px; width: 84px; clicked => { root.pick-device(); } }
+                Button { text: "ERC"; icon: @image-url("../assets/i13_16x16.png"); height: 28px; width: 84px; clicked => { root.run-erc(); } }
+                Button { text: "Sim"; icon: @image-url("../assets/i15_16x16.png"); height: 28px; width: 84px; clicked => { root.run-sim(); } }
                 Text { text: "  Layer:"; color: #1c2733; font-size: 11px; vertical-alignment: center; }
                 Button { text: root.layer; height: 28px; }
             }
