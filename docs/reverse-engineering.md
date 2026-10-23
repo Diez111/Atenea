@@ -208,6 +208,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::getpwrnets` (`?getpwrnets@NETLIST@@QAEXAAV?$GDPA@UNET@@@@@Z`)
   enumera power-nets (base del `validate` de rails + default `POWER`).
 - `NETLIST::{zap,reset}` (`?zap/reset@NETLIST@@QAEXXZ`): clear/reset.
+- `mdf_id` (`?mdf_id@@3QBDB`): es DATO exportado (buffer char),
+  no función — por eso no hay `parse`/decompile.
 - Accessors: `netptr(NET*,int)` / `scriptptr(NET_SCRIPT*,int)` /
   `addptr/addscript/addnprop/addmoddata(NET_PART*,MODDATA*)` /
   `addtraceprop(ELEMENT*,PROPLIST*,...,TRACEMODEFLAGS)` /
