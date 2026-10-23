@@ -78,6 +78,7 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] plantillas: .LTF = mismo magic LYT, .DTF = variante DSN (dsn_dump las abre, 0 wires: hojas vacías); .pjnt = XHTML.
 - [x] PACKAGE (9) y SYMBOL (2) libs: mismo DIR stride-80/nombres-64 (CONNECTORS.LIB: 230 entradas, parse_lib_dir sirve sin cambios) + cuerpos 02-frames/braces; .STY = estilos pad ASCII; .VML = modelos 3D binarios.
 - [x] cuerpos .LIB: mismo framing 02 xx + scripts {PREFIX=}/{PINDEFAULT}/{PROPDEFS}/{PROGRAM}/{MODDLL} (plib device_props, 8 KiB window) - link device->package->modelo; aengine lo expone en Pick Device.
+- [x] pen styles (siggen.DSN, `Symbol.style`): COMPONENT/GENERATOR=0x22, TERMINAL=0x21, MARKER/VPROBE=0x1f, PORT/TAPE=0x1d, WIRE grueso=0x23; style=0 en records con header bbox-first (pen default o en otro offset).
 - [x] símbolos: directorio completo `02 7F 00 LEN NAME 01 19`
   (298 records, 11 templates: COMPONENT/WIRE/BUS/TAPE/GENERATOR/
   TERMINAL/PIN/PORT/MARKER/Panel/VPROBE; 1627 vértices) —
