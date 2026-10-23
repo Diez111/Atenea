@@ -105,7 +105,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   .nodeset .disto .noise .four/.fourier .ic .ac .pz .dc .tf .tran
   .subckt/.ends/.end .options/.option/.opt .sens .probe`
   (`.TEMP` obsoleta: usar `.options TEMP/TNOM).
-- [x] plantillas: .LTF = mismo magic LYT, .DTF = variante DSN (dsn_dump las abre, 0 wires: hojas vacías); .pjnt = XHTML.
+- [x] editor de propiedades: `PROPDEFS.INI` = 23 defs con tipos
+  (`INDEXED STRING`/`STRING`/`YESNO`/`FLOAT`/`PACKAGE,0`/
+  `READONLY`/`HIDDEN`/`HIDDEN TRACEMODE`); diálogo `=PROPSTEXT`/`=PROPS`
+  (ver `docs/uispecs.md`). .DTF = variante DSN (dsn_dump las abre, 0 wires: hojas vacías); .pjnt = XHTML.
 - [x] PACKAGE (9) y SYMBOL (2) libs: mismo DIR stride-80/nombres-64 (CONNECTORS.LIB: 230 entradas, parse_lib_dir sirve sin cambios) + cuerpos 02-frames/braces; .STY = estilos pad ASCII; .VML = modelos 3D binarios.
 - [x] cuerpos .LIB: mismo framing 02 xx + scripts {PREFIX=}/{PINDEFAULT}/{PROPDEFS}/{PROGRAM}/{MODDLL} (plib device_props, 8 KiB window) - link device->package->modelo; aengine lo expone en Pick Device.
 - [x] pen block = constante por template (`34...00 02 22 00 00 00 00 60 4f 00 00 00 00 c0 00 01 ff ff ff 00 ff ff ff 00` idéntico en todos los COMPONENT) — el style id basta para render; strokes = orden de vértices (polilínea implícita, TBD verificar).
@@ -346,6 +349,10 @@ no extractable icon set exists — native UI draws its own glyphs
 - SDFGEN.EXE (`Labcenter SDF netlist converter`):
   `SDFGEN <filename> <format>` (ej. `design.net MULTIWIRE`),
   convierte netlists ajenas a SDF (`*NETLIST,%d`, FORMAT 2.0→3.0).
+  Solo 2 formatos de entrada: MULTIWIRE + TANGO.
+- Red VSM: NICS.DLL (ENC28J60 SPI + RTL8019AS NE2000, primitiva
+  DIGITAL; props NET_CARD/MAC_ADDR/CHECKSUM); no hay USB VSM
+  (solo HELP + mecánico 3D).
 - LYTCVT.DLL: `CONVERTER:` old-layout (`File version is %1.2f -
   cannot load!`, `Cannot rename existing .LYT`) — LYT es versionado;
   DSNCVT40.DLL: `ISIS IV Design Converter` (legacy DSN→v8).
