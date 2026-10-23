@@ -109,6 +109,65 @@ fn node(net: &str) -> String {
     }
 }
 
+/// Validate a document before simulation (mirrors `NETLIST::validate`).
+///
+/// Returns `(errors, warnings)` in file order. Errors: duplicate refs,
+/// distinct power-rail classes shorted in one net (PWRRAILS.INI classes:
+/// `VCC/VDD`, `GND/VSS`, `VEE`). Warnings: 1-pin nets (except power
+/// nets and `NC` roles), empty nets, parts with no net pins.
+#[must_use]
+pub fn validate(doc: &pmodel::Document) -> (Vec<String>, Vec<String>) {
+    let mut errors = Vec::new();
+    let mut warns = Vec::new();
+    let parts = doc.partlist().unwrap_or_default();
+    let nets = doc.netlist().unwrap_or_default();
+    let mut seen = std::collections::HashSet::new();
+    for p in &parts {
+        if !seen.insert(p.reference.clone()) {
+            errors.push(format!("duplicate ref: {}", p.reference));
+        }
+    }
+    let class_of = |r: &str| match r {
+        "VCC" | "VDD" | "+5V" => "VCC/VDD",
+        "GND" | "VSS" => "GND",
+        "VEE" | "-5V" => "VEE",
+        _ => "",
+    };
+    for n in &nets {
+        let mut classes: Vec<&str> = n
+            .pins
+            .iter()
+            .map(|(r, _, _)| class_of(r.as_str()))
+            .filter(|c| !c.is_empty())
+            .collect();
+        classes.sort_unstable();
+        classes.dedup();
+        if classes.len() >= 2 {
+            errors.push(format!(
+                "Power rails '{}' and '{}' interconnected in net {}",
+                classes[0], classes[1], n.id
+            ));
+        }
+        if n.pins.len() == 1 && !["VCC", "GND", "VDD", "VSS"].contains(&n.id.as_str()) {
+            let role = n.pins[0].1.as_str();
+            if role != "NC" {
+                warns.push(format!("UNDRIVEN: {} (1 pin)", n.id));
+            }
+        } else if n.pins.is_empty() {
+            warns.push(format!("net {}: flotante (0 pines)", n.id));
+        }
+    }
+    for p in &parts {
+        let in_net = nets
+            .iter()
+            .any(|n| n.pins.iter().any(|(r, _, _)| r == &p.reference));
+        if !in_net {
+            warns.push(format!("parte {}: sin pines en netlist", p.reference));
+        }
+    }
+    (errors, warns)
+}
+
 /// Convert an SDF `*PARTLIST`/`*NETLIST` document into ngspice element
 /// lines (no title, no analysis, no `.end` — see [`simulate`]).
 ///
@@ -336,6 +395,13 @@ pub fn simulate_tran(
     t_end: &str,
     vars: &[&str],
 ) -> Result<Trace, SimError> {
+    let (errs, _warns) = validate(doc);
+    if !errs.is_empty() {
+        return Err(SimError::BadNetlist(format!(
+            "validate: {}",
+            errs.join("; ")
+        )));
+    }
     let netlist = to_cir(doc, title, dt, t_end, vars)?;
     let out = run(&netlist)?;
     trace(&out, vars.len()).ok_or_else(|| SimError::BadNetlist("no trace table".to_owned()))
@@ -344,6 +410,27 @@ pub fn simulate_tran(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn validate_clean_rc_and_shorted_rails() {
+        let doc = pmodel::parse(RC_SDF).unwrap();
+        let (errs, _warns) = validate(&doc);
+        assert!(errs.is_empty(), "{errs:?}");
+        let bad = pmodel::parse(
+            "ISIS SCHEMATIC DESCRIPTION FORMAT 4.5\n====\n*PARTLIST,2\nV1,VSRC,5\nR1,RES,9k1\n*NETLIST,2\nSHORT,2\nVCC,PS,1\nGND,PS,1\nOUT,2\nV1,PS,2\nR1,PS,1\n",
+        )
+        .unwrap();
+        let (errs, _) = validate(&bad);
+        assert_eq!(errs.len(), 1);
+        assert!(errs[0].contains("interconnected"), "{}", errs[0]);
+        // validate() gates simulation with a vendor-style message.
+        assert!(
+            simulate_tran(&bad, "t", "10u", "5m", &["v(OUT)"])
+                .unwrap_err()
+                .to_string()
+                .contains("validate:")
+        );
+    }
 
     const RC_SDF: &str = "ISIS SCHEMATIC DESCRIPTION FORMAT 4.5
 =====================================
