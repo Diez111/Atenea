@@ -392,6 +392,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `getinitval(IINSTANCE*, pin, long)` (@0x1001fc54): lee prop del
   pin vía vtable+8; valor `RANDOM` → `srand/rand` con estado
   `DAT_1003259c` (xorshift) — iniciales aleatorios deterministas.
+- `proptypenames` (`?proptypenames@PROPDEF@@2PAPBDA`): array static
+  de `char const*` (dato, como `mdf_id`) — vocabulario de tipos.
+  `PROPTEXT`/`PROPLIST` (`putblock`/`addpair`) viven en `LXLCORE.DLL`
+  (imports, no código NETLIST).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
