@@ -73,6 +73,9 @@ pub struct Section {
     pub name: String,
     /// Declared row count (advisory; not enforced).
     pub count: usize,
+    /// Tokens after the count (e.g. `MAPPINGS` map-table name from
+    /// `MAP ON COMPARATOR`, `PARTLIST` part kind). May be empty.
+    pub extra: String,
     /// Body lines, trimmed, empties dropped.
     pub lines: Vec<String>,
 }
@@ -179,15 +182,14 @@ pub fn parse(text: &str) -> Result<Document, ParseError> {
             if let Some(sec) = current.take() {
                 sections.push(sec);
             }
-            // Header: `NAME[,count[,extra...]]` — count is the first token.
-            // Vendor reality (`NETLIST::write`): `*MAPPINGS,` has no count,
-            // `*SCRIPT` has no comma at all, and un-backpatched files carry
-            // `XXXXX`; all mean 0.
+            // Header: `NAME[,count[,extra...]]` — count is the first token,
+            // the rest (e.g. MAPPINGS map name) is kept verbatim.
             let (name, after) = match rest.split_once(',') {
                 Some((n, a)) => (n, a),
                 None => (rest, ""),
             };
-            let count_str = after.split(',').next().unwrap_or("").trim();
+            let mut toks = after.split(',');
+            let count_str = toks.next().unwrap_or("").trim();
             let count = if count_str.is_empty() || count_str == "XXXXX" {
                 0
             } else {
@@ -195,9 +197,11 @@ pub fn parse(text: &str) -> Result<Document, ParseError> {
                     .parse()
                     .map_err(|_| ParseError::BadSection(line.to_owned()))?
             };
+            let extra: Vec<&str> = toks.map(str::trim).collect();
             current = Some(Section {
                 name: name.trim().to_owned(),
                 count,
+                extra: extra.join(","),
                 lines: Vec::new(),
             });
             continue;
@@ -488,6 +492,8 @@ U1,OP,6
     fn mappings_and_starred_net_subheaders() {
         let doc = parse("LISA MODEL DESCRIPTION FORMAT 6.1\n====\n*MODELDEFS,1\nTTL : RHI=50, RLO=5\n*MAPPINGS,2,COMPARATOR\nA=1\nB=2\n*NETLIST,2\n*VCC,1\n*VCC,GT\n*GND,1\nGND,GT\n").unwrap();
         assert_eq!(doc.section("MAPPINGS").unwrap().lines, vec!["A=1", "B=2"]);
+        // Map-table name from `MAP ON COMPARATOR` survives the header.
+        assert_eq!(doc.section("MAPPINGS").unwrap().extra, "COMPARATOR");
         assert_eq!(doc.modeldefs()[0].name, "TTL");
         let nets = doc.netlist().unwrap();
         assert_eq!(nets.len(), 2);
