@@ -274,10 +274,14 @@ pub struct Symbol {
     /// Style id from the pen block (`34 00 00 00 00 02 <STYLE>`, e.g.
     /// `0x21` TERMINAL, `0x22` COMPONENT). `0` when absent.
     pub style: u32,
+    /// True for placed instances (`02 67/7b/7d/7e`), false for template
+    /// refs (`02 7f`).
+    pub instance: bool,
 }
 
-/// Marker prefix preceding every graphic template record.
-const SYMBOL_MARK: &[u8] = b"\x02\x7f";
+/// Marker bytes opening a graphic record: `02 <TAG>` where TAG is
+/// `0x7f` (template ref) or `0x67/0x7b/0x7d/0x7e` (placed instance).
+const SYMBOL_TAGS: &[u8] = &[0x7f, 0x67, 0x7b, 0x7d, 0x7e];
 /// Maximum payload bytes scanned per record.
 const SYMBOL_SCAN_LEN: usize = 128;
 /// Maximum vertices kept per record.
@@ -295,12 +299,12 @@ pub fn symbols(data: &[u8], bbox: Option<(i32, i32, i32, i32)>) -> Vec<Symbol> {
     let mut i = 0;
     while i + 3 < data.len() {
         let Some(pos) = data[i..]
-            .windows(SYMBOL_MARK.len())
-            .position(|w| w == SYMBOL_MARK)
+            .windows(2)
+            .position(|w| w[0] == 0x02 && SYMBOL_TAGS.contains(&w[1]))
         else {
             break;
         };
-        let at = i + pos + SYMBOL_MARK.len();
+        let at = i + pos + 2;
         // Template name: ASCII up to NUL, 1..=24 chars.
         let name_end = (at..(at + 25).min(data.len()))
             .find(|&k| data[k] == 0)
@@ -379,6 +383,7 @@ pub fn symbols(data: &[u8], bbox: Option<(i32, i32, i32, i32)>) -> Vec<Symbol> {
             offset: i + pos,
             vertices,
             style: style_of(data, base),
+            instance: data[i + pos + 1] != 0x7f,
         });
         i = base;
     }
@@ -740,12 +745,15 @@ mod tests {
         for s in &syms {
             *kinds.entry(s.template.clone()).or_insert(0) += 1;
         }
-        assert_eq!(syms.len(), 298);
-        assert_eq!(kinds.get("COMPONENT"), Some(&30));
+        assert_eq!(syms.len(), 321);
+        assert_eq!(kinds.get("COMPONENT"), Some(&37));
         assert_eq!(kinds.get("WIRE"), Some(&120));
-        assert_eq!(kinds.len(), 11);
+        assert_eq!(kinds.get("2D GRAPHIC"), Some(&7));
+        assert_eq!(kinds.len(), 12);
+        // 23 placed instances (02 67/7b/7d/7e) vs 298 template refs.
+        assert_eq!(syms.iter().filter(|s| s.instance).count(), 23);
         let total: usize = syms.iter().map(|s| s.vertices.len()).sum();
-        assert_eq!(total, 1627);
+        assert_eq!(total, 1799);
         // Deterministic: same input, same output.
         assert_eq!(syms, symbols(&data, Some(bbox)));
     }
