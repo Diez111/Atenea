@@ -1,6 +1,8 @@
-// Atenea shell, Proteus 8 look: explicit LIGHT palette (COSMIC dark
-// must not bleed in), compact toolbars, left preview/object-selector,
-// tabs + editing window + status bar. Data from aengine only.
+// Atenea shell: flat robust layout, explicit light palette.
+// Row0: menu bar (custom buttons, always visible).
+// Row1: toolbar with real ISIS icons.
+// Row2: left object panel (fixed 200px) + center tabs.
+// Row3: status bar.
 import { HorizontalBox, VerticalBox, TabWidget, ListView, LineEdit, Button } from "std-widgets.slint";
 
 export struct PartRow {
@@ -42,46 +44,29 @@ export component Atenea inherits Window {
     callback pick-device();
     callback tool-selected(string);
 
-    MenuBar {
-        Menu {
-            title: "File";
-            MenuItem { title: "Open…"; activated => { root.open-file(""); } }
-        }
-        Menu { title: "View";
-            MenuItem { title: "Tables"; }
-            MenuItem { title: "Graph"; }
-            MenuItem { title: "Esquema"; }
-            MenuItem { title: "Simulate"; }
-        }
-        Menu { title: "Edit"; }
-        Menu {
-            title: "Design";
-            MenuItem { title: "Edit Sheet Properties…"; activated => { root.tool-selected("sheet-props"); } }
-        }
-        Menu {
-            title: "Library";
-            MenuItem { title: "Pick Device…"; activated => { root.pick-device(); } }
-        }
-        Menu { title: "Debug"; }
-        Menu { title: "Template"; }
-        Menu { title: "System"; }
-        Menu {
-            title: "Graph";
-            MenuItem { title: "Add Transient Graph"; activated => { root.tool-selected("graph-transient"); } }
-            MenuItem { title: "Add Frequency Graph"; activated => { root.tool-selected("graph-frequency"); } }
-            MenuItem { title: "Add DC Sweep Graph"; activated => { root.tool-selected("graph-dc"); } }
-            MenuItem { title: "Add AC Sweep Graph"; activated => { root.tool-selected("graph-ac"); } }
-            MenuItem { title: "Run ERC"; activated => { root.run-erc(); } }
-        }
-        Menu {
-            title: "Help";
-            MenuItem { title: "About Atenea"; }
-        }
-    }
     VerticalBox {
         padding: 0;
         spacing: 0;
-        // Toolbar row: compact, light band.
+        // Row 0: menu bar (custom, guaranteed visible).
+        Rectangle {
+            background: #1c2733;
+            height: 30px;
+            HorizontalBox {
+                padding: 2px;
+                spacing: 0;
+                Button { text: "File"; height: 26px; clicked => { root.open-file(""); } }
+                Button { text: "View"; height: 26px; clicked => { root.tool-selected("view-tables"); } }
+                Button { text: "Edit"; height: 26px; clicked => { root.tool-selected("edit"); } }
+                Button { text: "Design"; height: 26px; clicked => { root.tool-selected("sheet-props"); } }
+                Button { text: "Graph"; height: 26px; clicked => { root.tool-selected("view-sim"); } }
+                Button { text: "Debug"; height: 26px; clicked => { root.tool-selected("debug"); } }
+                Button { text: "Library"; height: 26px; clicked => { root.pick-device(); } }
+                Button { text: "Template"; height: 26px; clicked => { root.tool-selected("template"); } }
+                Button { text: "System"; height: 26px; clicked => { root.tool-selected("system"); } }
+                Button { text: "Help"; height: 26px; clicked => { root.tool-selected("about"); } }
+            }
+        }
+        // Row 1: toolbar with real ISIS icons.
         Rectangle {
             background: #dfe6f2;
             height: 34px;
@@ -93,31 +78,16 @@ export component Atenea inherits Window {
                 Button { text: "ERC"; icon: @image-url("../assets/i13_16x16.png"); height: 28px; clicked => { root.run-erc(); } }
                 Button { text: "Sim"; icon: @image-url("../assets/i15_16x16.png"); height: 28px; clicked => { root.run-sim(); } }
                 Text { text: "  Layer:"; color: #1c2733; font-size: 11px; vertical-alignment: center; }
-                Button { text: root.layer; }
+                Button { text: root.layer; height: 28px; }
             }
         }
+        // Row 2: left panel + center.
         HorizontalBox {
             padding: 0;
             spacing: 0;
-            // Left rail: mode tools, compact square buttons.
-            Rectangle {
-                background: #dfe6f2;
-                width: 40px;
-                VerticalBox {
-                    padding: 2px;
-                    spacing: 2px;
-                    Button { text: "➤"; height: 30px; clicked => { root.tool-selected("select"); } }
-                    Button { text: "↖"; height: 30px; clicked => { root.tool-selected("move"); } }
-                    Button { text: "✎"; height: 30px; clicked => { root.tool-selected("wire"); } }
-                    Button { text: "▦"; height: 30px; clicked => { root.tool-selected("bus"); } }
-                    Button { text: "T"; height: 30px; clicked => { root.tool-selected("label"); } }
-                    Button { text: "●"; height: 30px; clicked => { root.tool-selected("probe"); } }
-                }
-            }
-            // Object selector: preview + components list.
             Rectangle {
                 background: #e8edf3;
-                width: 190px;
+                width: 200px;
                 VerticalBox {
                     padding: 3px;
                     spacing: 2px;
@@ -137,7 +107,6 @@ export component Atenea inherits Window {
                     Button { text: "Open IDX…"; clicked => { root.open-lib(); } }
                 }
             }
-            // Center: tabs + editing window.
             VerticalBox {
                 padding: 0;
                 TabWidget {
@@ -188,7 +157,7 @@ export component Atenea inherits Window {
                 }
             }
         }
-        // Status bar: light band, dark text.
+        // Row 3: status bar.
         Rectangle {
             background: #dfe6f2;
             height: 24px;
