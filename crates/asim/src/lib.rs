@@ -168,6 +168,128 @@ pub fn validate(doc: &pmodel::Document) -> (Vec<String>, Vec<String>) {
     (errors, warns)
 }
 
+/// Convert SDF into ngspice lines, mapping `D`/`Q` to ngspice default
+/// models (behavioral fallback).
+///
+/// Vendor DSIM primitives (`OA91`, `TIP31`, ...) ship as compiled model
+/// DLLs with no SPICE deck; only `BC184` (`ZETEX.SML`) and `CA3140`
+/// (`ANALOG.LML`) have vendor decks. Each substitution is reported in
+/// the returned warnings so callers can surface it (never silent).
+/// `U` (ICs) and `X`/`M` stay [`SimError::UnsupportedPart`].
+///
+/// # Errors
+///
+/// [`SimError::BadNetlist`] on missing pins; [`SimError::UnsupportedPart`]
+/// for `U`/`X`/`M`/other letters.
+pub fn elements_with_subs(doc: &pmodel::Document) -> Result<(Vec<String>, Vec<String>), SimError> {
+    let parts = doc
+        .partlist()
+        .map_err(|e| SimError::BadNetlist(e.to_string()))?;
+    let nets = doc
+        .netlist()
+        .map_err(|e| SimError::BadNetlist(e.to_string()))?;
+    let mut pins: HashMap<&str, Vec<&str>> = HashMap::new();
+    for net in &nets {
+        for (rx, _, _) in &net.pins {
+            pins.entry(rx.as_str()).or_default().push(net.id.as_str());
+        }
+    }
+    let mut out = Vec::new();
+    let mut subs = Vec::new();
+    let mut models: Vec<String> = Vec::new();
+    for p in &parts {
+        // Vendor letter comes from the reference (`D1`, `Q1`), NOT from
+        // `kind` (model name: `OA91`, `TIP31`).
+        let letter = p
+            .reference
+            .chars()
+            .next()
+            .unwrap_or('?')
+            .to_ascii_uppercase();
+        let nets_of = pins
+            .get(p.reference.as_str())
+            .ok_or_else(|| SimError::BadNetlist(format!("{} has no pins", p.reference)))?;
+        let num = p
+            .reference
+            .trim_start_matches(|c: char| c.is_ascii_alphabetic());
+        if matches!(letter, 'R' | 'C' | 'L' | 'V' | 'I') {
+            if nets_of.len() != 2 {
+                return Err(SimError::BadNetlist(format!(
+                    "{} expects 2 pins, has {}",
+                    p.reference,
+                    nets_of.len()
+                )));
+            }
+            out.push(format!(
+                "{}{} {} {} {}",
+                letter,
+                num,
+                node(nets_of[0]),
+                node(nets_of[1]),
+                normalize_value(&p.value)
+            ));
+        } else if letter == 'D' {
+            if nets_of.len() != 2 {
+                return Err(SimError::BadNetlist(format!(
+                    "{} expects 2 pins, has {}",
+                    p.reference,
+                    nets_of.len()
+                )));
+            }
+            let model = format!("DMOD_{}", sanitize(&p.kind));
+            out.push(format!(
+                "D{num} {} {} {model}",
+                node(nets_of[0]),
+                node(nets_of[1])
+            ));
+            if !models.contains(&model) {
+                models.push(model.clone());
+                out.push(format!(".MODEL {model} D"));
+                subs.push(format!(
+                    "{}: sin deck SPICE vendor, modelo D default (no OA91 germanio)",
+                    p.reference
+                ));
+            }
+        } else if letter == 'Q' {
+            if nets_of.len() != 3 {
+                return Err(SimError::BadNetlist(format!(
+                    "{} expects 3 pins, has {}",
+                    p.reference,
+                    nets_of.len()
+                )));
+            }
+            let model = format!("QMOD_{}", sanitize(&p.kind));
+            out.push(format!(
+                "Q{num} {} {} {} {model}",
+                node(nets_of[0]),
+                node(nets_of[1]),
+                node(nets_of[2])
+            ));
+            if !models.contains(&model) {
+                models.push(model.clone());
+                out.push(format!(".MODEL {model} NPN"));
+                subs.push(format!(
+                    "{}: sin deck SPICE vendor, modelo NPN default",
+                    p.reference
+                ));
+            }
+        } else {
+            return Err(SimError::UnsupportedPart(format!(
+                "{}(kind {})",
+                p.reference, p.kind
+            )));
+        }
+    }
+    Ok((out, subs))
+}
+
+/// Identifier-safe model suffix (`TIP31` -> `TIP31`, `2N 2222` -> `2N_2222`).
+fn sanitize(s: &str) -> String {
+    s.chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
+        .collect()
+}
+
 /// Convert an SDF `*PARTLIST`/`*NETLIST` document into ngspice element
 /// lines (no title, no analysis, no `.end` — see [`simulate`]).
 ///
@@ -191,8 +313,14 @@ pub fn elements(doc: &pmodel::Document) -> Result<Vec<String>, SimError> {
     }
     let mut out = Vec::new();
     for p in &parts {
-        let kind = p.kind.to_ascii_uppercase();
-        let letter = kind.chars().next().unwrap_or('?');
+        // Vendor letter comes from the reference (`D1`, `Q1`), NOT from
+        // `kind` (which is the model name: `OA91`, `TIP31`, `BC184`).
+        let letter = p
+            .reference
+            .chars()
+            .next()
+            .unwrap_or('?')
+            .to_ascii_uppercase();
         if !matches!(letter, 'R' | 'C' | 'L' | 'V' | 'I') {
             return Err(SimError::UnsupportedPart(format!(
                 "{}(kind {})",
@@ -240,6 +368,30 @@ pub fn to_cir(
     lines.push(format!(".tran {dt} {t_end} uic"));
     lines.push(".end".to_owned());
     Ok(lines.join("\n") + "\n")
+}
+
+/// Build a transient `.cir` with D/Q default-model substitution.
+///
+/// Returns the netlist plus substitution warnings (see
+/// [`elements_with_subs`]).
+///
+/// # Errors
+///
+/// Propagates [`SimError`] from [`elements_with_subs`].
+pub fn to_cir_with_subs(
+    doc: &pmodel::Document,
+    title: &str,
+    dt: &str,
+    t_end: &str,
+    vars: &[&str],
+) -> Result<(String, Vec<String>), SimError> {
+    let mut lines = vec![format!("* {title}")];
+    let (els, subs) = elements_with_subs(doc)?;
+    lines.extend(els);
+    lines.extend(vars.iter().map(|v| format!(".print tran {v}")));
+    lines.push(format!(".tran {dt} {t_end} uic"));
+    lines.push(".end".to_owned());
+    Ok((lines.join("\n") + "\n", subs))
 }
 
 /// Write a `.cir` netlist to disk.
@@ -488,7 +640,7 @@ L1,PS,2
                 "V1 IN 0 5".to_owned(),
                 "R1 IN MID 4.7MEG".to_owned(),
                 "C1 MID OUT 100n".to_owned(),
-                "I1 OUT 0 10u".to_owned(),
+                "L1 OUT 0 10u".to_owned(),
             ]
         );
     }
@@ -506,7 +658,7 @@ L1,PS,2
     fn to_cir_is_golden() {
         let doc = pmodel::parse(GOLDEN4).unwrap();
         let cir = to_cir(&doc, "G4", "10u", "5m", &["v(OUT)", "v(MID)"]).unwrap();
-        let expected = "* G4\nV1 IN 0 5\nR1 IN MID 4.7MEG\nC1 MID OUT 100n\nI1 OUT 0 10u\n.print tran v(OUT)\n.print tran v(MID)\n.tran 10u 5m uic\n.end\n";
+        let expected = "* G4\nV1 IN 0 5\nR1 IN MID 4.7MEG\nC1 MID OUT 100n\nL1 OUT 0 10u\n.print tran v(OUT)\n.print tran v(MID)\n.tran 10u 5m uic\n.end\n";
         assert_eq!(cir, expected);
     }
 
@@ -559,6 +711,26 @@ L1,PS,2
         let doc = pmodel::parse(RC_SDF.replace("C1,CAP,100n", "Q1,NPN,BC184").as_str()).unwrap();
         let err = elements(&doc).unwrap_err();
         assert!(matches!(err, SimError::UnsupportedPart(_)));
+    }
+
+    #[test]
+    fn dq_substitution_simulates() {
+        if std::process::Command::new("ngspice")
+            .arg("--version")
+            .output()
+            .is_err()
+        {
+            return;
+        }
+        // Diode clipper + NPN switch with default models.
+        let sdf = "ISIS SCHEMATIC DESCRIPTION FORMAT 4.5\n=====\n*PARTLIST,4\nV1,VSRC,5\nR1,RES,1k\nD1,OA91,OA91\nQ1,BC184,BC184\n*NETLIST,4\nIN,2\nV1,PS,1\nR1,PS,1\nMID,3\nR1,PS,2\nD1,PS,K\nQ1,PS,1\nOUT,2\nD1,PS,A\nQ1,PS,2\nGND,2\nV1,PS,2\nQ1,PS,3\n";
+        let doc = pmodel::parse(sdf).unwrap();
+        let (cir, subs) = to_cir_with_subs(&doc, "dq", "10u", "1m", &["v(OUT)"]).expect("dq cir");
+        assert_eq!(subs.len(), 2, "{subs:?}");
+        assert!(cir.contains(".MODEL DMOD_OA91 D"), "{cir}");
+        assert!(cir.contains(".MODEL QMOD_BC184 NPN"), "{cir}");
+        let out = run(&cir).expect("ngspice dq");
+        assert!(!out.stdout.is_empty(), "vacio");
     }
 
     #[test]
