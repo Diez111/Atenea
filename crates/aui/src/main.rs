@@ -56,10 +56,10 @@ fn erc_text_of(snap: &aengine::DocSnapshot) -> String {
 fn main() -> Result<(), slint::PlatformError> {
     let app = Atenea::new()?;
     let engine = aengine::Engine::spawn();
-    let last_sdf: std::sync::Mutex<Option<(String, String)>> =
-        std::sync::Mutex::new(None);
+    let last_sdf = std::sync::Arc::new(std::sync::Mutex::new(None));
 
     {
+        let last_sdf = last_sdf.clone();
         let app_w = app.as_weak();
         let eng = engine.clone();
         app.on_open_file(move |path| {
@@ -101,6 +101,7 @@ fn main() -> Result<(), slint::PlatformError> {
         });
     }
     {
+        let last_sdf = last_sdf.clone();
         let app_w = app.as_weak();
         let eng = engine.clone();
         app.on_run_sim(move || {

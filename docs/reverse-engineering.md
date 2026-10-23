@@ -273,6 +273,9 @@ no extractable icon set exists — native UI draws its own glyphs
   Created/Modified + `*PARTLIST,%d` (`%s,%s,%s,PACKAGE=%s`) + `*NETLIST,%d`;
   pin codes `PS IP OP IO TS OE OC PP LBL GT IT OT BT PR MOD`;
   `... too long (max %d) - clipped` warnings.
+- SDFGEN.EXE (`Labcenter SDF netlist converter`):
+  `SDFGEN <filename> <format>` (ej. `design.net MULTIWIRE`),
+  convierte netlists ajenas a SDF (`*NETLIST,%d`, FORMAT 2.0→3.0).
 - LYTCVT.DLL: `CONVERTER:` old-layout (`File version is %1.2f -
   cannot load!`, `Cannot rename existing .LYT`) — LYT es versionado;
   DSNCVT40.DLL: `ISIS IV Design Converter` (legacy DSN→v8).
