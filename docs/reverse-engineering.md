@@ -42,8 +42,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (`-C[=n] create new library`, `-L=<libname>`, exigen `.ENDS`).
   TOKENIZER.DLL = tokenizador BASIC (`WHILE/UNTIL`, `Nothing to
   tokenize`) para FLOWCHART/DIYSTAMP.
+- [x] `createdsimmodel` 8155H.dll — factory NULL-si-no-match.
+- [x] firmware/mecánico: LOADERS.DLL carga HEX/ELF/COFF + list files
   (VSM CPUs); `BIN/citf/` importa 3D STEP/IGES (OpenCASCADE TK*).
   DIYSTAMP.EXE es compilador BASIC de terceros (no Proteus).
+- [x] misc: EASYHDL.DLL compila programas MCU (`HDLMODEL`, CRC);
+  IDSCVT40.DLL convierte librerías viejas; FLOWCHART/VIEWDATA son UI Qt.
+- [x] modelos VSM (212 DLLs en MODELS/): 162 exponen `createdsimmodel`
   (primitiva DSIM) y 34 `createactivemodel`/`deleteactivemodel`
   (animados: BLDCanim, VGPS expone `IACTIVEMODEL`/`IDSIMMODEL`).
   Nuestro `vsm-host` carga ambas familias por nombre.
@@ -58,6 +63,7 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
   `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
+- [x] DSIM.DLL: interfaces `IDSIMCKT`/`IDSIMMODEL`/`IDSIMPIN1`/`IDSIMPIN2`
   (mixed-mode sim kernel, `DSIM creating net`, breakpoints). `asim` cubre
   el flujo batch; kernel interactivo = roadmap.
 - [x] ELECTRA.DLL: autorouter Qt (`Adaptive Shape-Based AutoRouter`,
