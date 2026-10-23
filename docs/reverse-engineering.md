@@ -373,6 +373,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `getnet/getmodule/getscript/getnetprop/getpart/getselector/getsheetid`,
   `netbounds/partbounds/propbounds/scriptbounds/tracebounds` (bboxes),
   `traceptr/realtime/iscontext/iscurrentsheet/ismode` (estado sim).
+  `iscontext(mask,mode)` (@0x1000dfe0): `(flags+0x24 & mask) &&
+  (flags+0x28 == mode)` — predicado que combina ambas palabras.
   `traceptr` (@0x1000e300): indexa array `TRACEPROP*` en `+0x170`
   (DPA de `addtraceprop` en `+0x160`).
 - `addscript` (`?addscript@...`, @0x10012c10: texto + posiciones `fpos`).
