@@ -44,7 +44,9 @@ Decompiled & applied (loop ledger):
   `AutoRouteRun/PauseAction`) — router propio = roadmap, formato LYT ya
   parseado (pads/sheets/CLASSES/SIGNAL).
 - [x] `CDBCORE` API + pin roles (strings ARES)
-- [ ] `NETLIST::read_models/read_props/sortnets` — pendientes menores
+- [x] `NETLIST::read_models` (private, @0x10018a80) + `read_props`
+  (@0x10018810) + `sortnets` (public, @0x100177f0) + `gettitle`
+  (@0x1000e170) — decompilados Ghidra vía REA (ver notas abajo)
 - [ ] `ISIS.DLL` factory loader — es GetProcAddress (sin función única);
   mecanismo documentado + espejado en `vsm-host` ✓
 - [x] símbolos: directorio completo `02 7F 00 LEN NAME 01 19`
@@ -74,6 +76,17 @@ Decompiled & applied (loop ledger):
   `net_gen`, `net_erc`, `write`/`writeheader`, `mdf_id`.
 - Strings: `SPICEMODEL`, `MODFILE`, `VSM DLL Model [%s]`, `DSNCVT40.DLL`,
   `dsn_editdesign`, `Complile Netlist` [sic].
+- `NETLIST::read_models` (`?read_models@NETLIST@@AAEXAAV?$basic_istream...`,
+  @0x10018a80): `skippast(',')` + `getint(count)`; loop `getline(0x2000)`
+  + `getpropname(':')` + `skipspaces` + `PROPLIST::add(this+0x9c)`.
+  Confirma MODELDEFS = count-first + `Clave: valor` (nuestro `pmodel`).
+- `NETLIST::sortnets` (`?sortnets@NETLIST@@QAEXXZ`, @0x100177f0):
+  `qsort(net_ptrs[this+0x198], count[this+0x194], 4, cmp@0x10017810)`.
+  Vendor ordena nets; nuestro `emit` preserva orden de archivo
+  (diferencia documentada, sin impacto funcional).
+- `NETLIST::gettitle` (`?gettitle@NETLIST@@QAEPBDXZ`, @0x1000e170):
+  `PROPLIST[this+0x64]["DSN_TITLE"]` — el título vive en las props
+  `DSN_*` que `write()` excluye del SDF.
 - `NETLIST::parse_models` (`?parse_models@...`, 0x1bb90, 368 B,
   Ghidra verifica nombre+body): lee líneas hasta EOF o línea que empiece
   con `*`; `getpropname(ptr,buf,':')` + `skipspaces` →

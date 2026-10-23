@@ -84,8 +84,8 @@ fn main() -> Result<(), slint::PlatformError> {
                         app.set_status(
                             format!("{} — {} parts, {} nets", snap.name, snap.parts.len(), snap.nets.len()).into(),
                         );
-                        app.set_parts(parts_of(&snap).into());
-                        app.set_nets(nets_of(&snap).into());
+                        app.set_parts(std::rc::Rc::new(slint::VecModel::from(parts_of(&snap))).into());
+                        app.set_nets(std::rc::Rc::new(slint::VecModel::from(nets_of(&snap))).into());
                         app.set_erc_text(erc_text_of(&snap).into());
                         if snap.kind == "lisa" {
                             if let Ok(text) = std::fs::read_to_string(&path) {
@@ -103,7 +103,7 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let app_w = app.as_weak();
         let eng = engine.clone();
-        app.on_run_sim(move |_| {
+        app.on_run_sim(move || {
             let guard = last_sdf.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
             let Some((name, sdf)) = guard.clone() else {
                 if let Some(app) = app_w.upgrade() {
@@ -133,7 +133,7 @@ fn main() -> Result<(), slint::PlatformError> {
     }
     {
         let app_w = app.as_weak();
-        app.on_run_erc(move |_| {
+        app.on_run_erc(move || {
             if let Some(app) = app_w.upgrade() {
                 app.set_status("ERC recalculado (ver pestaña ERC)".into());
             }
@@ -141,7 +141,7 @@ fn main() -> Result<(), slint::PlatformError> {
     }
     {
         let app_w = app.as_weak();
-        app.on_pick_device(move |_| {
+        app.on_pick_device(move || {
             if let Some(app) = app_w.upgrade() {
                 app.set_status("Pick Device: buscador IDX (en curso)".into());
             }
