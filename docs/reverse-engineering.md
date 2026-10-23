@@ -33,7 +33,10 @@ Decompiled & applied (loop ledger):
 - [x] `NETLIST::net_erc` — UNDRIVEN / SINGULAR LABEL / connected to
 - [x] `NETLIST::resolve` — MODEL/MODFILE + CDBCORE walk
 - [x] `DSIM::dsim_create` — firma, vtables, lookup primitiva
-- [x] `createdsimmodel` 8155H.dll — factory NULL-si-no-match
+- [x] modelos VSM (212 DLLs en MODELS/): 162 exponen `createdsimmodel`
+  (primitiva DSIM) y 34 `createactivemodel`/`deleteactivemodel`
+  (animados: BLDCanim, VGPS expone `IACTIVEMODEL`/`IDSIMMODEL`).
+  Nuestro `vsm-host` carga ambas familias por nombre.
 - [x] VSM activos (VTURTLE/DIPSW/CTIMER/COLORLED): `IACTIVEMODEL` +
   Qt `QPainter`/`QPaintDevice` para animación; SPICE expone `ISPICEMODEL`.
   Nuestro `vsm`/`nullmodel` espejan la interfaz sin Qt.

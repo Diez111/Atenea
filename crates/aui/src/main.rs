@@ -142,9 +142,40 @@ fn main() -> Result<(), slint::PlatformError> {
     }
     {
         let app_w = app.as_weak();
+        let eng = engine.clone();
+        app.on_open_lib(move || {
+            let path = rfd::FileDialog::new()
+                .add_filter("Proteus library", &["idx"])
+                .pick_file()
+                .map(|p| p.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            if path.is_empty() {
+                return;
+            }
+            if let Some(app) = app_w.upgrade() {
+                match poll(
+                    &eng.open(std::path::Path::new(&path)),
+                    Duration::from_secs(30),
+                ) {
+                    Some(Ok(snap)) => {
+                        app.set_lib_parts(
+                            std::rc::Rc::new(slint::VecModel::from(parts_of(&snap))).into(),
+                        );
+                        app.set_status(
+                            format!("{} — {} dispositivos", snap.name, snap.parts.len()).into(),
+                        );
+                    }
+                    Some(Err(e)) => app.set_status(format!("error: {e}").into()),
+                    None => app.set_status("timeout abriendo IDX".into()),
+                }
+            }
+        });
+    }
+    {
+        let app_w = app.as_weak();
         app.on_pick_device(move || {
             if let Some(app) = app_w.upgrade() {
-                app.set_status("Pick Device: buscador IDX (en curso)".into());
+                app.set_status("Pick Device: elegí en la pestaña Library".into());
             }
         });
     }

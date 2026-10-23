@@ -24,7 +24,10 @@ export component Atenea inherits Window {
     in-out property <string> erc_text: "";
     in-out property <string> sim_text: "";
 
+    in-out property <[PartRow]> lib_parts;
+    in-out property <string> lib_query: "";
     callback open-file(string);
+    callback open-lib();
     callback run-sim();
     callback run-erc();
     callback pick-device();
@@ -93,6 +96,22 @@ export component Atenea inherits Window {
                 title: "Simulate";
                 VerticalBox {
                     Text { text: root.sim_text; }
+                }
+            }
+            Tab {
+                title: "Library";
+                VerticalBox {
+                    HorizontalBox {
+                        LineEdit { placeholder-text: "buscar (Device/Category/MFR)…"; text <=> root.lib_query; }
+                        Button { text: "Open IDX…"; clicked => { root.open-lib(); } }
+                    }
+                    ListView {
+                        for p in root.lib_parts: HorizontalBox {
+                            Text { text: p.reference; width: 130px; }
+                            Text { text: p.kind; width: 110px; }
+                            Text { text: p.value; }
+                        }
+                    }
                 }
             }
             Tab {
