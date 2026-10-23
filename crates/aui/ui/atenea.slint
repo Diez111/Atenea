@@ -144,6 +144,14 @@ export component Atenea inherits Window {
                     Tab {
                         title: "Simulate";
                         VerticalBox {
+                            HorizontalBox {
+                                Button { text: "Transient"; clicked => { root.tool-selected("graph-transient"); } }
+                                Button { text: "Frequency"; clicked => { root.tool-selected("graph-frequency"); } }
+                                Button { text: "DC Sweep"; clicked => { root.tool-selected("graph-dc"); } }
+                                Button { text: "AC Sweep"; clicked => { root.tool-selected("graph-ac"); } }
+                                Button { text: "Noise"; clicked => { root.tool-selected("graph-noise"); } }
+                                Button { text: "Fourier"; clicked => { root.tool-selected("graph-fourier"); } }
+                            }
                             Image { source: root.plot; }
                             Text { text: root.sim_text; color: #1c2733; }
                         }
