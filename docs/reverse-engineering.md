@@ -155,7 +155,14 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::parse_requires` (`?parse_requires@...`, public, @0x1001c0c0):
   `chktok SAMPLE=`/`PRODUCT=` + `skippast('=')` + `gethex` → tabla
   en `this+0x284` (máx 0x10 entradas).
+- `NETLIST::addpin` ×2: string (`?addpin@NETLIST@@QAEXPAD0PAY0BP@DW4ELECTYPES@@H@Z`,
+  @0x100147b0) copia ref, corta sufijo `:xxx` vía `strrchr(':')`
+  (si flag `+0x24` o `ELECTYPES` 9..13), `PARTLIST::find(módulo)` y
+  delega a `addpin(NET_PART*,...)` (@0x10014860). Confirma enum
+  `ELECTYPES` + roles con `:` de `read_nets`.
 - `NETLIST::newnet` (`?newnet@NETLIST@@QAEXXZ`, public, @0x10014440):
+  resetea 9 dwords de staging (`+0x1cc..+0x1ec`: contador `+0x1d8`,
+  sucio `+0x1dc` — mismo bloque que `addwire`).
   resetea 9 dwords de staging (`+0x1cc..+0x1ec`: contador `+0x1d8`,
   sucio `+0x1dc` — mismo bloque que `addwire`).
 - `NETLIST::addwire` (`?addwire@NETLIST@@QAEXPAVWIRE@@H@Z`, public,
