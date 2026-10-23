@@ -257,6 +257,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   0x1001a6e0): agregan u32 a tablas fijas (PRODUCT `+0x244`/count
   `+0x284`, SAMPLE `+0x200`/count `+0x240`, máx 0x10) — las que
   llena `parse_requires`.
+- `NETLIST::addpwritf` (`?addpwritf@...`, @0x10013910): lee props
+  `ITFMOD/MODDATA/MODEL/MODFILE/POWER/PRIMITIVE/TRACE/VALUE`;
+  gated por flag `+0x24&4` y NO-`dxp` (`+0x28&0x10`) — es el worker
+  del path DXP.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
