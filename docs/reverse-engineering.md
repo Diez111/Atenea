@@ -160,6 +160,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (si flag `+0x24` o `ELECTYPES` 9..13), `PARTLIST::find(módulo)` y
   delega a `addpin(NET_PART*,...)` (@0x10014860). Confirma enum
   `ELECTYPES` + roles con `:` de `read_nets`.
+  Interna (@0x10014860): `getbusrange()` (rangos `D[0..7]`), clamp
+  `ELECTYPES` 0..0x10 (17 roles = `sdf_etstrings`), sub-partes
+  `REF#n` vía PINSWAP (`getnzstr(",;")` + `_stricmp`), SLIST `+0x1ac`.
 - `NETLIST::newnet` (`?newnet@NETLIST@@QAEXXZ`, public, @0x10014440):
   resetea 9 dwords de staging (`+0x1cc..+0x1ec`: contador `+0x1d8`,
   sucio `+0x1dc` — mismo bloque que `addwire`).
