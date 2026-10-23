@@ -86,6 +86,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
   `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
+- `dsim_linknet(nombre, STATE**)` (@0x10004288): resuelve net por
+  nombre → `STATE*` en `+0x3c`, 1/0.
 - `dsim_initialize(SDF_NETLIST*, IDSIMCKT**)` (@0x1001fc14):
   construye el `IDSIMCKT` singleton (`DAT_100360ec`) desde el
   SDF netlist + resetea estado (`DAT_10035928/20/24/5c`).
