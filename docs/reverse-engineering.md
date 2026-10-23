@@ -242,6 +242,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   del de `getpwrnets`/`netmerge`.
 - Flags `+0x28` mapeados: bit2=`graph()` (@0x1000e020), bit4=`dxp()`
   (@0x1000e040), bit5=`bom()` (@0x1000e050) — seteados por `setdsnstats`.
+- `NETLIST::getscript` (`?getscript@NETLIST@@QAEPBDPBD@Z`, public,
+  @0x1000e220): `DIDX[+0x140]` por nombre → texto en `+0x6c`
+  (indirecto si tamaño `+0x80`>0xf) — tabla de scripts.
+- `NETLIST::setmodstats` (`?setmodstats@NETLIST@@QAEXPAUNET_MODULE@@HH@Z`,
+  public, @0x100129a0): módulo actual `+0x19c`, flags `+0x34`,
+  vacía SLIST `+0x1a0`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
