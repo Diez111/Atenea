@@ -49,6 +49,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (`.tran/.ic/.nodeset`, `unknown device type - error`).
 - [x] packers de librería: PUTMDF.EXE/PUTSPICE.EXE
   (`-C[=n] create new library`, `-L=<libname>`, exigen `.ENDS`).
+  GETSPICE: `-D` borra modelos del lib, `-A` extrae todo,
+  `-F=<modname>` salida, `-L=<lib>` (default `PROSPICE.SML`);
+  PUTSPICE: `-D` borra del disco, `-C[=n]` crea.
   TOKENIZER.DLL = tokenizador BASIC (`WHILE/UNTIL`, `Nothing to
   tokenize`) para FLOWCHART/DIYSTAMP.
 - [x] `createdsimmodel` 8155H.dll — factory NULL-si-no-match.
@@ -71,8 +74,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] GVIEW.dll = visor Gerber/drill + salida CADCAM (`VIPKGVIEWER`, `DRILL_SYMBOL/SPAN`, `$DRILL%02d`, chequeo footprint sin asignar).
 - [x] ARES verificación/salida: DRC (`RST: ARES\DRC`, `Checking...`,
   `%d DRC errors`, `DRC disabled`, columnas `Design Rule/Violation
-  Type/Layer(s)/Spec'd/Actual Clearance`); conectividad (`Connectivity
-  Errors`, tabla `Error Type/1st Pin/2nd Pin/Missing/Extra`);
+  Type/Layer(s)/Spec'd/Actual Clearance`); `Design Rule Manager`
+  (`ATB_LAYOUT:8`); `Pre-Production Check` (chequeos de manufactura +
+  ignorar/resetear errores); conectividad (`Connectivity
+  Errors` + `Connectivity Report`, tabla `Error Type/1st Pin/2nd Pin/Missing/Extra`);
   Gerber X2 default (+selector RS274X, exige stackup válido) + netlist
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
