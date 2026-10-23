@@ -259,8 +259,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `mdf_id` (`?mdf_id@@3QBDB`): es DATO exportado (buffer char),
   no función — por eso no hay `parse`/decompile.
 - Accessors: `netptr(NET*,int)` / `scriptptr(NET_SCRIPT*,int)` /
-  `addptr/addscript/addnprop/addmoddata(NET_PART*,MODDATA*)` /
-  `addtraceprop(ELEMENT*,PROPLIST*,...,TRACEMODEFLAGS)` /
+  `addptr` / `addscript(char*,string,...fpos...)` (@0x10012c10: texto
+  + posiciones de archivo) / `addnprop` / `addmoddata(NET_PART*,
+  MODDATA*)` / `addtraceprop(ELEMENT*,PROPLIST*,...,TRACEMODEFLAGS)`
+  (@0x10013e50: nodo `new(0x48)`, `PROPLIST::format`, `DPA::add` en
+  `+0x160` — props de trace para VPROBE/IPROBE) /
   `setshtstats(SHEET*,int,int)` / `setdsnstats`.
 - `PINOUT::netgen` único método PINOUT en IAT:
   `?netgen@PINOUT@@QAEXAAVNETLIST@@PADPAUNET_PART@@AAVPROPTEXT@@PAUNET_MODULE@@@Z`.
