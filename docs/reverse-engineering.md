@@ -155,6 +155,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::parse_requires` (`?parse_requires@...`, public, @0x1001c0c0):
   `chktok SAMPLE=`/`PRODUCT=` + `skippast('=')` + `gethex` → tabla
   en `this+0x284` (máx 0x10 entradas).
+- `NETLIST::addelement` (`?addelement@NETLIST@@QAEPAUNET_PART@@PAD0AAVPROPLIST@@PAVOBJECT@@K@Z`,
+  public, @0x10012f70): crea `NET_PART` (`new(0x124)`), `PARTLIST::find`,
+  resuelve `PRIMITIVE`/`TERMINAL`, valida vs CDB por UID.
+  Errores: `Duplicate part reference`, `Conflicting library parts /
+  property values ... in multi-element device`, `No CDB element/part
+  record ... UID=%08X`.
 - `NETLIST::addpin` ×2: string (`?addpin@NETLIST@@QAEXPAD0PAY0BP@DW4ELECTYPES@@H@Z`,
   @0x100147b0) copia ref, corta sufijo `:xxx` vía `strrchr(':')`
   (si flag `+0x24` o `ELECTYPES` 9..13), `PARTLIST::find(módulo)` y
