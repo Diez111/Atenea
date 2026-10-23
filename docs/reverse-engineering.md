@@ -377,6 +377,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `&0x1f`); re-apunta pines (`+0x54/+0x58`).
 - `dsim_createadcs`/`createdacs` (@0x100043bc/@0x10004348): registran
   conversores en lista `+0x36040` (flag ADC `+6`, DAC `+0xb`).
+- `dsim_linkprobe(modelo, PARTITION*, ch)` (@0x10004490): bindea
+  probe (`+0x9c` partición, `+0xa4` canal, label truncado 0x20 en
+  `+0xa8`); log `DSIM Linked probe %s`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
