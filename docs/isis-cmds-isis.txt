@@ -1,0 +1,72 @@
+0000,A,Edit Bezier
+0000,A,Edit Box
+0000,A,Edit Circle
+0000,A,Edit Hidden Power Pins
+0000,A,Edit Line
+0000,A,Make Device
+0000,A,Show/Hide Toolbars
+0000,A,USC Expired
+0000,A,View Sample Designs
+1016,A,Find & Edit Component
+1017,A,Pick/Replace Library Part
+101B,A,Make Pinout
+101C,A,Make Symbol
+101D,A,Compile Placed Components to Device Library
+101E,A,Auto-Place Contents of Device Library
+101F,A,Search and Tag
+1020,A,Property Assignment Tool
+1021,A,Annotator
+1022,A,Netlist Compiler
+1023,A,Edit Design Properties
+1027,A,Add/Remove Source Code Files
+1028,A,Add/Remove Code Generation Tools
+1029,A,Source Code Editor Configuration
+102A,A,Edit Design Defaults
+102B,A,Graph Colour Configuration
+102C,A,Set 2D Graphics Initialisation
+102D,A,Configure Junction Dots
+102E,A,Apply Default Template
+1034,A,Animated Circuits Configuration
+103B,A,Edit Component
+103C,A,Edit Subcircuit
+103E,A,Edit Voltage Probe
+103F,A,Edit Current Probe
+1040,A,Edit Tape Recorder
+1041,A,Power Rail Configuration
+1045,A,Edit 2D Graphics Text
+1046,A,Edit Conformance Graph
+1046,A,Edit Transient Graph
+1047,A,Edit Frequency Graph
+1048,A,Edit DC Sweep Graph
+1049,A,Edit AC Sweep Graph
+104A,A,Edit Transfer Function Graph
+104B,A,Edit Noise Graph
+104C,A,Edit Distortion Graph
+104D,A,Edit Fourier Analysis Graph
+104E,A,Edit Audio Analysis Graph
+104F,A,Edit Graph Trace
+104F,A,Set Y-Axis Scaling
+1050,A,Configure Some Generator!
+105F,A,Edit Pattern
+1061,A,Print Design
+1062,A,Export Metafile
+1063,A,Export Bitmap
+1065,A,Vector Export
+1068,A,Edit Global Graphics Styles
+106A,A,Edit Global Text Styles
+1074,A,Package Device
+1075,A,Select Library For Packaged Devices
+1078,A,Edit Design Notes
+107C,A,Execute for specified time
+107D,A,Block Rotate/Reflect
+1085,A,Power Rails
+1086,A,Create New Power Supply
+1086,A,Rename New Power Supply
+1087,A,Batch Mode Conformance Analysis
+1087,A,Create New Design
+1088,A,Configure Diagnostics
+1090,A,Set Display Options
+1091,A,Align
+1093,A,Export SVG File
+1094,A,Export PDF File
+2064,A,Edit 2D Graphics

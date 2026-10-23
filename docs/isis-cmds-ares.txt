@@ -1,0 +1,101 @@
+0000,A,3D Models
+0000,A,Create New Layout
+0000,A,Edit Bezier
+0000,A,Edit Box
+0000,A,Edit Circle
+0000,A,Edit Dimension
+0000,A,Edit Line
+0000,A,Import Package
+0000,A,Make Package
+0000,A,Manufacturing Notes
+0000,A,Pre-Production Check
+0000,A,Show/Hide Toolbars
+0000,A,USC Expired
+1017,A,Pick/Replace Library Part
+102E,A,Apply Default Template
+1045,A,Edit 2D Graphics Text
+2000,A,Goto Radial Coordinate
+2000,A,Goto X-Y Coordinate
+2000,A,Move to X-Y Coordinate
+2001,A,Goto Component
+2002,A,Goto Pin
+2004,A,Edit Zone
+2005,A,Create New Component
+2006,A,Radial Replicate
+2006,A,Replicate
+2007,A,Create New Pad Style
+2008,A,New Via Style
+2009,A,3D Mechanical Model
+2009,A,3D Visual Model
+2010,A,Make Symbol
+2011,A,Compile Placed Components to Package Librar
+2013,A,Auto Name Generator
+2016,A,Auto Placer
+2018,A,Power Plane Generator
+2020,A,Edit Component
+2021,A,Edit Single Pin
+2022,A,Edit Via
+2025,A,Edit Trace Style
+2026,A,Edit Circular Pad Style
+2026,A,Edit Circular SMT Pad Style
+2027,A,Edit Square Pad Style
+2028,A,Edit DIL Pad Style
+2029,A,Edit Polygonal SMT Pad Style
+2029,A,Edit Rectangular SMT Pad Style
+2030,A,Edit Edge Connector Pad Style
+2032,A,Default Styles and Tolerances
+2033,A,Environment Configuration
+2034,A,Grid Configuration
+2035,A,Edit Layer Pairs
+2037,A,Board Properties
+2038,A,Board Properties
+2039,A,Default Text Style
+2040,A,Set Plotter Pens
+2042,A,Print Layout
+2043,A,Export Metafile
+2044,A,Export Bitmap
+2046,A,Vector Export
+2047,A,Export Overlay
+2049,A,Gerber View
+2050,A,DXF Import
+2051,A,Net Classes
+2052,A,Zone Configuration
+2053,A,Create New Padstack
+2054,A,Block Rotate/Reflect
+2055,A,Edit Padstack
+2057,A,Add Drill Span
+2057,A,Layer Stack View
+2057,A,Set Layer Usage
+2061,A,Duplicate Layer
+2063,A,Edit Dimension Object
+2064,A,3D M-CAD Output
+2064,A,CADCAM (Gerber and Excellon) Output
+2064,A,Design Rule Manager
+2064,A,Display Settings
+2064,A,Edit 2D Graphics
+2064,A,Edit Layer Stackup and Drill Spans
+2064,A,IDF Manufacturing Output
+2064,A,ODB++ Manufacturing Output
+2065,A,Edge Layers
+2066,A,CADCAM Notes
+2067,A,Shape Based Auto Router
+2069,A,Mitre Settings
+2070,A,Selection Filter Configuration
+2074,A,Create New Colour Set
+2074,A,Create New Design Rule
+2074,A,Create New Net Class
+2074,A,Design Rule Manager
+2074,A,Rename Colour Set
+2074,A,Rename Design Rule
+2074,A,Rename Net Class
+2075,A,Set Display Options
+2076,A,Export PDF
+2077,A,Align
+2078,A,Global Part Annotator
+2079,A,Export SVG
+2080,A,Teardrop Configuration
+2081,A,Length Tuning
+2083,A,Log Messages
+2084,A,Board Stackup Wizard
+2085,A,Import Package
+2086,A,Length Match
