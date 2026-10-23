@@ -133,6 +133,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `$WR8`; `02 40` = vía + `02 44` pin-ref). Y siempre 0 en samples —
   encoding del eje Y TBD (experimento ARES pendiente). `plib::lyt_tracks`
   une vértices consecutivos del mismo grupo; `02 41` = nets del layout.
+- [x] configs: `proteus.ini` (42 B, `[Settings] Program=...`);
+  `STARTUP.ini` = HTML del update manager (anuncio Proteus 9).
 - [x] iconos UI reales: ISIS.DLL `.rsrc` trae 11 grupos RT_GROUP_ICON
   (33 imágenes RT_ICON 16–48px: chips, transistor, probes, R/C/D,
   gráficas con ejes, filtros); extraídos a `crates/aui/assets/`
