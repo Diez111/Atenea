@@ -211,6 +211,9 @@ pub struct Symbol {
     pub offset: usize,
     /// Candidate vertices `(x, y)` in DSN internal units.
     pub vertices: Vec<(i32, i32)>,
+    /// Style id from the pen block (`34 00 00 00 00 02 <STYLE>`, e.g.
+    /// `0x21` TERMINAL, `0x22` COMPONENT). `0` when absent.
+    pub style: u32,
 }
 
 /// Marker prefix preceding every graphic template record.
@@ -315,10 +318,24 @@ pub fn symbols(data: &[u8], bbox: Option<(i32, i32, i32, i32)>) -> Vec<Symbol> {
             template,
             offset: i + pos,
             vertices,
+            style: style_of(data, base),
         });
         i = base;
     }
     out
+}
+/// Extract the pen-block style id following a record payload:
+/// `u32 len` + `34 00 00 00 00 02 <STYLE> ...` (observed `0x21` for
+/// TERMINAL, `0x22` for COMPONENT in `siggen.DSN`).
+fn style_of(data: &[u8], base: usize) -> u32 {
+    let end = (base + SYMBOL_SCAN_LEN + 64).min(data.len());
+    let win = &data[base.min(data.len())..end];
+    for w in win.windows(8) {
+        if w[0] == 0x34 && w[1] == 0 && w[2] == 0 && w[3] == 0 && w[4] == 0 && w[5] == 2 {
+            return u32::from(w[6]);
+        }
+    }
+    0
 }
 /// One `{...}` block: head plus the printable body that follows it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -423,6 +440,20 @@ mod tests {
             b"\x01\x02{*DEVICE} PREFIX=U PINOUT=7404\0\xff{*COMPONENT} {MODFILE=74INV.MDF}\0",
         );
         v
+    }
+
+    #[test]
+    fn symbols_pen_style() {
+        // `34 00 00 00 00 02 <STYLE>` pen block (TERMINAL=0x21).
+        let mut v = Vec::from(b"\x02\x7fTERMINAL\x00".as_slice());
+        v.extend_from_slice(&[0u8; 16]);
+        v.extend_from_slice(&[0x34, 0, 0, 0, 0, 2, 0x21, 0]);
+        let syms = symbols(&v, None);
+        assert_eq!(syms.len(), 1);
+        assert_eq!(syms[0].style, 0x21);
+        // No pen block -> style 0.
+        let w = Vec::from(b"\x02\x7fWIRE\x00".as_slice());
+        assert_eq!(symbols(&w, None)[0].style, 0);
     }
 
     #[test]
