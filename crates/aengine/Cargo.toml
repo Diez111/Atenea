@@ -12,6 +12,7 @@ pproj = { path = "../pproj" }
 asim = { path = "../asim" }
 vsm = { path = "../vsm" }
 vsm-host = { path = "../vsm-host" }
+zip = "2"
 
 [lints]
 workspace = true

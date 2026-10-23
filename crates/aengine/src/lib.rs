@@ -164,6 +164,7 @@ fn kind_of(path: &Path) -> &str {
         "pdsprj" => "pdsprj",
         "mdf" | "sdf" => "lisa",
         "dsn" | "lyt" => "dsn",
+        "pdsclip" => "pdsclip",
         "idx" => "idx",
         _ => "unknown",
     }
@@ -213,6 +214,34 @@ fn load_lisa(path: &Path, snap: &mut DocSnapshot) -> Result<(), String> {
         .push(("parts".to_owned(), snap.parts.len().to_string()));
     snap.summary
         .push(("nets".to_owned(), snap.nets.len().to_string()));
+    Ok(())
+}
+
+fn load_pdsclip(path: &Path, snap: &mut DocSnapshot) -> Result<(), String> {
+    use std::io::Read as _;
+    let file = std::fs::File::open(path).map_err(|e| e.to_string())?;
+    let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+    let mut sec = zip.by_name("DESIGN.SEC").map_err(|e| e.to_string())?;
+    let mut data = Vec::new();
+    sec.read_to_end(&mut data).map_err(|e| e.to_string())?;
+    drop(sec);
+    drop(zip);
+    plib::dsn::check_magic(&data).map_err(|e| e.to_string())?;
+    let wires = plib::dsn::wires(&data);
+    snap.summary
+        .push(("wires".to_owned(), wires.len().to_string()));
+    for w in &wires {
+        snap.wires.push((
+            plib::dsn::to_mm(w.x1),
+            plib::dsn::to_mm(w.y1),
+            plib::dsn::to_mm(w.x2),
+            plib::dsn::to_mm(w.y2),
+            w.bus,
+        ));
+    }
+    let syms = plib::dsn::symbols(&data, None);
+    snap.summary
+        .push(("symbols".to_owned(), syms.len().to_string()));
     Ok(())
 }
 
@@ -300,6 +329,7 @@ fn open_sync(path: &Path) -> Result<DocSnapshot, String> {
         "pdsprj" => load_pdsprj(path, &mut snap)?,
         "lisa" => load_lisa(path, &mut snap)?,
         "dsn" => load_dsn(path, &mut snap)?,
+        "pdsclip" => load_pdsclip(path, &mut snap)?,
         "idx" => load_idx(path, &mut snap)?,
         other => return Err(format!("unsupported extension: .{other}")),
     }
@@ -529,6 +559,25 @@ C1,PS,1
         assert_eq!(snap.kind, "lisa");
         assert_eq!(snap.parts.len(), 2);
         assert_eq!(snap.nets.len(), 2);
+    }
+
+    #[test]
+    fn open_pdsclip_snippet() {
+        use std::io::Write as _;
+        let dir = std::env::temp_dir().join("atenea-aengine-test");
+        let _ = std::fs::create_dir_all(&dir);
+        let path = dir.join("t.pdsclip");
+        let f = std::fs::File::create(&path).unwrap();
+        let mut zip = zip::ZipWriter::new(f);
+        zip.start_file("DESIGN.SEC", zip::write::SimpleFileOptions::default())
+            .unwrap();
+        zip.write_all(b"ISIS SNIPPET V8.0\x1a\xff\x03ABC\x00\x00\x00\x00\x00\x00\x00\x00")
+            .unwrap();
+        zip.finish().unwrap();
+        let eng = Engine::spawn();
+        let snap = eng.open(&path).recv().unwrap().unwrap();
+        assert_eq!(snap.kind, "pdsclip");
+        assert_eq!(snap.summary[0].1, "0");
     }
 
     #[test]

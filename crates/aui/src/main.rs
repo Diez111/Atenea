@@ -65,7 +65,7 @@ fn main() -> Result<(), slint::PlatformError> {
         app.on_open_file(move |path| {
             let path = if path.is_empty() {
                 rfd::FileDialog::new()
-                    .add_filter("Proteus", &["pdsprj", "sdf", "mdf", "dsn", "idx"])
+                    .add_filter("Proteus", &["pdsprj", "sdf", "mdf", "dsn", "lyt", "idx", "pdsclip"])
                     .pick_file()
                     .map(|p| p.to_string_lossy().into_owned())
                     .unwrap_or_default()

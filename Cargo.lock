@@ -267,6 +267,7 @@ dependencies = [
  "pproj",
  "vsm",
  "vsm-host",
+ "zip",
 ]
 
 [[package]]
