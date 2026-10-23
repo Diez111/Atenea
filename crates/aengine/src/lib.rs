@@ -511,6 +511,76 @@ pub fn sheet_svg(doc: &DocSnapshot, width: u32, height: u32) -> String {
     s
 }
 
+/// Render a transient [`TraceView`] as SVG polylines (dark ISIS line on
+/// light paper, axes + labels). Pure function for the worker.
+#[must_use]
+pub fn plot_svg(trace: &TraceView, width: u32, height: u32) -> String {
+    use std::fmt::Write as _;
+    let w = f64::from(width).max(1.0);
+    let h = f64::from(height).max(1.0);
+    let (ml, mt, mr, mb) = (56.0, 12.0, 12.0, 28.0);
+    let mut s = format!(
+        "<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>\n<rect x='0' y='0' width='{width}' height='{height}' fill='#f4f6fa'/>\n"
+    );
+    if trace.rows.is_empty() || trace.vars.is_empty() {
+        let _ = writeln!(
+            s,
+            "<text x='{ml}' y='40' font-size='12' fill='#555'>sin datos</text></svg>"
+        );
+        return s;
+    }
+    let ts: Vec<f64> = trace.rows.iter().map(|(t, _)| *t).collect();
+    let (t0, t1) = minmax(&ts, 1.0);
+    let mut all = Vec::new();
+    for (_, v) in &trace.rows {
+        all.extend_from_slice(v);
+    }
+    let (mut lo, mut hi) = minmax(&all, 5.0);
+    if hi - lo < 1e-9 {
+        hi = lo + 1.0;
+    }
+    let pad = (hi - lo) * 0.08;
+    lo -= pad;
+    hi += pad;
+    let px = |t: f64| ml + (t - t0) / (t1 - t0).max(1e-12) * (w - ml - mr);
+    let py = |v: f64| h - mb - (v - lo) / (hi - lo) * (h - mt - mb);
+    let _ = writeln!(
+        s,
+        "<rect x='{ml}' y='{mt}' width='{:.0}' height='{:.0}' fill='#ffffff' stroke='#0f4c9c'/>",
+        w - ml - mr,
+        h - mt - mb
+    );
+    let colors = ["#1c2733", "#0f4c9c", "#b3402a", "#2a7d4f"];
+    for (vi, var) in trace.vars.iter().enumerate() {
+        if vi >= trace.rows[0].1.len() {
+            break;
+        }
+        let color = colors[vi % colors.len()];
+        let mut d = String::from("M");
+        for (t, v) in &trace.rows {
+            let _ = write!(d, "{:.1},{:.1} ", px(*t), py(v[vi]));
+        }
+        let _ = writeln!(
+            s,
+            "<path d='{d}' fill='none' stroke='{color}' stroke-width='1.5'/>"
+        );
+        let _ = writeln!(
+            s,
+            "<text x='{:.0}' y='{:.0}' font-size='11' fill='{color}'>{var}</text>",
+            ml + 4.0,
+            mt + 14.0 + f64::from(u32::try_from(vi).unwrap_or(u32::MAX)) * 14.0
+        );
+    }
+    let _ = writeln!(
+        s,
+        "<text x='{:.0}' y='{:.0}' font-size='11' fill='#555'>t={t1:.3}s max={hi:.3}</text>",
+        ml,
+        h - 8.0
+    );
+    s.push_str("</svg>\n");
+    s
+}
+
 fn minmax(v: &[f64], fallback: f64) -> (f64, f64) {
     if v.is_empty() {
         return (0.0, fallback);
@@ -585,6 +655,21 @@ C1,PS,1
         let eng = Engine::spawn();
         let (errs, _) = eng.validate(RC).recv().unwrap();
         assert!(errs.is_empty(), "{errs:?}");
+    }
+
+    #[test]
+    fn plot_svg_renders_series() {
+        let trace = TraceView {
+            vars: vec!["v(MID)".to_owned()],
+            rows: vec![(0.0, vec![0.0]), (0.001, vec![5.0])],
+            last: vec![5.0],
+            subs: Vec::new(),
+        };
+        let svg = plot_svg(&trace, 400, 300);
+        assert!(svg.contains("<path"));
+        assert!(svg.contains("v(MID)"));
+        let empty = plot_svg(&TraceView::default(), 400, 300);
+        assert!(empty.contains("sin datos"));
     }
 
     #[test]

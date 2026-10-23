@@ -24,6 +24,7 @@ export component Atenea inherits Window {
     in-out property <string> erc_text: "";
     in-out property <string> sim_text: "";
     in-out property <image> sheet;
+    in-out property <image> plot;
 
     in-out property <[PartRow]> lib_parts;
     in-out property <string> lib_query: "";
@@ -98,6 +99,7 @@ export component Atenea inherits Window {
             Tab {
                 title: "Simulate";
                 VerticalBox {
+                    Image { source: root.plot; }
                     Text { text: root.sim_text; }
                 }
             }

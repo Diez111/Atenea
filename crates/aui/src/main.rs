@@ -151,6 +151,13 @@ fn main() -> Result<(), slint::PlatformError> {
                         if !t.subs.is_empty() {
                             msg.push_str(&format!("\nmodelos: {}", t.subs.join("; ")));
                         }
+                        let plot_svg = aengine::plot_svg(&t, 800, 400);
+                        let plot_path = std::env::temp_dir().join("atenea-plot.svg");
+                        if std::fs::write(&plot_path, plot_svg).is_ok()
+                            && let Ok(img) = slint::Image::load_from_path(&plot_path)
+                        {
+                            app.set_plot(img);
+                        }
                         app.set_sim_text(msg.into());
                         app.set_status("sim OK".into());
                     }
