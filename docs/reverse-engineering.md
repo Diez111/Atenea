@@ -149,7 +149,7 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] DAC (`NATDAC.LML`, 25 decks): DAC081S101/082S085/084S085/101S101...
   + ADC080X (2950 B); reguladores 7805-7815 en `ANALOG.LML`
   (FORMAT 3.0/8.0, decks `Design: 7812`).
-- [x] CPUs VSM = `createmixedmodel` (núcleo digital + pines analógicos):
+- [x] CPUs VSM = `createmixedmodel` TODAS (PIC16EX/PIC18/pic16/AVR2/msp430/dsPIC33/PIC24/HC11/ARM7TDMI/AVR/cm0/cm3 + genéricos .LML):
   PIC16EX (14MB: USART/USB/SPI/I2C/ADC/DAC/PWM/CCP/LCD/TMR/WDT/BOR/
   Comparator/PLL/VREF/SR-latch), AVR2 (4.5MB, GDI propio). Firmware
   vía HEX (LOADERS.DLL).
