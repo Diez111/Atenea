@@ -214,6 +214,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::getnet` (`?getnet@NETLIST@@QAEPAUNET@@PBD@Z`, public,
   @0x10015c50): NULL→`""`, `#N` numérico o corta en `=`; scan lineal
   del array `+0x198/+0x194`.
+- `NETLIST::getnetprop` (`?getnetprop@NETLIST@@QAEPBDPAUNET@@PBD@Z`,
+  public, @0x10015f60): escanea props de net (array stride `0x66`
+  en `+0x8`, count `+0x14`, `_stricmp`); valor en `+0x33`. Confirma
+  que el 2º array de `netmerge` son props `CLAVE\0...valor`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
