@@ -86,6 +86,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
   `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
+- `dsim_initialize(SDF_NETLIST*, IDSIMCKT**)` (@0x1001fc14):
+  construye el `IDSIMCKT` singleton (`DAT_100360ec`) desde el
+  SDF netlist + resetea estado (`DAT_10035928/20/24/5c`).
 - [x] DSIM.DLL ABI completa (29 exports): ciclo `create/initialize/setup/bootstep/timestep/suspend/resume/terminate`, red `linknet/mergenets/connect(SDF_PINTYPE)`, pines `peek/poke`, conversores `createadcs/createdacs/linkadc/linkdac/postadc/polldac`, `getbuspin`, `linkprobe/linktape/writedata`, `signon(SIMLOG)`, `getdelay/getinitval`. Nuestro `vsm` cubre create-level; stepping completo = roadmap.
 - [x] DSIM.DLL: interfaces `IDSIMCKT`/`IDSIMMODEL`/`IDSIMPIN1`/`IDSIMPIN2`
   (mixed-mode sim kernel, `DSIM creating net`, breakpoints). `asim` cubre
