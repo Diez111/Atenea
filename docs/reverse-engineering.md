@@ -359,6 +359,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   MODULE `+0x8` nombre (0x32), `+0x78` param, `+0x7c` UID;
   ELEMENT `+0xc` UID, `+0x80/84/88` PINTEXT; TRACEPROP en DPA `+0x160`;
   SHEET `+0x8` índice; PROPLIST=`+0x64` DSN (KEY\0valor).
+- `dsim_setup()` (@0x10003d24): invoca setup de cada modelo
+  (vtable+4) sobre el singleton `IDSIMCKT`; `terminate()`
+  (@0x1000e8fc) libera listas `+0x35f60/+0x35f80`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
