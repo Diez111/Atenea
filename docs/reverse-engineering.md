@@ -240,6 +240,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   @0x10016050): cuenta pines con nombre (stride `0x48` en `+0xc`,
   count `+0x18`, nombre no vacío) — segundo array de pines además
   del de `getpwrnets`/`netmerge`.
+- Flags `+0x28` mapeados: bit2=`graph()` (@0x1000e020), bit4=`dxp()`
+  (@0x1000e040), bit5=`bom()` (@0x1000e050) — seteados por `setdsnstats`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
