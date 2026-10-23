@@ -41,35 +41,35 @@ export component Atenea inherits Window {
     callback pick-device();
     callback tool-selected(string);
 
+    MenuBar {
+        Menu {
+            title: "File";
+            MenuItem { title: "Open…"; activated => { root.open-file(""); } }
+        }
+        Menu { title: "Output"; }
+        Menu {
+            title: "View";
+            MenuItem { title: "Tables"; }
+            MenuItem { title: "Graph"; }
+            MenuItem { title: "Esquema"; }
+            MenuItem { title: "Simulate"; }
+        }
+        Menu { title: "Edit"; }
+        Menu {
+            title: "Library";
+            MenuItem { title: "Pick Device…"; activated => { root.pick-device(); } }
+        }
+        Menu { title: "Tools"; }
+        Menu { title: "Technology"; }
+        Menu { title: "System"; }
+        Menu {
+            title: "Help";
+            MenuItem { title: "About Atenea"; }
+        }
+    }
     VerticalBox {
         padding: 0;
         spacing: 0;
-        MenuBar {
-            Menu {
-                title: "File";
-                MenuItem { title: "Open…"; activated => { root.open-file(""); } }
-            }
-            Menu { title: "Output"; }
-            Menu {
-                title: "View";
-                MenuItem { title: "Tables"; }
-                MenuItem { title: "Graph"; }
-                MenuItem { title: "Esquema"; }
-                MenuItem { title: "Simulate"; }
-            }
-            Menu { title: "Edit"; }
-            Menu {
-                title: "Library";
-                MenuItem { title: "Pick Device…"; activated => { root.pick-device(); } }
-            }
-            Menu { title: "Tools"; }
-            Menu { title: "Technology"; }
-            Menu { title: "System"; }
-            Menu {
-                title: "Help";
-                MenuItem { title: "About Atenea"; }
-            }
-        }
         // Toolbar row 1: file/edit + simulate (ISIS blue band look).
         HorizontalBox {
             padding: 2px;
