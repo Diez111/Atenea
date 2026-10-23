@@ -365,6 +365,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_connect` ×2 (@0x100045a0/@0x10004630): string parte por
   `_` + `bsearch` (solo OP 0xd/IP 0xe); instancia crea
   `IDSIMPIN2`, linkea y loguea `connecting pin %s:%s`.
+- `dsim_peekpin(modelo, idx, STATE*)` (@0x10003d90): forward con
+  guarda NULL a `FUN_10003da8` (poke simétrico en curso).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
