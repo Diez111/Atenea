@@ -127,6 +127,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `$WR8`; `02 40` = vía + `02 44` pin-ref). Y siempre 0 en samples —
   encoding del eje Y TBD (experimento ARES pendiente). `plib::lyt_tracks`
   une vértices consecutivos del mismo grupo; `02 41` = nets del layout.
+- [x] iconos UI reales: ISIS.DLL `.rsrc` trae 11 grupos RT_GROUP_ICON
+  (33 imágenes RT_ICON 16–48px: chips, transistor, probes, R/C/D,
+  gráficas con ejes, filtros); extraídos a `crates/aui/assets/`
+  (parser PE propio: sección `.rsrc`, dir tipo 14→3). Corrige claim
+  anterior: los iconos NO están dibujados solo en código.
 - [x] UI declarativa: PDS.EXE/ISIS.DLL/ARES.DLL embeben specs UTF-16
   `=KEY,tipo,...` (534 ISIS + 459 ARES + 114 PDS: `=MENU`, `=PREVIEW`,
   `=ADDPIN`, `=ANGLE`, `=COLOUR`, `=LAYER`...) — ver `docs/uispecs.md`.
