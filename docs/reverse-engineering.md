@@ -283,13 +283,17 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::{zap,reset}` (`?zap/reset@NETLIST@@QAEXXZ`): clear/reset.
 - `mdf_id` (`?mdf_id@@3QBDB`): es DATO exportado (buffer char),
   no función — por eso no hay `parse`/decompile.
-- Accessors: `netptr(NET*,int)` / `scriptptr(NET_SCRIPT*,int)` /
-  `addptr` / `addscript(char*,string,...fpos...)` (@0x10012c10: texto
-  + posiciones de archivo) / `addnprop` / `addmoddata(NET_PART*,
-  MODDATA*)` / `addtraceprop(ELEMENT*,PROPLIST*,...,TRACEMODEFLAGS)`
-  (@0x10013e50: nodo `new(0x48)`, `PROPLIST::format`, `DPA::add` en
-  `+0x160` — props de trace para VPROBE/IPROBE) /
-  `setshtstats(SHEET*,int,int)` / `setdsnstats`.
+- Accessors (firmas mangled verificadas, semántica por nombre):
+  `netptr(NET*,int)`/`scriptptr`/`partptr` (indexados),
+  `addptr(BASE*)`, `addnprop(char*,char*)`,
+  `addmoddata(NET_PART*,MODDATA*)`, `setmodstats`,
+  `getnet/getmodule/getscript/getnetprop/getpart/getselector/getsheetid`,
+  `netbounds/partbounds/propbounds/scriptbounds/tracebounds` (bboxes),
+  `traceptr/realtime/iscontext/iscurrentsheet/ismode` (estado sim).
+- `addscript` (`?addscript@...`, @0x10012c10: texto + posiciones `fpos`).
+- `addtraceprop` (`?addtraceprop@...`, @0x10013e50: nodo `new(0x48)`,
+  `PROPLIST::format`, `DPA::add` en `+0x160` — props de trace para
+  VPROBE/IPROBE).
 - `PINOUT::netgen` único método PINOUT en IAT:
   `?netgen@PINOUT@@QAEXAAVNETLIST@@PADPAUNET_PART@@AAVPROPTEXT@@PAUNET_MODULE@@@Z`.
 - `net_gen` path: `tfngen` importado de `LXLCORE.DLL` (ptr `0x10022174`,
