@@ -380,6 +380,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_linkprobe(modelo, PARTITION*, ch)` (@0x10004490): bindea
   probe (`+0x9c` partición, `+0xa4` canal, label truncado 0x20 en
   `+0xa8`); log `DSIM Linked probe %s`.
+- `dsim_linktape(modelo, CHANNEL_ITERATOR*)` (@0x1000442c): espejo
+  de linkprobe para cintas (`+0x9c` iterador, label `+0xa0`);
+  log `DSIM Linked tape %s`.
+- `dsim_writedata(t, modelo)` (@0x10002628): inserta ordenado por
+  tiempo en lista `DAT_100360e8` (corte en `DAT_10036098`).
+- `dsim_getbuspin(IINSTANCE*, nombre, ...)` (@0x10004500): busca
+  modelo en lista (`+8` == instancia), `FUN_10007594` → `IBUSPIN*`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
