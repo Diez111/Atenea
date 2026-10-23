@@ -451,6 +451,40 @@ pub fn parse(text: &str) -> Result<Subckt, ParseError> {
     })
 }
 
+/// Parse every `.SUBCKT` deck in `text` (LML decks concatenate many).
+///
+/// Same grammar as [`parse`], but a second `.SUBCKT` header starts a new
+/// deck instead of erroring. Enabler for `X` instances (match by deck name).
+///
+/// # Errors
+///
+/// [`ParseError::MissingSubckt`] when no header is present at all;
+/// per-deck errors mirror [`parse`].
+#[must_use]
+pub fn parse_many(text: &str) -> Vec<Result<Subckt, ParseError>> {
+    let mut out = Vec::new();
+    let mut current = Vec::new();
+    let mut seen = false;
+    for line in logical_lines(text) {
+        let upper = line.to_ascii_uppercase();
+        if upper.starts_with(".SUBCKT") && seen {
+            out.push(parse(&current.join("\n")));
+            current.clear();
+            seen = false;
+        }
+        if upper.starts_with(".SUBCKT") {
+            seen = true;
+        }
+        current.push(line);
+    }
+    if seen {
+        out.push(parse(&current.join("\n")));
+    } else if out.is_empty() {
+        out.push(Err(ParseError::MissingSubckt));
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -562,6 +596,16 @@ V2 1 2 1.56
         assert_eq!(parse_value("DC"), None);
         assert_eq!(parse_value("RQ"), None);
         assert_eq!(parse_value(""), None);
+    }
+
+    #[test]
+    fn parse_many_splits_decks() {
+        let text = ".SUBCKT A 1 2\nR1 1 2 1K\n.ENDS\n.SUBCKT B 1\nC1 1 0 1u\n.ENDS\n";
+        let decks = parse_many(text);
+        assert_eq!(decks.len(), 2);
+        assert_eq!(decks[0].as_ref().unwrap().name, "A");
+        assert_eq!(decks[1].as_ref().unwrap().name, "B");
+        assert!(parse_many("R1 1 2 10\n")[0].is_err());
     }
 
     #[test]
