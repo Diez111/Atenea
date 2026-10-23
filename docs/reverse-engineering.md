@@ -164,6 +164,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   free, @0x1001f7e0): emite la sección `*PROPDEFS` desde
   `PROPTEXT` + `GDIDX<PROPDEF>` (menciona `COMPONENT`/`PROPDEFS`).
   Cierra el lado escritura: `write` → `net_gen` → `fmtdprop`.
+- `NETLIST::parse_field` (`?parse_field@...`, public, @0x1001bcc0):
+  parser de entradas `*PARTLIST`: por parte `CDBCORE::findpart` +
+  `getpartelements` + `addelement`, con rama `TERMINAL`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
