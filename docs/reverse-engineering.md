@@ -149,6 +149,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] DAC (`NATDAC.LML`, 25 decks): DAC081S101/082S085/084S085/101S101...
   + ADC080X (2950 B); reguladores 7805-7815 en `ANALOG.LML`
   (FORMAT 3.0/8.0, decks `Design: 7812`).
+- [x] CPUs VSM = `createmixedmodel` (núcleo digital + pines analógicos):
+  PIC16EX (14MB: USART/USB/SPI/I2C/ADC/DAC/PWM/CCP/LCD/TMR/WDT/BOR/
+  Comparator/PLL/VREF/SR-latch), AVR2 (4.5MB, GDI propio). Firmware
+  vía HEX (LOADERS.DLL).
 - [x] opto/triac: `OPTO.LIB/LML` (4N2x, MOC3xxx); TRIAC tb. en
   `ANALOG.LIB`/`DEVICE.LIB`; cristales en `DEVICE.LIB` + `ANALOG.LML`.
   `UNIOMEM` 11LC/93LC, `MMC` SD-SPI; +`IDT720X` FIFO, `PCF8570`, `ATA` IDE).
