@@ -34,6 +34,9 @@ Decompiled & applied (loop ledger):
 - [x] `NETLIST::resolve` — MODEL/MODFILE + CDBCORE walk
 - [x] `DSIM::dsim_create` — firma, vtables, lookup primitiva
 - [x] `createdsimmodel` 8155H.dll — factory NULL-si-no-match
+- [x] VSM activos (VTURTLE/DIPSW/CTIMER/COLORLED): `IACTIVEMODEL` +
+  Qt `QPainter`/`QPaintDevice` para animación; SPICE expone `ISPICEMODEL`.
+  Nuestro `vsm`/`nullmodel` espejan la interfaz sin Qt.
 - [x] `CDBCORE` API + pin roles (strings ARES)
 - [ ] `NETLIST::read_models/read_props/sortnets` — pendientes menores
 - [ ] `ISIS.DLL` factory loader — es GetProcAddress (sin función única);
