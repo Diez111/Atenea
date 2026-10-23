@@ -37,6 +37,12 @@ Decompiled & applied (loop ledger):
 - [x] VSM activos (VTURTLE/DIPSW/CTIMER/COLORLED): `IACTIVEMODEL` +
   Qt `QPainter`/`QPaintDevice` para animación; SPICE expone `ISPICEMODEL`.
   Nuestro `vsm`/`nullmodel` espejan la interfaz sin Qt.
+- [x] DSIM.DLL: interfaces `IDSIMCKT`/`IDSIMMODEL`/`IDSIMPIN1`/`IDSIMPIN2`
+  (mixed-mode sim kernel, `DSIM creating net`, breakpoints). `asim` cubre
+  el flujo batch; kernel interactivo = roadmap.
+- [x] ELECTRA.DLL: autorouter Qt (`Adaptive Shape-Based AutoRouter`,
+  `AutoRouteRun/PauseAction`) — router propio = roadmap, formato LYT ya
+  parseado (pads/sheets/CLASSES/SIGNAL).
 - [x] `CDBCORE` API + pin roles (strings ARES)
 - [ ] `NETLIST::read_models/read_props/sortnets` — pendientes menores
 - [ ] `ISIS.DLL` factory loader — es GetProcAddress (sin función única);

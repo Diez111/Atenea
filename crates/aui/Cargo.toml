@@ -1,0 +1,17 @@
+[package]
+name = "aui"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "Atenea UI: Slint shell 100% glue over the aengine worker (no logic on the UI thread)"
+
+[dependencies]
+aengine = { path = "../aengine" }
+rfd = "0.15"
+slint = { version = "1.18", default-features = true, features = ["backend-winit"] }
+
+[build-dependencies]
+slint-build = "1.18"
+
+[lints]
+workspace = true

@@ -1,0 +1,107 @@
+// Atenea shell: menu + tab bar + views, all data from aengine.
+import { HorizontalBox, VerticalBox, TabWidget, ListView, LineEdit, Button } from "std-widgets.slint";
+
+export struct PartRow {
+    reference: string,
+    kind: string,
+    value: string,
+}
+
+export struct NetRow {
+    id: string,
+    pins: string,
+}
+
+export component Atenea inherits Window {
+    title: "Atenea — clon nativo interoperable";
+    min-width: 900px;
+    min-height: 600px;
+
+    in-out property <string> status: "listo";
+    in-out property <string> filter: "";
+    in-out property <[PartRow]> parts;
+    in-out property <[NetRow]> nets;
+    in-out property <string> erc_text: "";
+    in-out property <string> sim_text: "";
+
+    callback open-file(string);
+    callback run-sim();
+    callback run-erc();
+    callback pick-device();
+
+    MenuBar {
+        Menu {
+            title: "File";
+            MenuItem { title: "Open…"; activated => { root.open-file(""); } }
+        }
+        Menu {
+            title: "View";
+            MenuItem { title: "Tables"; }
+            MenuItem { title: "Graph"; }
+            MenuItem { title: "Esquema"; }
+            MenuItem { title: "Simulate"; }
+        }
+        Menu {
+            title: "Library";
+            MenuItem { title: "Pick Device…"; activated => { root.pick-device(); } }
+        }
+        Menu {
+            title: "Graph";
+            MenuItem { title: "Run ERC"; activated => { root.run-erc(); } }
+        }
+        Menu {
+            title: "Help";
+            MenuItem { title: "About Atenea"; }
+        }
+    }
+    VerticalBox {
+        HorizontalBox {
+            Text { text: "Atenea"; font-size: 14px; font-weight: 700; }
+            LineEdit { placeholder-text: "filter…"; text <=> root.filter; }
+            Button { text: "Simulate"; clicked => { root.run-sim(); } }
+        }
+        TabWidget {
+            Tab {
+                title: "Tables";
+                HorizontalBox {
+                    VerticalBox {
+                        Text { text: "Parts"; font-weight: 700; }
+                        ListView {
+                            for p in root.parts: HorizontalBox {
+                                Text { text: p.reference; width: 90px; }
+                                Text { text: p.kind; width: 90px; }
+                                Text { text: p.value; }
+                            }
+                        }
+                    }
+                    VerticalBox {
+                        Text { text: "Nets"; font-weight: 700; }
+                        ListView {
+                            for n in root.nets: HorizontalBox {
+                                Text { text: n.id; width: 110px; }
+                                Text { text: n.pins; }
+                            }
+                        }
+                    }
+                }
+            }
+            Tab {
+                title: "Esquema";
+                Text { text: "Hoja ISIS (wires/placements vía aengine) — render 2D en curso"; }
+            }
+            Tab {
+                title: "Simulate";
+                VerticalBox {
+                    Text { text: root.sim_text; }
+                }
+            }
+            Tab {
+                title: "ERC";
+                VerticalBox {
+                    Text { text: root.erc_text; }
+                }
+            }
+        }
+        Text { text: root.status; font-size: 11px; }
+    }
+}
