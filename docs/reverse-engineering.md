@@ -228,6 +228,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::netcleanup` (`?netcleanup@NETLIST@@QAEXPAUNET@@HHH@Z`,
   public, @0x10015690): compacta/dedup array de pines (`+0x4`, count
   `+0x10`), re-enlaza pin→net, `NETLOG::logerror` si hay.
+- `NETLIST::pathgen` (`?pathgen@NETLIST@@QAEPADPAUNET_MODULE@@H@Z`,
+  public, @0x10012e40): recorre cadena de módulos (`+0x38`), genera
+  path jerárquico (llama `setcdbroot/link/addmodule/addmodelinstance`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
