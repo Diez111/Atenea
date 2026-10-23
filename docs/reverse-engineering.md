@@ -317,6 +317,21 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::getsheetid` (`?getsheetid@NETLIST@@QAEKXZ`, public,
   @0x1000e310): `**(SHEET**)this ?: 0` — id de la hoja actual
   (la que fija `setshtstats` en `+0x0`).
+- Mapa objeto `NETLIST` (offsets verificados en decompilados):
+  `+0x0` SHEET* actual, `+0x1c` CDBWALKQ*, `+0x20` módulo raíz,
+  `+0x24/+0x28/+0x30` flags (bits: 2 graph, 3 realtime, 4 dxp, 5 bom),
+  `+0x34` flags hoja, `+0x38` OR-mask, `+0x3c` PROPLIST* DSN,
+  `+0x64` PROPLIST DSN_* (+100 dec), `+0x70`/`+0x74` tabla PROPDEFS
+  (`KEY\0valor`), `+0x88` DPA maptables, `+0x9c` PROPLIST MODELDEFS,
+  `+0x100` PARTLIST, `+0x10c` count partes, `+0x110` array partes,
+  `+0x140` DIDX scripts, `+0x160` DPA traces, `+0x170` array TRACEPROP,
+  `+0x180` count nets, `+0x184` array nets, `+0x1a0` SLIST netprops,
+  `+0x1a8` NET_PMT pendiente, `+0x1ac` SLIST sub-partes,
+  `+0x19c` módulo actual, `+0x19c+0x44` PROPLIST módulo,
+  `+0x1c4` SLIST staging (addwire/addptr), `+0x1cc..0x1ec` staging
+  (count `+0x1d8`, sucio `+0x1dc`, merge `+0x1e0/0x1e4/0x1e8/0x1ec`),
+  `+0x200/count+0x240` sample keys, `+0x244/count+0x284` product keys,
+  `+0xc0` DIDX modfiles.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
