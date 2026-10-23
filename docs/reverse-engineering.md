@@ -332,6 +332,14 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (count `+0x1d8`, sucio `+0x1dc`, merge `+0x1e0/0x1e4/0x1e8/0x1ec`),
   `+0x200/count+0x240` sample keys, `+0x244/count+0x284` product keys,
   `+0xc0` DIDX modfiles.
+- Layouts secundarios (offsets verificados): NET `+0x4` array pines
+  (stride `0x48`, rol `ELECTYPES` en `+0x38`), `+0x8` array props (stride `0x66`: clave `+0x0`, valor `+0x33`), count pines `+0x10`,
+  count props `+0x14`, estado `+0x20`; NET_PART `+0x4` nombre?, `+0xdc`
+  estado PSM, `+0xe8` link, `+0xf8` PINSWAP list, `+0x118` extra;
+  NET_MODULE `+0x38` parent, `+0x3c` NET_PART link, `+0x44` NRPROPLIST;
+  MODULE `+0x8` nombre (0x32), `+0x78` param, `+0x7c` UID;
+  ELEMENT `+0xc` UID, `+0x80/84/88` PINTEXT; TRACEPROP en DPA `+0x160`;
+  SHEET `+0x8` índice; PROPLIST=`+0x64` DSN (KEY\0valor).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
