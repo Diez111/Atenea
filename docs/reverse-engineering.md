@@ -96,6 +96,15 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (@0x1000e170) — decompilados Ghidra vía REA (ver notas abajo)
 - [ ] `ISIS.DLL` factory loader — es GetProcAddress (sin función única);
   mecanismo documentado + espejado en `vsm-host` ✓
+- [x] ISIS anotador: operación batch (`RST: ISIS\\Command` `Performing
+  Annotation on Design...`); habilita back-annotation + pinswap
+  automático; terminales de potencia anotados crean rails.
+- [x] CONSOLE.EXE: verbos `simulate|dumptables` + `Usage: %s
+  input_file output_file`, perfilado dinámico, constant propagation.
+- [x] SPICEINP 25 tarjetas: `.model .width .print .plot .temp .op
+  .nodeset .disto .noise .four/.fourier .ic .ac .pz .dc .tf .tran
+  .subckt/.ends/.end .options/.option/.opt .sens .probe`
+  (`.TEMP` obsoleta: usar `.options TEMP/TNOM).
 - [x] plantillas: .LTF = mismo magic LYT, .DTF = variante DSN (dsn_dump las abre, 0 wires: hojas vacías); .pjnt = XHTML.
 - [x] PACKAGE (9) y SYMBOL (2) libs: mismo DIR stride-80/nombres-64 (CONNECTORS.LIB: 230 entradas, parse_lib_dir sirve sin cambios) + cuerpos 02-frames/braces; .STY = estilos pad ASCII; .VML = modelos 3D binarios.
 - [x] cuerpos .LIB: mismo framing 02 xx + scripts {PREFIX=}/{PINDEFAULT}/{PROPDEFS}/{PROGRAM}/{MODDLL} (plib device_props, 8 KiB window) - link device->package->modelo; aengine lo expone en Pick Device.
