@@ -5,6 +5,7 @@
 //! render thread never blocks.
 
 use std::collections::HashMap;
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{self, Receiver, Sender};
 
@@ -410,6 +411,89 @@ fn worker(rx: &Receiver<Job>) {
     }
 }
 
+/// Render the sheet (`wires` + `placements`) as a standalone SVG string
+/// (ISIS look: light paper, blue sheet border, dark wires, thick buses).
+/// Pure function — the worker builds it, the UI only displays it.
+#[must_use]
+pub fn sheet_svg(doc: &DocSnapshot, width: u32, height: u32) -> String {
+    let mut xs = Vec::new();
+    let mut ys = Vec::new();
+    for (x1, y1, x2, y2, _) in &doc.wires {
+        xs.extend_from_slice(&[*x1, *x2]);
+        ys.extend_from_slice(&[*y1, *y2]);
+    }
+    for (_, x, y) in &doc.placements {
+        xs.push(*x);
+        ys.push(*y);
+    }
+    let (min_x, max_x) = minmax(&xs, 400.0);
+    let (min_y, max_y) = minmax(&ys, 300.0);
+    let pad_x = (max_x - min_x).max(1.0) * 0.06;
+    let pad_y = (max_y - min_y).max(1.0) * 0.06;
+    let lo_x = min_x - pad_x;
+    let hi_x = max_x + pad_x;
+    let lo_y = min_y - pad_y;
+    let hi_y = max_y + pad_y;
+    let w = f64::from(width).max(1.0);
+    let h = f64::from(height).max(1.0);
+    let sx = w / (hi_x - lo_x);
+    let sy = h / (hi_y - lo_y);
+    let sc = sx.min(sy);
+    let ox = (w - (hi_x - lo_x) * sc) / 2.0;
+    let oy = (h - (hi_y - lo_y) * sc) / 2.0;
+    let px = |x: f64| ox + (x - lo_x) * sc;
+    // SVG origin is top-left: flip Y.
+    let py = |y: f64| h - (oy + (y - lo_y) * sc);
+    let mut s = format!(
+        "<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>\n<rect x='0' y='0' width='{width}' height='{height}' fill='#f4f6fa'/>\n"
+    );
+    // Sheet border (ISIS blue).
+    let _ = writeln!(
+        s,
+        "<rect x='{ox:.0}' y='{oy:.0}' width='{:.0}' height='{:.0}' fill='#ffffff' stroke='#0f4c9c' stroke-width='2'/>",
+        (hi_x - lo_x) * sc,
+        (hi_y - lo_y) * sc
+    );
+    for (x1, y1, x2, y2, bus) in &doc.wires {
+        let sw = if *bus { 3 } else { 1 };
+        let _ = writeln!(
+            s,
+            "<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='#1c2733' stroke-width='{sw}'/>",
+            px(*x1),
+            py(*y1),
+            px(*x2),
+            py(*y2)
+        );
+    }
+    for (text, x, y) in &doc.placements {
+        let esc = text.replace('&', "&amp;").replace('<', "&lt;");
+        let _ = writeln!(
+            s,
+            "<text x='{:.1}' y='{:.1}' font-family='monospace' font-size='11' fill='#0f4c9c'>{esc}</text>",
+            px(*x),
+            py(*y)
+        );
+    }
+    s.push_str("</svg>\n");
+    s
+}
+
+fn minmax(v: &[f64], fallback: f64) -> (f64, f64) {
+    if v.is_empty() {
+        return (0.0, fallback);
+    }
+    let mut lo = f64::INFINITY;
+    let mut hi = f64::NEG_INFINITY;
+    for x in v {
+        lo = lo.min(*x);
+        hi = hi.max(*x);
+    }
+    if hi <= lo {
+        hi = lo + 1.0;
+    }
+    (lo, hi)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -449,5 +533,23 @@ C1,PS,1
         let eng = Engine::spawn();
         let (errs, _) = eng.validate(RC).recv().unwrap();
         assert!(errs.is_empty(), "{errs:?}");
+    }
+
+    #[test]
+    fn svg_renders_wires_and_labels() {
+        let mut snap = DocSnapshot {
+            name: "t".to_owned(),
+            kind: "dsn".to_owned(),
+            ..DocSnapshot::default()
+        };
+        snap.wires.push((0.0, 0.0, 10.0, 0.0, false));
+        snap.wires.push((0.0, 0.0, 0.0, 5.0, true));
+        snap.placements.push(("VCC".to_owned(), 10.0, 0.0));
+        let svg = sheet_svg(&snap, 800, 600);
+        assert!(svg.starts_with("<svg"));
+        assert_eq!(svg.matches("<line").count(), 2);
+        assert!(svg.contains("stroke-width='3'"));
+        assert!(svg.contains(">VCC</text>"));
+        assert!(svg.contains("#0f4c9c"));
     }
 }
