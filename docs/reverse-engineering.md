@@ -264,6 +264,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::partssize` (`?partssize@NETLIST@@QAEHXZ`, @0x1000e290):
   `return count(+0x10c)` — tamaño del array de partes (`nodegen`
   itera `+0x10c/+0x110`).
+- PSM (power-state pass, privados): `psm_crc` (@0x1001afd0) = CRC32
+  sobre la tabla PROPDEFS (`+0x74`, count `+0x70`); `psm_netprop`
+  (@0x1001aa60) busca roles OP(0xd)/IP(0xe) en pines y asigna estado
+  de net; `psm_partprop` (@0x1001a8a0) transiciona estado de parte
+  (`+0xdc/+0xe8`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
