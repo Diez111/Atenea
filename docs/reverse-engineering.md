@@ -91,7 +91,25 @@ Decompiled & applied (loop ledger):
   `[NC MOD PR BT OT IT GT LBL PP PD PU TS IO OP IP PS DEFNET …]`
   (índices 0–16). Rol `0xe`=IP se remapea a `0xd`=OP y va a `addlabel`
   en vez de `addpin`. Roles <8 → pin, <0xf → net.
-- `resolve` (`void NETLIST::resolve(char const*)`, Ghidra): recorre partes,
+- `NETLIST::validate` (`?validate@NETLIST@@QAEXXZ`, `void __thiscall`,
+  @0x100175b0): solo 2× `NETLOG::logerror` — hide-common-pins +
+  `Power rails '%s' and '%s' interconnected`. `asim::validate` lo espeja.
+- `NETLIST::getpwrnets` (`?getpwrnets@NETLIST@@QAEXAAV?$GDPA@UNET@@@@@Z`)
+  enumera power-nets (base del `validate` de rails + default `POWER`).
+- `NETLIST::{zap,reset}` (`?zap/reset@NETLIST@@QAEXXZ`): clear/reset.
+- Accessors: `netptr(NET*,int)` / `scriptptr(NET_SCRIPT*,int)` /
+  `addptr/addscript/addnprop/addmoddata(NET_PART*,MODDATA*)` /
+  `addtraceprop(ELEMENT*,PROPLIST*,...,TRACEMODEFLAGS)` /
+  `setshtstats(SHEET*,int,int)` / `setdsnstats`.
+- `PINOUT::netgen` único método PINOUT en IAT:
+  `?netgen@PINOUT@@QAEXAAVNETLIST@@PADPAUNET_PART@@AAVPROPTEXT@@PAUNET_MODULE@@@Z`.
+- `net_gen` path: `tfngen` importado de `LXLCORE.DLL` (ptr `0x10022174`,
+  calls `0x1000fa8a/0x100fab8`); `fopen` vía `MSVCR90` (ptr `0x10022398`);
+  fallo → `PUSH 0xa002` en `0x1000fae3`.
+- CDBCORE I/O: `loadsheet 0x10004670` / `savesheet 0x100047c0` /
+  `loadbindings 0x10008dc0` / `savebindings 0x10009340` (+ `save/load`
+  ya documentados). `MODULE`: `+0x08` nombre, `+0x78/+0x7c u32`,
+  `+0x80` ptr nullable contado.
   lee props `MODEL`/`MODFILE` y resuelve contra la DB de modelos;
   usa `CDBCORE` en stack para el walk. Nuestra `asim` hoy rechaza
   `Q/D/U` (futura vía: resolver `MODEL`/`MODFILE` con `pmodel::modeldefs`).
