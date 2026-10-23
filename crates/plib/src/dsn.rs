@@ -196,6 +196,63 @@ pub fn placements(data: &[u8]) -> Vec<Placed> {
     out
 }
 
+/// One PCB track segment in internal units (1 unit = 10 nm).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Track {
+    /// Start x.
+    pub x1: i32,
+    /// Start y (`0` in the samples seen — axis TBD).
+    pub y1: i32,
+    /// End x.
+    pub x2: i32,
+    /// End y.
+    pub y2: i32,
+    /// 3-byte group id shared by chained vertices (`cc ff 00` in Cpur).
+    pub group: [u8; 3],
+}
+
+/// Track-vertex marker (`02 60 <group:3B> <x:i32> <y:i32> ...`).
+const TRACK_MARK: &[u8] = b"\x02\x60";
+
+/// Extract PCB track segments from `.LYT` (ARES side).
+///
+/// Consecutive `02 60` vertices sharing the 3-byte group id form one
+/// polyline; each link becomes a [`Track`]. Verified on `Cpur.LYT`
+/// (2 vertices → 1 segment, `$WR8`); `02 40` = via + `02 44` pin ref
+/// (framing TBD). Y reads `0` in the samples — axis encoding TBD.
+#[must_use]
+pub fn lyt_tracks(data: &[u8]) -> Vec<Track> {
+    let mut verts: Vec<([u8; 3], i32, i32)> = Vec::new();
+    let mut i = 0;
+    while i + 13 <= data.len() {
+        if data[i] == TRACK_MARK[0] && data[i + 1] == TRACK_MARK[1] {
+            let group = [data[i + 2], data[i + 3], data[i + 4]];
+            let x = i32::from_le_bytes([data[i + 5], data[i + 6], data[i + 7], data[i + 8]]);
+            let y = i32::from_le_bytes([data[i + 9], data[i + 10], data[i + 11], data[i + 12]]);
+            // Sanity: board-scale coords, group id non-zero.
+            if x.abs() < 100_000_000 && y.abs() < 100_000_000 && group != [0, 0, 0] {
+                verts.push((group, x, y));
+            }
+            i += 13;
+            continue;
+        }
+        i += 1;
+    }
+    let mut out = Vec::new();
+    for w in verts.windows(2) {
+        if w[0].0 == w[1].0 {
+            out.push(Track {
+                x1: w[0].1,
+                y1: w[0].2,
+                x2: w[1].1,
+                y2: w[1].2,
+                group: w[0].0,
+            });
+        }
+    }
+    out
+}
+
 /// One graphic symbol record: template name + candidate vertices.
 ///
 /// Template directory form (verified `siggen.DSN`): `02 7F 00 LEN NAME
@@ -440,6 +497,25 @@ mod tests {
             b"\x01\x02{*DEVICE} PREFIX=U PINOUT=7404\0\xff{*COMPONENT} {MODFILE=74INV.MDF}\0",
         );
         v
+    }
+
+    #[test]
+    fn lyt_tracks_chain() {
+        // Two chained `02 60` vertices (Cpur.LYT shape) -> 1 segment.
+        let mut v = Vec::new();
+        for x in [14_239_744i32, 10_233_560i32] {
+            v.extend_from_slice(b"\x02\x60\xcc\xff\x00");
+            v.extend_from_slice(&x.to_le_bytes());
+            v.extend_from_slice(&0i32.to_le_bytes());
+        }
+        let t = super::lyt_tracks(&v);
+        assert_eq!(t.len(), 1);
+        assert_eq!(t[0].x1, 14_239_744);
+        assert_eq!(t[0].x2, 10_233_560);
+        assert_eq!(t[0].group, [0xcc, 0xff, 0x00]);
+        // Different groups do not chain.
+        v[2] = 0x01;
+        assert!(super::lyt_tracks(&v).is_empty());
     }
 
     #[test]
