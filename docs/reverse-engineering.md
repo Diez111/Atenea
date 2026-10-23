@@ -91,6 +91,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   Nuestro `vsm-host` pisa en 1000 ps hoy (coherente).
 - `dsim_linknet(nombre, STATE**)` (@0x10004288): resuelve net por
   nombre → `STATE*` en `+0x3c`, 1/0.
+- `dsim_bootstep` (@0x10003938): `boot init...` por callback SIMLOG;
+  itera lista de modelos (`+0x35f70`, count `+0x35f6c`) con init
+  por modelo.
 - `dsim_initialize(SDF_NETLIST*, IDSIMCKT**)` (@0x1001fc14):
   construye el `IDSIMCKT` singleton (`DAT_100360ec`) desde el
   SDF netlist + resetea estado (`DAT_10035928/20/24/5c`).
