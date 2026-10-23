@@ -261,6 +261,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `ITFMOD/MODDATA/MODEL/MODFILE/POWER/PRIMITIVE/TRACE/VALUE`;
   gated por flag `+0x24&4` y NO-`dxp` (`+0x28&0x10`) — es el worker
   del path DXP.
+- `NETLIST::partssize` (`?partssize@NETLIST@@QAEHXZ`, @0x1000e290):
+  `return count(+0x10c)` — tamaño del array de partes (`nodegen`
+  itera `+0x10c/+0x110`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
