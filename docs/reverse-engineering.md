@@ -236,6 +236,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   duplicado → `Duplicate entry '%s' found in MAP ON %s table`.
 - `CDBCORE::getmodule` (`?getmodule@CDBCORE@@QAEPAUMODULE@@K@Z`, @0x10001030):
   índice 1-based a array de `MODULE*` (`+0x250`, count `+0x24c`).
+- `NETLIST::numberpins` (`?numberpins@NETLIST@@QAEHXZ`, public,
+  @0x10016050): cuenta pines con nombre (stride `0x48` en `+0xc`,
+  count `+0x18`, nombre no vacío) — segundo array de pines además
+  del de `getpwrnets`/`netmerge`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
