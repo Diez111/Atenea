@@ -137,6 +137,15 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `STARTUP.ini` = HTML del update manager (anuncio Proteus 9).
 - [x] DSO.DLL = osciloscopio Win32 (`DialogBoxParamA`, `DisplayColorChannel%i`,
   `createactivemodel`) — instrumento con UI nativa, no Qt.
+- [x] instrumentos/comms: `SPEAKER.DLL` = `IACTIVEMODEL` + WinMM
+  (`waveOutOpen/Write/...`) — playback real; `VGPS.dll` habla
+  NMEA+MTK (`GPGGA/GPRMC/PMTK`, baud/fix interval);
+  `COMPIM.dll` = puente COM físico/virtual (RS232).
+- [x] RTC (14 DLLs, 7 familias): DS12887 paralelo, DS1302 3-wire,
+  DS1307/1337/1338/1340 + DS3232/3234 + PCF2123/8523/8563/8583 +
+  MCP7941X + MAX6902 (I2C/SPI, BCD, VBAT, alarmas); ABI DSIM.
+- [x] displays (`DISPLAY.LML`): LCDALPHA=HD44780, LCDMPX, LCDPIXEL,
+  COLORLED, ColorLcd (PRIMITIVE DIGITAL/ANALOG, no Qt).
 - [x] motores: `MOTORS.LML` (11 modelos SPICE: 3PHMOTOR, BISTEPPER,
   BLDC*, DCFAN, DCMOTOR, SERVO, STEPPER...; sondas `RTVPROBE
   RPM/ANGLE/TORQUE/SPEED`, params `STEP/RPM/OMEGA/LCOIL/VNOM/KTORQUE`);
