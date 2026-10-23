@@ -33,7 +33,9 @@ Decompiled & applied (loop ledger):
 - [x] `NETLIST::net_erc` — UNDRIVEN / SINGULAR LABEL / connected to
 - [x] `NETLIST::resolve` — MODEL/MODFILE + CDBCORE walk
 - [x] `DSIM::dsim_create` — firma, vtables, lookup primitiva
-- [x] modelos VSM (212 DLLs en MODELS/): 162 exponen `createdsimmodel`
+- [x] firmware/mecánico: LOADERS.DLL carga HEX/ELF/COFF + list files
+  (VSM CPUs); `BIN/citf/` importa 3D STEP/IGES (OpenCASCADE TK*).
+  DIYSTAMP.EXE es compilador BASIC de terceros (no Proteus).
   (primitiva DSIM) y 34 `createactivemodel`/`deleteactivemodel`
   (animados: BLDCanim, VGPS expone `IACTIVEMODEL`/`IDSIMMODEL`).
   Nuestro `vsm-host` carga ambas familias por nombre.
