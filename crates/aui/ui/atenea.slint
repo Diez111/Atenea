@@ -63,6 +63,14 @@ export component Atenea inherits Window {
         Menu { title: "Technology"; }
         Menu { title: "System"; }
         Menu {
+            title: "Graph";
+            MenuItem { title: "Add Transient Graph"; activated => { root.tool-selected("graph-transient"); } }
+            MenuItem { title: "Add Frequency Graph"; activated => { root.tool-selected("graph-frequency"); } }
+            MenuItem { title: "Add DC Sweep Graph"; activated => { root.tool-selected("graph-dc"); } }
+            MenuItem { title: "Add AC Sweep Graph"; activated => { root.tool-selected("graph-ac"); } }
+            MenuItem { title: "Run ERC"; activated => { root.run-erc(); } }
+        }
+        Menu {
             title: "Help";
             MenuItem { title: "About Atenea"; }
         }

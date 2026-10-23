@@ -144,6 +144,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `net_gen`, `net_erc`, `write`/`writeheader`, `mdf_id`.
 - Strings: `SPICEMODEL`, `MODFILE`, `VSM DLL Model [%s]`, `DSNCVT40.DLL`,
   `dsn_editdesign`, `Complile Netlist` [sic].
+- `NETLIST::parse_define` (`?parse_define@NETLIST@@QAEXAAV?$basic_istream...`,
+  public, @0x1001b850): loop `getline` hasta `*`; `getpropname('=')` +
+  `skipspaces` → `PROPLIST[this+100]` si `atrootlevel()` + además
+  `PROPLIST[modulo_actual+0x44]`; al topar `*` hace `seekg` atrás para
+  que el dispatcher vea el terminador. (En SDF de texto no hay
+  `*DEFINE` — vive en DSN binario.)
 - `NETLIST::read_models` (`?read_models@NETLIST@@AAEXAAV?$basic_istream...`,
   @0x10018a80): `skippast(',')` + `getint(count)`; loop `getline(0x2000)`
   + `getpropname(':')` + `skipspaces` + `PROPLIST::add(this+0x9c)`.
