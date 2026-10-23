@@ -375,8 +375,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_mergenets(n1, n2)` (@0x10003ed8): fusiona nets con tabla
   de combinación de estados 32×32 (`DAT_10035960`, índices
   `&0x1f`); re-apunta pines (`+0x54/+0x58`).
-- `dsim_createadcs` (@0x100043bc): registra conversores ADC en
-  lista `+0x36040` (DAC simétrico en curso).
+- `dsim_createadcs`/`createdacs` (@0x100043bc/@0x10004348): registran
+  conversores en lista `+0x36040` (flag ADC `+6`, DAC `+0xb`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
