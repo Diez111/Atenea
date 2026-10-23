@@ -146,7 +146,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   MCP7941X + MAX6902 (I2C/SPI, BCD, VBAT, alarmas); ABI DSIM.
 - [x] displays (`DISPLAY.LML`): LCDALPHA=HD44780, LCDMPX, LCDPIXEL,
   COLORLED, ColorLcd (PRIMITIVE DIGITAL/ANALOG, no Qt).
-- [x] memorias: 4 DLLs genéricas (`I2CMEM` 24LCxx, `SPIMEM` 25LC/M25P,
+- [x] DAC (`NATDAC.LML`, 25 decks): DAC081S101/082S085/084S085/101S101...
+  + ADC080X (2950 B); reguladores 7805-7815 en `ANALOG.LML`
+  (FORMAT 3.0/8.0, decks `Design: 7812`).
   `UNIOMEM` 11LC/93LC, `MMC` SD-SPI; +`IDT720X` FIFO, `PCF8570`, `ATA` IDE).
 - [x] entrada: `KEYPAD.DLL` = active model que captura teclado PC
   (`VkKeyScanA`); matrices en `ACTIVE.LML`.
