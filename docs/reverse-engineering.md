@@ -211,6 +211,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   @0x100154f0): fusiona dos NETs (`realloc`+`memcpy`: pines stride
   `0x48` en `+0x4`/count `+0x10`, segundo array stride `0x66` en
   `+0x8`/count `+0x14`) — confirma tamaño de pin 0x48 de `getpwrnets`.
+- `NETLIST::getnet` (`?getnet@NETLIST@@QAEPAUNET@@PBD@Z`, public,
+  @0x10015c50): NULL→`""`, `#N` numérico o corta en `=`; scan lineal
+  del array `+0x198/+0x194`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
