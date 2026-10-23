@@ -146,7 +146,16 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   MCP7941X + MAX6902 (I2C/SPI, BCD, VBAT, alarmas); ABI DSIM.
 - [x] displays (`DISPLAY.LML`): LCDALPHA=HD44780, LCDMPX, LCDPIXEL,
   COLORLED, ColorLcd (PRIMITIVE DIGITAL/ANALOG, no Qt).
-- [x] motores: `MOTORS.LML` (11 modelos SPICE: 3PHMOTOR, BISTEPPER,
+- [x] memorias: 4 DLLs genéricas (`I2CMEM` 24LCxx, `SPIMEM` 25LC/M25P,
+  `UNIOMEM` 11LC/93LC, `MMC` SD-SPI; +`IDT720X` FIFO, `PCF8570`, `ATA` IDE).
+- [x] entrada: `KEYPAD.DLL` = active model que captura teclado PC
+  (`VkKeyScanA`); matrices en `ACTIVE.LML`.
+- [x] sensores (83 DLLs): BMP180/DHTXX/DS182X + HYT271/SHT2X/TH02
+  (hum), DS1620/LM75/TC7X/MCP980X (temp), MAX31855/66745 (termopar),
+  SRF04 (ultrasonido), INA219 (potencia); patrón DSIM.
+- [x] ADC (20+ DLLs): `createmixedmodel` (ADC083X, LTC24XX) vs DSIM
+  puro (MCP300X, TLC254X, MAX12X, AD1674); analógico vía `MODFILE` +
+  `ITFMOD` (TTL/TLC1543ITF/ADS7824ITF...).
   BLDC*, DCFAN, DCMOTOR, SERVO, STEPPER...; sondas `RTVPROBE
   RPM/ANGLE/TORQUE/SPEED`, params `STEP/RPM/OMEGA/LCOIL/VNOM/KTORQUE`);
   `ROTOR.DLL`/`BLDCanim.dll` animación mecánica.
