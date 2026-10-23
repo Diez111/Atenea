@@ -170,6 +170,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::bom`/`dxp` (`?bom/dxp@NETLIST@@QAEHXZ`, @0x1000e050/
   0x1000e040): NO generan nada — son getters de bits de opción
   (`(flags+0x28>>5)&1` / `(>>4)&1`). La salida BOM va por `net_gen`.
+- `NETLIST::setdsnstats` (`?setdsnstats@NETLIST@@QAEXIIIPAUCDBWALKQ@@PAVPROPLIST@@@Z`,
+  public, @0x10012900): flags `+0x24/+0x28/+0x30` (+0x28 bit4/5 =
+  `dxp()`/`bom()`), `CDBWALKQ` en `+0x1c`, `PROPLIST` en `+0x3c`.
+- `NETLIST::setshtstats` (`?setshtstats@NETLIST@@QAEXPAUSHEET@@HH@Z`,
+  public, @0x10012930): hoja vía tabla `+0xf0` (índice `*(sheet+8)`),
+  módulo en `+0x19c`, flags `+0x34`, `+0x38`; vacía SLIST `+0x1a0`
+  (staging de netprops).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
