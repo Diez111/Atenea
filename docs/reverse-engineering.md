@@ -201,6 +201,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   crea `NET_MODULE` desde `NET_PART` (link `+0x3c`, copia nombre).
 - `NETLIST::addmodfile` (`?addmodfile@NETLIST@@QAEXPAD@Z`, @0x1000e100):
   `strdup` + `DIDX::add(+0xc0)` — lista de MODFILE paths.
+- `NETLIST::applymapping` (`?applymapping@NETLIST@@AAEXPAUNET_PMT@@PAUNET_MODULE@@@Z`,
+  private, @0x10015980): runtime de `*MAPPINGS` — `getselector` +
+  `PROPLIST[]` con fallback `DEFAULT`.
+- `NETLIST::nodegen` (`?nodegen@NETLIST@@QAEXXZ`, public, @0x10017690):
+  numeración de nodos sobre array `+0x198/+0x194` (mismo que `sortnets`),
+  contadores de pin `+0xcc/+0xd0`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
