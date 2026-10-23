@@ -559,6 +559,33 @@ pub fn simulate_tran(
     trace(&out, vars.len()).ok_or_else(|| SimError::BadNetlist("no trace table".to_owned()))
 }
 
+/// Transient sim with D/Q default-model substitution (see
+/// [`elements_with_subs`]). Returns the trace plus substitution warnings.
+///
+/// # Errors
+///
+/// Same as [`simulate_tran`], via [`to_cir_with_subs`].
+pub fn simulate_tran_with_subs(
+    doc: &pmodel::Document,
+    title: &str,
+    dt: &str,
+    t_end: &str,
+    vars: &[&str],
+) -> Result<(Trace, Vec<String>), SimError> {
+    let (errs, _warns) = validate(doc);
+    if !errs.is_empty() {
+        return Err(SimError::BadNetlist(format!(
+            "validate: {}",
+            errs.join("; ")
+        )));
+    }
+    let (netlist, subs) = to_cir_with_subs(doc, title, dt, t_end, vars)?;
+    let out = run(&netlist)?;
+    let trace =
+        trace(&out, vars.len()).ok_or_else(|| SimError::BadNetlist("no trace table".to_owned()))?;
+    Ok((trace, subs))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

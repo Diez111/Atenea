@@ -242,8 +242,8 @@ fn cmd_wires(path: &str) -> Result<String, String> {
 fn cmd_sim(path: &str, vars: &[&str], tstop: &str) -> Result<String, String> {
     let text = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
     let doc = pmodel::parse(&text).map_err(|e| e.to_string())?;
-    let trace =
-        asim::simulate_tran(&doc, "acore", "10u", tstop, vars).map_err(|e| format!("{e:?}"))?;
+    let (trace, subs) = asim::simulate_tran_with_subs(&doc, "acore", "10u", tstop, vars)
+        .map_err(|e| format!("{e:?}"))?;
     let mut o = String::from("{\"vars\":[");
     for (i, v) in trace.vars.iter().enumerate() {
         if i > 0 {
@@ -263,6 +263,17 @@ fn cmd_sim(path: &str, vars: &[&str], tstop: &str) -> Result<String, String> {
         o.push(']');
     }
     o.push_str("]}");
+    if !subs.is_empty() {
+        o.push_str(",\"subs\":[");
+        for (i, s) in subs.iter().enumerate() {
+            if i > 0 {
+                o.push(',');
+            }
+            let _ = write!(o, "\"{}\"", esc(s));
+        }
+        o.push(']');
+    }
+    o.push('}');
     Ok(o)
 }
 
