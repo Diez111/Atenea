@@ -90,6 +90,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] ELECTRA.DLL: autorouter Qt (`Adaptive Shape-Based AutoRouter`,
   `AutoRouteRun/PauseAction`) — router propio = roadmap, formato LYT ya
   parseado (pads/sheets/CLASSES/SIGNAL).
+- [x] CDBCORE constructores (`@0x1003860/0x1003800`): `addelement`
+  (`getelement(sheet,uid)` si no `newelement`; UID en `+0xc`,
+  `PINTEXTDATA`→`+0x80/84/88`, registro en `+0x304`) y `addmodule`
+  (`newmodule`, nombre `strnzcpy 0x32` en `+0x8`, `+0x78`=param,
+  `+0x7c`=UID, registro en `+0x31c`) — confirman al byte nuestro
+  layout `pproj::cdb` (nombre+0x08, u32s+0x78/+0x7c, pines+0x80).
 - [x] `CDBCORE` API + pin roles (strings ARES)
 - [x] `NETLIST::read_models` (private, @0x10018a80) + `read_props`
   (@0x10018810) + `sortnets` (public, @0x100177f0) + `gettitle`
