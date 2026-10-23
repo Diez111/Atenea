@@ -19,6 +19,11 @@ No Labcenter binaries or data are reproduced here.
 - `Translations/`: 29× Qt `.qm`. `HELP/`: 54× `.chm` (docs, `VSMSDK.chm` most
   relevant for VSM DLL interface — not yet read).
 
+## Roadmap sim (diseño concreto)
+
+- `X` (p.ej. `U1,CA3140` en Ppsu): el SDF trae `MODELDEFS` vacío; el vendor resuelve por librería (`NETLIST::resolve`). Camino nativo: 1) `pmodel::spice::parse_many` sobre el deck LML (hecho); 2) mapa `kind->Subckt`; 3) `asim` emite `Xref n* DECK` + re-emite el deck (falta emitter `Subckt->texto` + aplanar pines por `PACKAGE`); 4) U/CPU con firmware (HEX via LOADERS) quedan en DSIM, fuera de ngspice.
+- `M` (MOSFET): `M d g s b modelo [L= W=]` + `.MODEL NMOS/PMOS` (ngspice trivial, falta mapear `L=/W=/AD/AS`).
+
 ## Ghidra findings (REA + Ghidra 12.1.2)
 
 Decompiled & applied (loop ledger):
