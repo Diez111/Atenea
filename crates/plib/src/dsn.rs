@@ -254,7 +254,51 @@ pub fn symbols(data: &[u8], bbox: Option<(i32, i32, i32, i32)>) -> Vec<Symbol> {
         let base = name_end + 1;
         let end = (base + SYMBOL_SCAN_LEN).min(data.len());
         let mut vertices = Vec::new();
+        // Count-first: `u32 count` + pairs (observed `04 00 00 00` +
+        // 4×`i32` in COMPONENT records). Fall back to blind scan when
+        // the count is implausible (bbox-header records start with
+        // coordinates, e.g. `70 5f f4 ff ...`).
         let mut j = base;
+        if base + 4 <= data.len() {
+            let count =
+                u32::from_le_bytes([data[base], data[base + 1], data[base + 2], data[base + 3]]);
+            if count > 0
+                && u64::from(count) <= SYMBOL_MAX_VERTS as u64 * 2
+                && base + 4 + count as usize * 8 <= data.len()
+            {
+                let mut ok = true;
+                let mut cur = base + 4;
+                let mut counted = Vec::new();
+                for _ in 0..count {
+                    let vex = i32::from_le_bytes([
+                        data[cur],
+                        data[cur + 1],
+                        data[cur + 2],
+                        data[cur + 3],
+                    ]);
+                    let vey = i32::from_le_bytes([
+                        data[cur + 4],
+                        data[cur + 5],
+                        data[cur + 6],
+                        data[cur + 7],
+                    ]);
+                    if vex.abs() > 100_000_000 || vey.abs() > 100_000_000 {
+                        ok = false;
+                        break;
+                    }
+                    counted.push((vex, vey));
+                    cur += 8;
+                }
+                if ok {
+                    j = base + 4 + count as usize * 8;
+                    let keep = |vx: i32, vy: i32| match bbox {
+                        Some((x0, y0, x1, y1)) => vx >= x0 && vx <= x1 && vy >= y0 && vy <= y1,
+                        None => true,
+                    };
+                    vertices.extend(counted.into_iter().filter(|&(vx, vy)| keep(vx, vy)));
+                }
+            }
+        }
         while j + 8 <= end && vertices.len() < SYMBOL_MAX_VERTS {
             let x = i32::from_le_bytes([data[j], data[j + 1], data[j + 2], data[j + 3]]);
             let y = i32::from_le_bytes([data[j + 4], data[j + 5], data[j + 6], data[j + 7]]);
@@ -379,6 +423,26 @@ mod tests {
             b"\x01\x02{*DEVICE} PREFIX=U PINOUT=7404\0\xff{*COMPONENT} {MODFILE=74INV.MDF}\0",
         );
         v
+    }
+
+    #[test]
+    fn symbols_count_first() {
+        // Observed COMPONENT record shape: marker + `u32 count` + pairs.
+        let mut v = Vec::from(b"\x02\x7fCOMPONENT\x00".as_slice());
+        v.extend_from_slice(&2u32.to_le_bytes());
+        for (x, y) in [(1_000_000i32, 2_000_000i32), (3_000_000, 4_000_000)] {
+            v.extend_from_slice(&x.to_le_bytes());
+            v.extend_from_slice(&y.to_le_bytes());
+        }
+        let syms = symbols(&v, None);
+        assert_eq!(syms.len(), 1);
+        assert_eq!(syms[0].template, "COMPONENT");
+        assert_eq!(syms[0].vertices.len(), 2);
+        // Implausible count (bbox header) falls back to blind scan.
+        let mut w = Vec::from(b"\x02\x7fWIRE\x00".as_slice());
+        w.extend_from_slice(&0xfff4_5f70u32.to_le_bytes());
+        w.extend_from_slice(&[0u8; 120]);
+        assert_eq!(symbols(&w, None).len(), 1);
     }
 
     #[test]

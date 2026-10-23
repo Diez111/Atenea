@@ -99,12 +99,9 @@ fn main() -> Result<(), slint::PlatformError> {
                         app.set_erc_text(erc_text_of(&snap).into());
                         if snap.kind == "dsn" {
                             let svg = aengine::sheet_svg(&snap, 1200, 800);
-                            let svg_path =
-                                std::env::temp_dir().join("atenea-sheet.svg");
+                            let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
                             if std::fs::write(&svg_path, svg).is_ok() {
-                                if let Ok(img) =
-                                    slint::Image::load_from_path(&svg_path)
-                                {
+                                if let Ok(img) = slint::Image::load_from_path(&svg_path) {
                                     app.set_sheet(img);
                                 }
                             }
