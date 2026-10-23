@@ -23,6 +23,7 @@ export component Atenea inherits Window {
     in-out property <[NetRow]> nets;
     in-out property <string> erc_text: "";
     in-out property <string> sim_text: "";
+    in-out property <image> sheet;
 
     in-out property <[PartRow]> lib_parts;
     in-out property <string> lib_query: "";
@@ -90,7 +91,9 @@ export component Atenea inherits Window {
             }
             Tab {
                 title: "Esquema";
-                Text { text: "Hoja ISIS (wires/placements vía aengine) — render 2D en curso"; }
+                VerticalBox {
+                    Image { source: root.sheet; }
+                }
             }
             Tab {
                 title: "Simulate";
