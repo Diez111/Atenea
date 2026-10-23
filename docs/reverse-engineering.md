@@ -370,6 +370,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_pokepin(modelo, idx, t_segundos, STATE)` (@0x10003de4):
   maneja analógico con tiempo en ps (`ROUND(t/1e-12)` 64-bit).
   Confirma timebase ps en todo el kernel.
+- `dsim_signon(modelo, SIMLOG*, IWATCHPOPUP*)` (@0x1000e928):
+  registra log global (`DAT_100360c4`) + watch popup (`DAT_100360d4`).
+- `dsim_mergenets(n1, n2)` (@0x10003ed8): fusiona nets con tabla
+  de combinación de estados 32×32 (`DAT_10035960`, índices
+  `&0x1f`); re-apunta pines (`+0x54/+0x58`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
