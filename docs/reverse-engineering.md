@@ -144,6 +144,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `net_gen`, `net_erc`, `write`/`writeheader`, `mdf_id`.
 - Strings: `SPICEMODEL`, `MODFILE`, `VSM DLL Model [%s]`, `DSNCVT40.DLL`,
   `dsn_editdesign`, `Complile Netlist` [sic].
+- `NETLIST::addmodule` (`?addmodule@NETLIST@@QAEPAUNET_MODULE@@PADAAVPROPLIST@@PAUMODULE@@@Z`,
+  public, @0x10013800): crea `NET_MODULE` (`new(0x68)` +
+  `NRPROPLIST` en `+0x44`), copia nombre `MODULE`; solo si `+0x1c`.
+- `NETLIST::propkwd` (`?propkwd@NETLIST@@QAEPBDH@Z`, public, @0x1000e1a0):
+  `return keywords[this+0x74][i]` — tabla de vocabulario PROPDEFS
+  (`PROPDEFS.INI`: PACKAGE, VALUE, MODFILE...).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
