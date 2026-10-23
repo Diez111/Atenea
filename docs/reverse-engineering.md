@@ -40,7 +40,14 @@ Decompiled & applied (loop ledger):
 - [x] VSM activos (VTURTLE/DIPSW/CTIMER/COLORLED): `IACTIVEMODEL` +
   Qt `QPainter`/`QPaintDevice` para animación; SPICE expone `ISPICEMODEL`.
   Nuestro `vsm`/`nullmodel` espejan la interfaz sin Qt.
-- [x] DSIM.DLL: interfaces `IDSIMCKT`/`IDSIMMODEL`/`IDSIMPIN1`/`IDSIMPIN2`
+- [x] ARES verificación/salida: DRC (`RST: ARES\DRC`, `Checking...`,
+  `%d DRC errors`, `DRC disabled`, columnas `Design Rule/Violation
+  Type/Layer(s)/Spec'd/Actual Clearance`); conectividad (`Connectivity
+  Errors`, tabla `Error Type/1st Pin/2nd Pin/Missing/Extra`);
+  Gerber X2 default (+selector RS274X, exige stackup válido) + netlist
+  `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
+  `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
+  `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
   (mixed-mode sim kernel, `DSIM creating net`, breakpoints). `asim` cubre
   el flujo batch; kernel interactivo = roadmap.
 - [x] ELECTRA.DLL: autorouter Qt (`Adaptive Shape-Based AutoRouter`,
