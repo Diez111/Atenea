@@ -30,6 +30,7 @@ export component Atenea inherits Window {
     in-out property <string> lib_query: "";
     callback open-file(string);
     callback open-lib();
+    callback filter-lib(string);
     callback run-sim();
     callback run-erc();
     callback pick-device();
@@ -107,7 +108,7 @@ export component Atenea inherits Window {
                 title: "Library";
                 VerticalBox {
                     HorizontalBox {
-                        LineEdit { placeholder-text: "buscar (Device/Category/MFR)…"; text <=> root.lib_query; }
+                        LineEdit { placeholder-text: "buscar (Device/Category/MFR)…"; text <=> root.lib_query; edited(q) => { root.filter-lib(q); } }
                         Button { text: "Open IDX…"; clicked => { root.open-lib(); } }
                     }
                     ListView {

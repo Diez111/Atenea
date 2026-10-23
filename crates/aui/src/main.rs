@@ -57,6 +57,8 @@ fn main() -> Result<(), slint::PlatformError> {
     let app = Atenea::new()?;
     let engine = aengine::Engine::spawn();
     let last_sdf = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let lib_cache: std::sync::Arc<std::sync::Mutex<Vec<PartRow>>> =
+        std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
 
     {
         let last_sdf = last_sdf.clone();
@@ -176,6 +178,7 @@ fn main() -> Result<(), slint::PlatformError> {
         });
     }
     {
+        let lib_cache = lib_cache.clone();
         let app_w = app.as_weak();
         let eng = engine.clone();
         app.on_open_lib(move || {
@@ -193,9 +196,11 @@ fn main() -> Result<(), slint::PlatformError> {
                     Duration::from_secs(30),
                 ) {
                     Some(Ok(snap)) => {
-                        app.set_lib_parts(
-                            std::rc::Rc::new(slint::VecModel::from(parts_of(&snap))).into(),
-                        );
+                        let rows = parts_of(&snap);
+                        *lib_cache
+                            .lock()
+                            .unwrap_or_else(std::sync::PoisonError::into_inner) = rows.clone();
+                        app.set_lib_parts(std::rc::Rc::new(slint::VecModel::from(rows)).into());
                         app.set_status(
                             format!("{} — {} dispositivos", snap.name, snap.parts.len()).into(),
                         );
@@ -203,6 +208,31 @@ fn main() -> Result<(), slint::PlatformError> {
                     Some(Err(e)) => app.set_status(format!("error: {e}").into()),
                     None => app.set_status("timeout abriendo IDX".into()),
                 }
+            }
+        });
+    }
+    {
+        let lib_cache = lib_cache.clone();
+        let app_w = app.as_weak();
+        app.on_filter_lib(move |q| {
+            let q = q.to_lowercase();
+            let guard = lib_cache
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            let rows: Vec<PartRow> = guard
+                .iter()
+                .filter(|p| {
+                    q.is_empty()
+                        || p.reference.to_lowercase().contains(&q)
+                        || p.kind.to_lowercase().contains(&q)
+                        || p.value.to_lowercase().contains(&q)
+                })
+                .cloned()
+                .collect();
+            let n = rows.len();
+            if let Some(app) = app_w.upgrade() {
+                app.set_lib_parts(std::rc::Rc::new(slint::VecModel::from(rows)).into());
+                app.set_status(format!("{n} coincidencia(s)").into());
             }
         });
     }
