@@ -58,6 +58,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] firmware/mecánico: LOADERS.DLL carga HEX/ELF/COFF + list files
   (VSM CPUs); `BIN/citf/` importa 3D STEP/IGES (OpenCASCADE TK*).
   DIYSTAMP.EXE es compilador BASIC de terceros (no Proteus).
+- [x] convertidores decompilados (`convert` en los 3): mismo esqueleto
+  table-driven (init once, walk `tabla+1` con callback de progreso
+  `Loading %s...`): LYTCVT @0x1000303b (578 procs), IDSCVT40
+  @0x100030d4, DSNCVT40 @0x1000e950.
 - [x] cadena de conversión: DSNCVT40 = ISIS IV + `ISIS SECTION V3.5` vía `ISIS_3X4X_DSNCVT.DLL` (3.x/4.x); IDSCVT40 migra los 4 kinds (DEVICE/PACKAGE/MODEL/SYMBOL) con chequeo de versión.
 - [x] misc: EASYHDL.DLL compila programas MCU (`HDLMODEL`, CRC);
   IDSCVT40.DLL convierte librerías viejas; FLOWCHART/VIEWDATA son UI Qt.
