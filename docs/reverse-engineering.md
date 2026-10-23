@@ -150,6 +150,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::propkwd` (`?propkwd@NETLIST@@QAEPBDH@Z`, public, @0x1000e1a0):
   `return keywords[this+0x74][i]` — tabla de vocabulario PROPDEFS
   (`PROPDEFS.INI`: PACKAGE, VALUE, MODFILE...).
+  `propval` (`?propval@NETLIST@@QAEPBDH@Z`, @0x1000e1b0) devuelve el
+  puntero PASADO el NUL: la tabla son pares `CLAVE\0valor\0`.
 - `NETLIST::propsubst` (`?propsubst@NETLIST@@QAEXPADAAVPROPLIST@@@Z`,
   public, @0x10013ee0): sustitución de parámetros en valores con
   `EVALUATOR<double>` (buffers 1K) + límite de anidado
