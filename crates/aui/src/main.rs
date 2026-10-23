@@ -56,6 +56,22 @@ fn erc_text_of(snap: &aengine::DocSnapshot) -> String {
 fn main() -> Result<(), slint::PlatformError> {
     let app = Atenea::new()?;
     let engine = aengine::Engine::spawn();
+    // Never show an empty black hole: default beige ISIS sheet.
+    {
+        let empty = aengine::DocSnapshot {
+            name: "UNTITLED".to_owned(),
+            kind: "dsn".to_owned(),
+            ..aengine::DocSnapshot::default()
+        };
+        let svg = aengine::sheet_svg(&empty, 1200, 800);
+        let path = std::env::temp_dir().join("atenea-sheet.svg");
+        if std::fs::write(&path, svg).is_ok() {
+            if let Ok(img) = slint::Image::load_from_path(&path) {
+                app.set_sheet(img);
+            }
+        }
+        app.set_status("abrí un archivo con File > Open".into());
+    }
     let last_sdf = std::sync::Arc::new(std::sync::Mutex::new(None));
     let lib_cache: std::sync::Arc<std::sync::Mutex<Vec<PartRow>>> =
         std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
