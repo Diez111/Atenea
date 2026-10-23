@@ -60,6 +60,7 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] VSM activos (VTURTLE/DIPSW/CTIMER/COLORLED): `IACTIVEMODEL` +
   Qt `QPainter`/`QPaintDevice` para animación; SPICE expone `ISPICEMODEL`.
   Nuestro `vsm`/`nullmodel` espejan la interfaz sin Qt.
+- [x] GVIEW.dll = visor Gerber/drill + salida CADCAM (`VIPKGVIEWER`, `DRILL_SYMBOL/SPAN`, `$DRILL%02d`, chequeo footprint sin asignar).
 - [x] ARES verificación/salida: DRC (`RST: ARES\DRC`, `Checking...`,
   `%d DRC errors`, `DRC disabled`, columnas `Design Rule/Violation
   Type/Layer(s)/Spec'd/Actual Clearance`); conectividad (`Connectivity
