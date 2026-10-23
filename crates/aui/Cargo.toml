@@ -13,5 +13,6 @@ slint = { version = "1.18", default-features = true, features = ["backend-winit"
 [build-dependencies]
 slint-build = "1.18"
 
-[lints]
-workspace = true
+# NOTE: no hereda `workspace = true`: el código generado por Slint trae
+# `allow(unsafe_code)` interno, incompatible con `unsafe=forbid` (-F).
+# `aui` es solo glue sobre `aengine` (ya auditado con forbid).
