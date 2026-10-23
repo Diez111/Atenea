@@ -19,6 +19,10 @@ No Labcenter binaries or data are reproduced here.
 - `Translations/`: 29× Qt `.qm`. `HELP/`: 54× `.chm` (docs, `VSMSDK.chm` most
   relevant for VSM DLL interface — not yet read).
 
+## Frontera verificada (no-SPICE)
+
+- `OA_BIP` (ANALOG.LML, 5106 B) = MAPPINGS de parámetros (`GAIN/CMRR/FT/SR/IB...` por tipo 709/741/LM324...) + PARTLIST de primitivas DSIM (`B`), NO subcircuito SPICE. `U1,CA3140` → `MODFILE=OA_BIP` + `PACKAGE=DIL08`: las funciones de pin (in+/in-/out) viven en el modelo DSIM compilado, no en la librería. Conclusión: `U`/`X` exigen kernel DSIM interactivo (roadmap mayor), no backend ngspice.
+
 ## Roadmap sim (diseño concreto)
 
 - `X` (p.ej. `U1,CA3140` en Ppsu): el SDF trae `MODELDEFS` vacío; el vendor resuelve por librería (`NETLIST::resolve`). Camino nativo: 1) `pmodel::spice::parse_many` sobre el deck LML (hecho); 2) mapa `kind->Subckt`; 3) `asim` emite `Xref n* DECK` + re-emite el deck (falta emitter `Subckt->texto` + aplanar pines por `PACKAGE`); 4) U/CPU con firmware (HEX via LOADERS) quedan en DSIM, fuera de ngspice.
