@@ -1,4 +1,6 @@
-// Atenea shell: menu + tab bar + views, all data from aengine.
+// Atenea shell, Proteus 8 look: menu + 2 toolbar rows + left
+// preview/object-selector + tabs + editing window + status bar.
+// All data comes from aengine; the UI never blocks.
 import { HorizontalBox, VerticalBox, TabWidget, ListView, LineEdit, Button } from "std-widgets.slint";
 
 export struct PartRow {
@@ -13,120 +15,157 @@ export struct NetRow {
 }
 
 export component Atenea inherits Window {
-    title: "Atenea — clon nativo interoperable";
-    min-width: 900px;
-    min-height: 600px;
+    title: "UNTITLED - Atenea (clon nativo interoperable)";
+    min-width: 1100px;
+    min-height: 700px;
 
     in-out property <string> status: "listo";
+    in-out property <string> coords: "+0.0 -0.0 th";
+    in-out property <string> drc: "No ERC errors";
+    in-out property <string> layer: "Top Copper";
     in-out property <string> filter: "";
     in-out property <[PartRow]> parts;
     in-out property <[NetRow]> nets;
     in-out property <string> erc_text: "";
     in-out property <string> sim_text: "";
+    in-out property <[PartRow]> lib_parts;
+    in-out property <string> lib_query: "";
     in-out property <image> sheet;
     in-out property <image> plot;
 
-    in-out property <[PartRow]> lib_parts;
-    in-out property <string> lib_query: "";
     callback open-file(string);
     callback open-lib();
     callback filter-lib(string);
     callback run-sim();
     callback run-erc();
     callback pick-device();
+    callback tool-selected(string);
 
-    MenuBar {
-        Menu {
-            title: "File";
-            MenuItem { title: "Open…"; activated => { root.open-file(""); } }
-        }
-        Menu {
-            title: "View";
-            MenuItem { title: "Tables"; }
-            MenuItem { title: "Graph"; }
-            MenuItem { title: "Esquema"; }
-            MenuItem { title: "Simulate"; }
-        }
-        Menu {
-            title: "Library";
-            MenuItem { title: "Pick Device…"; activated => { root.pick-device(); } }
-        }
-        Menu {
-            title: "Graph";
-            MenuItem { title: "Run ERC"; activated => { root.run-erc(); } }
-        }
-        Menu {
-            title: "Help";
-            MenuItem { title: "About Atenea"; }
-        }
-    }
     VerticalBox {
-        HorizontalBox {
-            Text { text: "Atenea"; font-size: 14px; font-weight: 700; }
-            LineEdit { placeholder-text: "filter…"; text <=> root.filter; }
-            Button { text: "Simulate"; clicked => { root.run-sim(); } }
-        }
-        TabWidget {
-            Tab {
-                title: "Tables";
-                HorizontalBox {
-                    VerticalBox {
-                        Text { text: "Parts"; font-weight: 700; }
-                        ListView {
-                            for p in root.parts: HorizontalBox {
-                                Text { text: p.reference; width: 90px; }
-                                Text { text: p.kind; width: 90px; }
-                                Text { text: p.value; }
-                            }
-                        }
-                    }
-                    VerticalBox {
-                        Text { text: "Nets"; font-weight: 700; }
-                        ListView {
-                            for n in root.nets: HorizontalBox {
-                                Text { text: n.id; width: 110px; }
-                                Text { text: n.pins; }
-                            }
-                        }
-                    }
-                }
+        padding: 0;
+        spacing: 0;
+        MenuBar {
+            Menu {
+                title: "File";
+                MenuItem { title: "Open…"; activated => { root.open-file(""); } }
             }
-            Tab {
-                title: "Esquema";
-                VerticalBox {
-                    Image { source: root.sheet; }
-                }
+            Menu { title: "Output"; }
+            Menu {
+                title: "View";
+                MenuItem { title: "Tables"; }
+                MenuItem { title: "Graph"; }
+                MenuItem { title: "Esquema"; }
+                MenuItem { title: "Simulate"; }
             }
-            Tab {
-                title: "Simulate";
-                VerticalBox {
-                    Image { source: root.plot; }
-                    Text { text: root.sim_text; }
-                }
-            }
-            Tab {
+            Menu { title: "Edit"; }
+            Menu {
                 title: "Library";
-                VerticalBox {
-                    HorizontalBox {
-                        LineEdit { placeholder-text: "buscar (Device/Category/MFR)…"; text <=> root.lib_query; edited(q) => { root.filter-lib(q); } }
-                        Button { text: "Open IDX…"; clicked => { root.open-lib(); } }
+                MenuItem { title: "Pick Device…"; activated => { root.pick-device(); } }
+            }
+            Menu { title: "Tools"; }
+            Menu { title: "Technology"; }
+            Menu { title: "System"; }
+            Menu {
+                title: "Help";
+                MenuItem { title: "About Atenea"; }
+            }
+        }
+        // Toolbar row 1: file/edit + simulate (ISIS blue band look).
+        HorizontalBox {
+            padding: 2px;
+            Button { text: "Open"; clicked => { root.open-file(""); } }
+            Button { text: "Pick"; clicked => { root.pick-device(); } }
+            Button { text: "ERC"; clicked => { root.run-erc(); } }
+            Button { text: "Sim"; clicked => { root.run-sim(); } }
+            Text { text: "  Layer:"; vertical-alignment: center; }
+            Button { text: root.layer; }
+        }
+        HorizontalBox {
+            padding: 0;
+            spacing: 0;
+            // Left rail: mode tools (Proteus vertical toolbar).
+            VerticalBox {
+                width: 44px;
+                padding: 2px;
+                Button { text: "➤"; clicked => { root.tool-selected("select"); } }
+                Button { text: "↖"; clicked => { root.tool-selected("move"); } }
+                Button { text: "⎋"; clicked => { root.tool-selected("wire"); } }
+                Button { text: "▦"; clicked => { root.tool-selected("bus"); } }
+                Button { text: "T"; clicked => { root.tool-selected("label"); } }
+                Button { text: "●"; clicked => { root.tool-selected("probe"); } }
+            }
+            // Object selector: preview + components list.
+            VerticalBox {
+                width: 190px;
+                padding: 3px;
+                Text { text: "PREVIEW"; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
+                Image { source: root.sheet; height: 130px; }
+                Text { text: "COMPONENTS"; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
+                LineEdit { placeholder-text: "buscar…"; text <=> root.lib_query; edited(q) => { root.filter-lib(q); } }
+                ListView {
+                    for p in root.lib_parts: HorizontalBox {
+                        Text { text: p.reference; font-size: 11px; }
                     }
-                    ListView {
-                        for p in root.lib_parts: HorizontalBox {
-                            Text { text: p.reference; width: 130px; }
-                            Text { text: p.kind; width: 110px; }
-                            Text { text: p.value; }
+                }
+                HorizontalBox {
+                    Button { text: "Open IDX…"; clicked => { root.open-lib(); } }
+                }
+            }
+            // Center: tabs + editing window.
+            VerticalBox {
+                padding: 0;
+                TabWidget {
+                    Tab {
+                        title: "Schematic Capture";
+                        // Editing window: black like ARES, sheet SVG inside.
+                        Image { source: root.sheet; }
+                    }
+                    Tab {
+                        title: "Tables";
+                        HorizontalBox {
+                            VerticalBox {
+                                Text { text: "Parts"; font-weight: 700; }
+                                ListView {
+                                    for p in root.parts: HorizontalBox {
+                                        Text { text: p.reference; width: 90px; }
+                                        Text { text: p.kind; width: 90px; }
+                                        Text { text: p.value; }
+                                    }
+                                }
+                            }
+                            VerticalBox {
+                                Text { text: "Nets"; font-weight: 700; }
+                                ListView {
+                                    for n in root.nets: HorizontalBox {
+                                        Text { text: n.id; width: 110px; }
+                                        Text { text: n.pins; }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Tab {
+                        title: "Simulate";
+                        VerticalBox {
+                            Image { source: root.plot; }
+                            Text { text: root.sim_text; }
+                        }
+                    }
+                    Tab {
+                        title: "ERC";
+                        VerticalBox {
+                            Text { text: root.erc_text; }
                         }
                     }
                 }
             }
-            Tab {
-                title: "ERC";
-                VerticalBox {
-                    Text { text: root.erc_text; }
-                }
-            }
         }
-        Text { text: root.status; font-size: 11px; }
+        // Status bar: file | DRC | coords.
+        HorizontalBox {
+            padding: 2px;
+            Text { text: root.status; font-size: 11px; }
+            Text { text: "  ✓ " + root.drc; font-size: 11px; }
+            Text { text: "  " + root.coords; font-size: 11px; }
+        }
     }
 }

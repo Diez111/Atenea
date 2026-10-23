@@ -103,7 +103,7 @@ fn main() -> Result<(), slint::PlatformError> {
                         );
                         app.set_erc_text(erc_text_of(&snap).into());
                         if snap.kind == "dsn" {
-                            let svg = aengine::sheet_svg(&snap, 1200, 800);
+                            let svg = aengine::sheet_svg_dark(&snap, 1200, 800);
                             let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
                             if std::fs::write(&svg_path, svg).is_ok()
                                 && let Ok(img) = slint::Image::load_from_path(&svg_path)
@@ -233,6 +233,14 @@ fn main() -> Result<(), slint::PlatformError> {
             if let Some(app) = app_w.upgrade() {
                 app.set_lib_parts(std::rc::Rc::new(slint::VecModel::from(rows)).into());
                 app.set_status(format!("{n} coincidencia(s)").into());
+            }
+        });
+    }
+    {
+        let app_w = app.as_weak();
+        app.on_tool_selected(move |t| {
+            if let Some(app) = app_w.upgrade() {
+                app.set_status(format!("herramienta: {t}").into());
             }
         });
     }

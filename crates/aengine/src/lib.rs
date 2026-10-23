@@ -449,6 +449,17 @@ fn worker(rx: &Receiver<Job>) {
 /// Pure function — the worker builds it, the UI only displays it.
 #[must_use]
 pub fn sheet_svg(doc: &DocSnapshot, width: u32, height: u32) -> String {
+    sheet_svg_inner(doc, width, height, false)
+}
+
+/// ARES look: black editing window, blue sheet border, light wires.
+/// (Proteus 8 PCB Layout editing window is black; see CHM screenshots.)
+#[must_use]
+pub fn sheet_svg_dark(doc: &DocSnapshot, width: u32, height: u32) -> String {
+    sheet_svg_inner(doc, width, height, true)
+}
+
+fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> String {
     let mut xs = Vec::new();
     let mut ys = Vec::new();
     for (x1, y1, x2, y2, _) in &doc.wires {
@@ -477,13 +488,18 @@ pub fn sheet_svg(doc: &DocSnapshot, width: u32, height: u32) -> String {
     let px = |x: f64| ox + (x - lo_x) * sc;
     // SVG origin is top-left: flip Y.
     let py = |y: f64| h - (oy + (y - lo_y) * sc);
+    let (paper, sheet_fill, wire, label) = if dark {
+        ("#000000", "#000000", "#c8ccd4", "#7fb3ff")
+    } else {
+        ("#f4f6fa", "#ffffff", "#1c2733", "#0f4c9c")
+    };
     let mut s = format!(
-        "<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>\n<rect x='0' y='0' width='{width}' height='{height}' fill='#f4f6fa'/>\n"
+        "<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>\n<rect x='0' y='0' width='{width}' height='{height}' fill='{paper}'/>\n"
     );
     // Sheet border (ISIS blue).
     let _ = writeln!(
         s,
-        "<rect x='{ox:.0}' y='{oy:.0}' width='{:.0}' height='{:.0}' fill='#ffffff' stroke='#0f4c9c' stroke-width='2'/>",
+        "<rect x='{ox:.0}' y='{oy:.0}' width='{:.0}' height='{:.0}' fill='{sheet_fill}' stroke='#0f4c9c' stroke-width='2'/>",
         (hi_x - lo_x) * sc,
         (hi_y - lo_y) * sc
     );
@@ -491,7 +507,7 @@ pub fn sheet_svg(doc: &DocSnapshot, width: u32, height: u32) -> String {
         let sw = if *bus { 3 } else { 1 };
         let _ = writeln!(
             s,
-            "<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='#1c2733' stroke-width='{sw}'/>",
+            "<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='{sw}'/>",
             px(*x1),
             py(*y1),
             px(*x2),
@@ -502,7 +518,7 @@ pub fn sheet_svg(doc: &DocSnapshot, width: u32, height: u32) -> String {
         let esc = text.replace('&', "&amp;").replace('<', "&lt;");
         let _ = writeln!(
             s,
-            "<text x='{:.1}' y='{:.1}' font-family='monospace' font-size='11' fill='#0f4c9c'>{esc}</text>",
+            "<text x='{:.1}' y='{:.1}' font-family='monospace' font-size='11' fill='{label}'>{esc}</text>",
             px(*x),
             py(*y)
         );
@@ -688,5 +704,8 @@ C1,PS,1
         assert!(svg.contains("stroke-width='3'"));
         assert!(svg.contains(">VCC</text>"));
         assert!(svg.contains("#0f4c9c"));
+        let dark = sheet_svg_dark(&snap, 800, 600);
+        assert!(dark.contains("fill='#000000'"));
+        assert!(dark.contains("stroke='#c8ccd4'"));
     }
 }
