@@ -33,7 +33,15 @@ Decompiled & applied (loop ledger):
 - [x] `NETLIST::net_erc` — UNDRIVEN / SINGULAR LABEL / connected to
 - [x] `NETLIST::resolve` — MODEL/MODFILE + CDBCORE walk
 - [x] `DSIM::dsim_create` — firma, vtables, lookup primitiva
-- [x] firmware/mecánico: LOADERS.DLL carga HEX/ELF/COFF + list files
+- [x] simulador nativo: SPICESIM.DLL es fork SPICE3F5 (paths
+  `.\SPICE3F5\SPARSE\SP*.C`, `?spice_initialize(SDF_NETLIST*,
+  SIMLOG*, ISPICE...)`) — nuestro backend ngspice es su descendiente
+directo, elección validada. SPICEINP.DLL parsea tarjetas
+  (`.tran/.ic/.nodeset`, `unknown device type - error`).
+- [x] packers de librería: PUTMDF.EXE/PUTSPICE.EXE
+  (`-C[=n] create new library`, `-L=<libname>`, exigen `.ENDS`).
+  TOKENIZER.DLL = tokenizador BASIC (`WHILE/UNTIL`, `Nothing to
+  tokenize`) para FLOWCHART/DIYSTAMP.
   (VSM CPUs); `BIN/citf/` importa 3D STEP/IGES (OpenCASCADE TK*).
   DIYSTAMP.EXE es compilador BASIC de terceros (no Proteus).
   (primitiva DSIM) y 34 `createactivemodel`/`deleteactivemodel`
