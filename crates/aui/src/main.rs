@@ -144,9 +144,11 @@ fn main() -> Result<(), slint::PlatformError> {
                 ) {
                     Some(Ok(t)) => {
                         let last = t.last.first().copied().unwrap_or(f64::NAN);
-                        app.set_sim_text(
-                            format!("{} puntos, última v(MID)={last:.4} V", t.rows.len()).into(),
-                        );
+                        let mut msg = format!("{} puntos, última v(MID)={last:.4} V", t.rows.len());
+                        if !t.subs.is_empty() {
+                            msg.push_str(&format!("\nmodelos: {}", t.subs.join("; ")));
+                        }
+                        app.set_sim_text(msg.into());
                         app.set_status("sim OK".into());
                     }
                     Some(Err(e)) => app.set_sim_text(format!("error: {e}").into()),

@@ -61,6 +61,8 @@ pub struct TraceView {
     pub rows: Vec<(f64, Vec<f64>)>,
     /// Last values per visible series.
     pub last: Vec<f64>,
+    /// Model substitutions (D/Q defaults) — never silent.
+    pub subs: Vec<String>,
 }
 
 /// Work request for the engine thread.
@@ -369,8 +371,8 @@ fn simulate_sync(
         return Err(format!("validate: {}", errs.join("; ")));
     }
     let refs: Vec<&str> = vars.iter().map(String::as_str).collect();
-    let trace =
-        asim::simulate_tran(&doc, name, "10u", tstop, &refs).map_err(|e| format!("{e:?}"))?;
+    let (trace, subs) = asim::simulate_tran_with_subs(&doc, name, "10u", tstop, &refs)
+        .map_err(|e| format!("{e:?}"))?;
     let last = trace
         .rows
         .last()
@@ -380,6 +382,7 @@ fn simulate_sync(
         vars: trace.vars,
         rows: trace.rows,
         last,
+        subs,
     })
 }
 
