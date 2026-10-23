@@ -160,6 +160,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::fmtdprop` (`?fmtdprop@NETLIST@@QAAXPBD0ZZ`, public,
   @0x100129d0): `vsprintf` + `PROPLIST::add(proplist+100)` — setter
   formateado de props `DSN_*` (lo usa `setdsnprops`).
+- `format_propdefs` (`?format_propdefs@@YAXAAVPROPTEXT@@AAV?$GDIDX@VPROPDEF@@@@H@Z`,
+  free, @0x1001f7e0): emite la sección `*PROPDEFS` desde
+  `PROPTEXT` + `GDIDX<PROPDEF>` (menciona `COMPONENT`/`PROPDEFS`).
+  Cierra el lado escritura: `write` → `net_gen` → `fmtdprop`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
