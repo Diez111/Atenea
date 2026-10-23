@@ -163,9 +163,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   Interna (@0x10014860): `getbusrange()` (rangos `D[0..7]`), clamp
   `ELECTYPES` 0..0x10 (17 roles = `sdf_etstrings`), sub-partes
   `REF#n` vía PINSWAP (`getnzstr(",;")` + `_stricmp`), SLIST `+0x1ac`.
+- `NETLIST::addlabel` (`?addlabel@NETLIST@@QAEXPAUNET_MODULE@@PAVOBJECT@@PBDW4ELECTYPES@@@Z`,
+  public, @0x10014480): label vacío → return; `ELECTYPES 0x11`
+  con flag; `8` → `mergebusrange_lbc(+0x1e0/+0x1e4)`, resto →
+  `mergebusrange_bar(+0x1e8/+0x1ec)`; sucio `+0x1dc`; `!x` = ref de
+  módulo, `&x` = submódulo.
 - `NETLIST::newnet` (`?newnet@NETLIST@@QAEXXZ`, public, @0x10014440):
-  resetea 9 dwords de staging (`+0x1cc..+0x1ec`: contador `+0x1d8`,
-  sucio `+0x1dc` — mismo bloque que `addwire`).
   resetea 9 dwords de staging (`+0x1cc..+0x1ec`: contador `+0x1d8`,
   sucio `+0x1dc` — mismo bloque que `addwire`).
 - `NETLIST::addwire` (`?addwire@NETLIST@@QAEXPAVWIRE@@H@Z`, public,
