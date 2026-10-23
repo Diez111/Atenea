@@ -167,6 +167,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::parse_field` (`?parse_field@...`, public, @0x1001bcc0):
   parser de entradas `*PARTLIST`: por parte `CDBCORE::findpart` +
   `getpartelements` + `addelement`, con rama `TERMINAL`.
+- `NETLIST::bom`/`dxp` (`?bom/dxp@NETLIST@@QAEHXZ`, @0x1000e050/
+  0x1000e040): NO generan nada — son getters de bits de opción
+  (`(flags+0x28>>5)&1` / `(>>4)&1`). La salida BOM va por `net_gen`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
