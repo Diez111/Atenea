@@ -222,6 +222,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   @0x10012ba0): vuelca `NET_PMT` pendiente (`+0x1a8`): módulo raíz
   → `DPA::add(+0x88)`, si no `applymapping(módulo)` + libera.
   Cierra `parse_map` → `addmaptable` → `applymapping`.
+- `*bounds` (`netbounds` @0x1000e2b0 y familia `part/prop/script/trace`):
+  `0<=i<count` → 1/0 (verificado el patrón en `netbounds` vs count
+  `+0x194`; el resto es la misma forma).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
