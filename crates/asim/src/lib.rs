@@ -181,6 +181,169 @@ pub fn validate(doc: &pmodel::Document) -> (Vec<String>, Vec<String>) {
 ///
 /// [`SimError::BadNetlist`] on missing pins; [`SimError::UnsupportedPart`]
 /// for `U`/`X`/`M`/other letters.
+/// Check exact pin count for `p`.
+fn expect_pins(p: &pmodel::Part, nets_of: &[&str], n: usize) -> Result<(), SimError> {
+    if nets_of.len() == n {
+        Ok(())
+    } else {
+        Err(SimError::BadNetlist(format!(
+            "{} expects {n} pins, has {}",
+            p.reference,
+            nets_of.len()
+        )))
+    }
+}
+
+/// Append a `.MODEL` default card once + its substitution note.
+fn add_model(
+    model: &str,
+    card: &str,
+    note: &str,
+    out: &mut Vec<String>,
+    subs: &mut Vec<String>,
+    models: &mut Vec<String>,
+) {
+    if !models.iter().any(|m| m == model) {
+        models.push(model.to_owned());
+        out.push(card.to_owned());
+        subs.push(note.to_owned());
+    }
+}
+
+/// Emit `R`/`C`/`L`/`V`/`I` (strict, no substitution).
+fn emit_passive(
+    p: &pmodel::Part,
+    letter: char,
+    num: &str,
+    nets_of: &[&str],
+    out: &mut Vec<String>,
+) -> Result<(), SimError> {
+    expect_pins(p, nets_of, 2)?;
+    out.push(format!(
+        "{letter}{num} {} {} {}",
+        node(nets_of[0]),
+        node(nets_of[1]),
+        normalize_value(&p.value)
+    ));
+    Ok(())
+}
+
+/// Emit `D` with ngspice default model (honest fallback, noted).
+fn emit_diode(
+    p: &pmodel::Part,
+    num: &str,
+    nets_of: &[&str],
+    out: &mut Vec<String>,
+    subs: &mut Vec<String>,
+    models: &mut Vec<String>,
+) -> Result<(), SimError> {
+    expect_pins(p, nets_of, 2)?;
+    let model = format!("DMOD_{}", sanitize(&p.kind));
+    out.push(format!(
+        "D{num} {} {} {model}",
+        node(nets_of[0]),
+        node(nets_of[1])
+    ));
+    add_model(
+        &model,
+        &format!(".MODEL {model} D"),
+        &format!(
+            "{}: sin deck SPICE vendor, modelo D default (no OA91 germanio)",
+            p.reference
+        ),
+        out,
+        subs,
+        models,
+    );
+    Ok(())
+}
+
+/// Emit `Q` with ngspice default NPN model (honest fallback, noted).
+fn emit_bjt(
+    p: &pmodel::Part,
+    num: &str,
+    nets_of: &[&str],
+    out: &mut Vec<String>,
+    subs: &mut Vec<String>,
+    models: &mut Vec<String>,
+) -> Result<(), SimError> {
+    expect_pins(p, nets_of, 3)?;
+    let model = format!("QMOD_{}", sanitize(&p.kind));
+    out.push(format!(
+        "Q{num} {} {} {} {model}",
+        node(nets_of[0]),
+        node(nets_of[1]),
+        node(nets_of[2])
+    ));
+    add_model(
+        &model,
+        &format!(".MODEL {model} NPN"),
+        &format!("{}: sin deck SPICE vendor, modelo NPN default", p.reference),
+        out,
+        subs,
+        models,
+    );
+    Ok(())
+}
+
+/// Emit `M` (`M d g s b model`, bulk = 4th pin or tied to source).
+#[allow(clippy::too_many_arguments)]
+fn emit_mos(
+    p: &pmodel::Part,
+    num: &str,
+    nets_of: &[&str],
+    out: &mut Vec<String>,
+    subs: &mut Vec<String>,
+    models: &mut Vec<String>,
+) -> Result<(), SimError> {
+    if nets_of.len() != 3 && nets_of.len() != 4 {
+        return Err(SimError::BadNetlist(format!(
+            "{} expects 3-4 pins, has {}",
+            p.reference,
+            nets_of.len()
+        )));
+    }
+    let bulk = if nets_of.len() == 4 {
+        node(nets_of[3])
+    } else {
+        node(nets_of[2])
+    };
+    let ku = p.kind.to_ascii_uppercase();
+    let pmos = ku.starts_with('P') || ku.contains("P-CH") || ku.contains("PMOS");
+    let mtype = if pmos { "PMOS" } else { "NMOS" };
+    let model = format!("MMOD_{}", sanitize(&p.kind));
+    out.push(format!(
+        "M{num} {} {} {} {bulk} {model}",
+        node(nets_of[0]),
+        node(nets_of[1]),
+        node(nets_of[2])
+    ));
+    add_model(
+        &model,
+        &format!(".MODEL {model} {mtype}"),
+        &format!(
+            "{}: sin deck SPICE vendor, modelo {mtype} default (sin L/W/AD/AS)",
+            p.reference
+        ),
+        out,
+        subs,
+        models,
+    );
+    Ok(())
+}
+
+/// Convert SDF into ngspice lines, mapping `D`/`Q`/`M` to ngspice default
+/// models (behavioral fallback, each substitution reported).
+///
+/// Vendor DSIM primitives (`OA91`, `TIP31`, ...) ship as compiled model
+/// DLLs with no SPICE deck; only `BC184` (`ZETEX.SML`) and `CA3140`
+/// (`ANALOG.LML`) have vendor decks. `U` (ICs) and `X` stay
+/// [`SimError::UnsupportedPart`].
+///
+/// # Errors
+///
+/// [`SimError::BadNetlist`] on missing pins; [`SimError::UnsupportedPart`]
+/// for `U`/`X`/other letters.
 pub fn elements_with_subs(doc: &pmodel::Document) -> Result<(Vec<String>, Vec<String>), SimError> {
     let parts = doc
         .partlist()
@@ -213,66 +376,13 @@ pub fn elements_with_subs(doc: &pmodel::Document) -> Result<(Vec<String>, Vec<St
             .reference
             .trim_start_matches(|c: char| c.is_ascii_alphabetic());
         if matches!(letter, 'R' | 'C' | 'L' | 'V' | 'I') {
-            if nets_of.len() != 2 {
-                return Err(SimError::BadNetlist(format!(
-                    "{} expects 2 pins, has {}",
-                    p.reference,
-                    nets_of.len()
-                )));
-            }
-            out.push(format!(
-                "{}{} {} {} {}",
-                letter,
-                num,
-                node(nets_of[0]),
-                node(nets_of[1]),
-                normalize_value(&p.value)
-            ));
+            emit_passive(p, letter, num, nets_of, &mut out)?;
         } else if letter == 'D' {
-            if nets_of.len() != 2 {
-                return Err(SimError::BadNetlist(format!(
-                    "{} expects 2 pins, has {}",
-                    p.reference,
-                    nets_of.len()
-                )));
-            }
-            let model = format!("DMOD_{}", sanitize(&p.kind));
-            out.push(format!(
-                "D{num} {} {} {model}",
-                node(nets_of[0]),
-                node(nets_of[1])
-            ));
-            if !models.contains(&model) {
-                models.push(model.clone());
-                out.push(format!(".MODEL {model} D"));
-                subs.push(format!(
-                    "{}: sin deck SPICE vendor, modelo D default (no OA91 germanio)",
-                    p.reference
-                ));
-            }
+            emit_diode(p, num, nets_of, &mut out, &mut subs, &mut models)?;
         } else if letter == 'Q' {
-            if nets_of.len() != 3 {
-                return Err(SimError::BadNetlist(format!(
-                    "{} expects 3 pins, has {}",
-                    p.reference,
-                    nets_of.len()
-                )));
-            }
-            let model = format!("QMOD_{}", sanitize(&p.kind));
-            out.push(format!(
-                "Q{num} {} {} {} {model}",
-                node(nets_of[0]),
-                node(nets_of[1]),
-                node(nets_of[2])
-            ));
-            if !models.contains(&model) {
-                models.push(model.clone());
-                out.push(format!(".MODEL {model} NPN"));
-                subs.push(format!(
-                    "{}: sin deck SPICE vendor, modelo NPN default",
-                    p.reference
-                ));
-            }
+            emit_bjt(p, num, nets_of, &mut out, &mut subs, &mut models)?;
+        } else if letter == 'M' {
+            emit_mos(p, num, nets_of, &mut out, &mut subs, &mut models)?;
         } else {
             return Err(SimError::UnsupportedPart(format!(
                 "{}(kind {})",
@@ -758,6 +868,18 @@ L1,PS,2
         assert!(cir.contains(".MODEL QMOD_BC184 NPN"), "{cir}");
         let out = run(&cir).expect("ngspice dq");
         assert!(!out.stdout.is_empty(), "vacio");
+    }
+
+    #[test]
+    fn mosfet_substitution() {
+        // NMOS switch (bulk tied) + PMOS by kind prefix.
+        let sdf = "ISIS SCHEMATIC DESCRIPTION FORMAT 4.5\n=====\n*PARTLIST,3\nV1,VSRC,5\nM1,2N7000,2N7000\nM2,P-CH,P-CH\n*NETLIST,3\nIN,3\nV1,PS,1\nM1,PS,1\nM2,PS,1\nMID,3\nM1,PS,2\nM1,PS,3\nM2,PS,2\nGND,3\nV1,PS,2\nM2,PS,3\nM2,PS,3\n";
+        let doc = pmodel::parse(sdf).unwrap();
+        let (cir, subs) = to_cir_with_subs(&doc, "m", "10u", "1m", &["v(MID)"]).expect("m cir");
+        assert_eq!(subs.len(), 2, "{subs:?}");
+        assert!(cir.contains(".MODEL MMOD_2N7000 NMOS"), "{cir}");
+        assert!(cir.contains(".MODEL MMOD_P_CH PMOS"), "{cir}");
+        assert!(cir.contains("M1 "), "{cir}");
     }
 
     #[test]
