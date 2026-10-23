@@ -75,6 +75,7 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (@0x1000e170) — decompilados Ghidra vía REA (ver notas abajo)
 - [ ] `ISIS.DLL` factory loader — es GetProcAddress (sin función única);
   mecanismo documentado + espejado en `vsm-host` ✓
+- [x] cuerpos .LIB: mismo framing 02 xx + scripts {PREFIX=}/{PINDEFAULT}/{PROPDEFS}/{PROGRAM}/{MODDLL} (plib device_props, 8 KiB window) - link device->package->modelo; aengine lo expone en Pick Device.
 - [x] símbolos: directorio completo `02 7F 00 LEN NAME 01 19`
   (298 records, 11 templates: COMPONENT/WIRE/BUS/TAPE/GENERATOR/
   TERMINAL/PIN/PORT/MARKER/Panel/VPROBE; 1627 vértices) —

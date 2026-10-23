@@ -125,6 +125,42 @@ pub fn parse_idx(data: &[u8], kind: super::LibKind) -> Result<Vec<IdxEntry>, Par
     Ok(out)
 }
 
+/// Extract `{KEY=VAL}` / `{*SECTION}` script groups from a `.LIB` device
+/// body starting at `offset` (bounds-checked, 8 KiB window).
+///
+/// Device bodies interleave `02 xx` framed binary with ASCII scripts
+/// (`{PREFIX=ARD}`, `{PINDEFAULT GND 56}`, `{*DEVICE}`) — verified on
+/// `ArduinoTEP.LIB` (MEGA 2560 @41504, PRO MINI @43578).
+#[must_use]
+pub fn device_props(data: &[u8], offset: u32) -> Vec<(String, String)> {
+    let start = offset as usize;
+    let end = (start + 8192).min(data.len());
+    let Some(win) = data.get(start..end) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    let mut i = 0;
+    while i < win.len() {
+        if win[i] != b'{' {
+            i += 1;
+            continue;
+        }
+        let Some(rel) = win[i..].iter().position(|&b| b == b'}') else {
+            break;
+        };
+        if rel > 1 && rel <= 121 {
+            let body = String::from_utf8_lossy(&win[i + 1..i + rel]).into_owned();
+            if let Some((k, v)) = body.split_once('=') {
+                out.push((k.to_owned(), v.to_owned()));
+            } else {
+                out.push((body, String::new()));
+            }
+        }
+        i += rel + 1;
+    }
+    out
+}
+
 /// Parse a `.LIB` directory into entries.
 ///
 /// Stops at the first all-zero slot or implausible name; caps at 4096.
@@ -193,6 +229,21 @@ mod tests {
         }
         v.extend_from_slice(&0x1234_5678u32.to_le_bytes());
         v
+    }
+
+    #[test]
+    fn device_props_scripts() {
+        let mut body = vec![0x02u8, 0x6b];
+        body.extend_from_slice(b"COMPONENT\0");
+        body.extend_from_slice(&[0xd0u8, 0x54, 0x21, 0x00]);
+        body.extend_from_slice(b"{PREFIX=ARD}\n{*DEVICE}\n{PINDEFAULT GND 56}");
+        let props = super::device_props(&body, 0);
+        assert_eq!(props.len(), 3);
+        assert_eq!(props[0], ("PREFIX".to_owned(), "ARD".to_owned()));
+        assert_eq!(props[1], ("*DEVICE".to_owned(), String::new()));
+        assert_eq!(props[2].0, "PINDEFAULT GND 56".to_owned());
+        // Out-of-range offset is advisory, never panics.
+        assert!(super::device_props(&body, 999_999).is_empty(), "oob");
     }
 
     #[test]

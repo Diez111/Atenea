@@ -244,9 +244,8 @@ fn load_idx(path: &Path, snap: &mut DocSnapshot) -> Result<(), String> {
     let data = std::fs::read(path).map_err(|e| e.to_string())?;
     let idx = plib::libdir::parse_idx(&data, plib::LibKind::Idx).map_err(|e| e.to_string())?;
     let lib_path = path.with_extension("LIB");
-    let dirs = std::fs::read(&lib_path)
-        .map(|v| plib::libdir::parse_lib_dir(&v))
-        .unwrap_or_default();
+    let lib_data = std::fs::read(&lib_path).unwrap_or_default();
+    let dirs = plib::libdir::parse_lib_dir(&lib_data);
     let by_key: HashMap<u32, &plib::libdir::DirEntry> = dirs.iter().map(|d| (d.key, d)).collect();
     for e in &idx {
         let name = by_key
@@ -258,6 +257,14 @@ fn load_idx(path: &Path, snap: &mut DocSnapshot) -> Result<(), String> {
         }
         if let Some(d) = by_key.get(&e.key) {
             rest.push(format!("offset={}", d.offset));
+            for (k, v) in plib::libdir::device_props(&lib_data, d.offset) {
+                if matches!(k.as_str(), "PREFIX" | "MODDLL" | "PROGRAM" | "PRIMITIVE") {
+                    rest.push(format!("{k}={v}"));
+                }
+                if rest.len() >= 6 {
+                    break;
+                }
+            }
         }
         snap.parts.push(PartView {
             reference: name,
