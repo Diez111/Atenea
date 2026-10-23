@@ -231,6 +231,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLIST::pathgen` (`?pathgen@NETLIST@@QAEPADPAUNET_MODULE@@H@Z`,
   public, @0x10012e40): recorre cadena de módulos (`+0x38`), genera
   path jerárquico (llama `setcdbroot/link/addmodule/addmodelinstance`).
+- `NETLIST::addmapitem` (`?addmapitem@NETLIST@@QAEXPAD0@Z`, public,
+  @0x10012b40): agrega a la tabla MAP pendiente (`+0x1a8+0x40`);
+  duplicado → `Duplicate entry '%s' found in MAP ON %s table`.
+- `CDBCORE::getmodule` (`?getmodule@CDBCORE@@QAEPAUMODULE@@K@Z`, @0x10001030):
+  índice 1-based a array de `MODULE*` (`+0x250`, count `+0x24c`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
