@@ -112,8 +112,13 @@ fn main() -> Result<(), slint::PlatformError> {
                             }
                             .into(),
                         );
-                        if snap.kind == "dsn" {
-                            let svg = aengine::sheet_svg_dark(&snap, 1200, 800);
+                        if snap.kind == "dsn" || snap.kind == "lyt" {
+                            // ISIS = hoja beige clara, ARES = hoja negra.
+                            let svg = if snap.kind == "lyt" {
+                                aengine::sheet_svg_dark(&snap, 1200, 800)
+                            } else {
+                                aengine::sheet_svg(&snap, 1200, 800)
+                            };
                             let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
                             if std::fs::write(&svg_path, svg).is_ok()
                                 && let Ok(img) = slint::Image::load_from_path(&svg_path)

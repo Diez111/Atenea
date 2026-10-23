@@ -47,9 +47,7 @@ export component Atenea inherits Window {
             title: "File";
             MenuItem { title: "Open…"; activated => { root.open-file(""); } }
         }
-        Menu { title: "Output"; }
-        Menu {
-            title: "View";
+        Menu { title: "View";
             MenuItem { title: "Tables"; }
             MenuItem { title: "Graph"; }
             MenuItem { title: "Esquema"; }
@@ -57,11 +55,15 @@ export component Atenea inherits Window {
         }
         Menu { title: "Edit"; }
         Menu {
+            title: "Design";
+            MenuItem { title: "Edit Sheet Properties…"; activated => { root.tool-selected("sheet-props"); } }
+        }
+        Menu {
             title: "Library";
             MenuItem { title: "Pick Device…"; activated => { root.pick-device(); } }
         }
-        Menu { title: "Tools"; }
-        Menu { title: "Technology"; }
+        Menu { title: "Debug"; }
+        Menu { title: "Template"; }
         Menu { title: "System"; }
         Menu {
             title: "Graph";
@@ -119,13 +121,13 @@ export component Atenea inherits Window {
                 VerticalBox {
                     padding: 3px;
                     spacing: 2px;
-                    Text { text: "PREVIEW"; color: #1c2733; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
+                    Text { text: "OVERVIEW"; color: #1c2733; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
                     Rectangle {
                         background: #000000;
                         height: 130px;
                         Image { source: root.sheet; }
                     }
-                    Text { text: "COMPONENTS"; color: #1c2733; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
+                    Text { text: "P  L  DEVICES"; color: #1c2733; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
                     LineEdit { placeholder-text: "buscar…"; text <=> root.lib_query; edited(q) => { root.filter-lib(q); } }
                     ListView {
                         for p in root.lib_parts: HorizontalBox {

@@ -163,7 +163,8 @@ fn kind_of(path: &Path) -> &str {
     {
         "pdsprj" => "pdsprj",
         "mdf" | "sdf" => "lisa",
-        "dsn" | "lyt" => "dsn",
+        "dsn" => "dsn",
+        "lyt" => "lyt",
         "pdsclip" => "pdsclip",
         "idx" => "idx",
         _ => "unknown",
@@ -328,7 +329,7 @@ fn open_sync(path: &Path) -> Result<DocSnapshot, String> {
     match snap.kind.as_str() {
         "pdsprj" => load_pdsprj(path, &mut snap)?,
         "lisa" => load_lisa(path, &mut snap)?,
-        "dsn" => load_dsn(path, &mut snap)?,
+        "dsn" | "lyt" => load_dsn(path, &mut snap)?,
         "pdsclip" => load_pdsclip(path, &mut snap)?,
         "idx" => load_idx(path, &mut snap)?,
         other => return Err(format!("unsupported extension: .{other}")),
@@ -491,7 +492,8 @@ fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> St
     let (paper, sheet_fill, wire, label) = if dark {
         ("#000000", "#000000", "#c8ccd4", "#7fb3ff")
     } else {
-        ("#f4f6fa", "#ffffff", "#1c2733", "#0f4c9c")
+        // ISIS editing window beige (see ISISTUT screenshots).
+        ("#f2ecdd", "#fbf8ef", "#1c2733", "#0f4c9c")
     };
     let mut s = format!(
         "<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>\n<rect x='0' y='0' width='{width}' height='{height}' fill='{paper}'/>\n"
