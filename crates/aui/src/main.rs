@@ -102,6 +102,16 @@ fn main() -> Result<(), slint::PlatformError> {
                             std::rc::Rc::new(slint::VecModel::from(nets_of(&snap))).into(),
                         );
                         app.set_erc_text(erc_text_of(&snap).into());
+                        let errs = snap.erc.iter().filter(|(s, _)| *s == 'E').count();
+                        let warns = snap.erc.len() - errs;
+                        app.set_drc(
+                            if errs == 0 && warns == 0 {
+                                "No ERC errors".to_owned()
+                            } else {
+                                format!("{errs} errors, {warns} warnings")
+                            }
+                            .into(),
+                        );
                         if snap.kind == "dsn" {
                             let svg = aengine::sheet_svg_dark(&snap, 1200, 800);
                             let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
