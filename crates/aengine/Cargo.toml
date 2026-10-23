@@ -1,0 +1,17 @@
+[package]
+name = "aengine"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "Async engine facade for the Atenea UI: parsers + ngspice on a worker thread, never on the UI thread"
+
+[dependencies]
+plib = { path = "../plib" }
+pmodel = { path = "../pmodel" }
+pproj = { path = "../pproj" }
+asim = { path = "../asim" }
+vsm = { path = "../vsm" }
+vsm-host = { path = "../vsm-host" }
+
+[lints]
+workspace = true

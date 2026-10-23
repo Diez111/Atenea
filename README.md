@@ -98,6 +98,9 @@ Sin Vulkan/VM: agregá `--gl`. Release instalado: `~/.local/bin/atenea` +
   Binario `atenea` + launcher `atenea.desktop`.
 - `crates/asim`: simulación batch (SDF → netlist ngspice con `9k1`→`9.1k`,
   `4M7`→`4.7MEG`, red GND→nodo 0; corre `ngspice -b`, parsea `Trace`).
+- `crates/aengine`: fachada async (worker thread + `DocSnapshot`/`TraceView`/
+  `erc_of`; la UI solo manda `Job`s y recibe respuestas, nunca bloquea).
+- `crates/aui` (en curso): UI Slint 100% glue a `aengine` (shell + vistas).
 - `crates/vsm-host` + `crates/nullmodel`: plugins nativos (`dlopen` +
   ABI `atenea_model_*`; demo carga y pisa 10×1000 ps verificado).
 - Cobertura medida: `corpus_check` sobre 2374 archivos reales.
