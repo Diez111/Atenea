@@ -65,10 +65,10 @@ fn main() -> Result<(), slint::PlatformError> {
         };
         let svg = aengine::sheet_svg(&empty, 1200, 800);
         let path = std::env::temp_dir().join("atenea-sheet.svg");
-        if std::fs::write(&path, svg).is_ok() {
-            if let Ok(img) = slint::Image::load_from_path(&path) {
-                app.set_sheet(img);
-            }
+        if std::fs::write(&path, svg).is_ok()
+            && let Ok(img) = slint::Image::load_from_path(&path)
+        {
+            app.set_sheet(img);
         }
         app.set_status("abrí un archivo con File > Open".into());
     }
