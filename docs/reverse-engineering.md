@@ -240,8 +240,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   @0x10016050): cuenta pines con nombre (stride `0x48` en `+0xc`,
   count `+0x18`, nombre no vacío) — segundo array de pines además
   del de `getpwrnets`/`netmerge`.
-- Flags `+0x28` mapeados: bit2=`graph()` (@0x1000e020), bit4=`dxp()`
-  (@0x1000e040), bit5=`bom()` (@0x1000e050) — seteados por `setdsnstats`.
+- Flags `+0x28` mapeados: bit2=`graph()` (@0x1000e020),
+  bit3=`realtime()` (@0x1000e030), bit4=`dxp()` (@0x1000e040),
+  bit5=`bom()` (@0x1000e050) — seteados por `setdsnstats`.
 - `NETLIST::getscript` (`?getscript@NETLIST@@QAEPBDPBD@Z`, public,
   @0x1000e220): `DIDX[+0x140]` por nombre → texto en `+0x6c`
   (indirecto si tamaño `+0x80`>0xf) — tabla de scripts.
