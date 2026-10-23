@@ -269,6 +269,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (@0x1001aa60) busca roles OP(0xd)/IP(0xe) en pines y asigna estado
   de net; `psm_partprop` (@0x1001a8a0) transiciona estado de parte
   (`+0xdc/+0xe8`).
+- `NETLIST::addmoddata` (`?addmoddata@NETLIST@@QAEHPAUNET_PART@@PAUMODDATA@@@Z`,
+  public, @0x10013bd0): worker MODDATA con el mismo gate que `addpwritf`
+  (`+0x24&4`, no-`dxp`) — path DXP por parte.
+- `NETLIST::getselector` (`?getselector@NETLIST@@AAEHQADAAVPROPLIST@@0@Z`,
+  private, @0x10015ad0): parsea nombres separados por `+`
+  (`getnzstr(0x3f)`); error `Selection property name(s) expected in MAP
+  statement` — el selector de `MAP ON` (`parse_map`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
