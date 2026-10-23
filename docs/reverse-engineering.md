@@ -93,10 +93,15 @@ Decompiled & applied (loop ledger):
   `resolve`, `net_erc`, `net_gen`, `bom`, `dxp`, `addscript`,
   `writeheader`, `propkwd/propsubst/propval`, `validate`, `sortnets`,
   `gettitle`, `write`, `setcdbroot`, `setdsnprops`.
-- `net_gen` ×2 (0x1000fa00 ostream / 0x1000fc50 path): despacha por índice
-  de formato vía tabla `net_formats` + punteros `PTR_FUN_10030390[i]`;
-  genera nombres con `tfngen`/`addext`, abre con `fopen(..."w")`.
-  Pseudocódigo completo guardado en `/tmp/nl_decomp/`.
+- `net_gen` ×2: ostream `?net_gen@@YAXAAVNETLIST@@AAV?$basic_ostream@DU?$char_traits@D@std@@@std@@HPAD2@Z`
+  @0x1000fa00 y path `?net_gen@@YAXAAVNETLIST@@PADH11@Z`
+  (`void net_gen(NETLIST*,char*,int,char*,char*)`) @0x1000fc50: abre con
+  `fopen(..,"w")` + `addext`, despacha por índice vía tabla `net_formats`
+  + punteros `PTR_FUN_10030390[i]`, `error(0xa002)` si falla.
+  Formatos extra: `FORMAT,CROCODILENETLIST,1` + `REALPCB.ADI`
+  (familia Crocodile/RealPCB fuera de los 6).
+- `writeheader(ostream*, "ELECTRICAL RULES CHECK", ...)` abre los reports
+  (visto llamarse desde `net_erc` en 0x1000f46a).
 - Mapping to native crates: `PROPDEF` ↔ `*PROPDEFS` vocabulary
   (`PROPDEFS.INI`); `NETLIST::write` ↔ `*PARTLIST`/`*NETLIST` in `pmodel`;
   `setcdbroot` ↔ `ROOT.CDB` in `pproj`.
