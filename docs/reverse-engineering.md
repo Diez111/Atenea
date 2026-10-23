@@ -47,7 +47,10 @@ Decompiled & applied (loop ledger):
   `plib::symbols` generalizado a todos los templates; familias
   `02 22` (primitiva) vs `02 1B-23` (markers/pins/ports); ref `7F`
   vs instancia `67/7B/7D/7E`. Strokes/pen aún TBD.
-- [ ] pads LYT — records `02 7f` localizados, campos TBD
+- [x] pads LYT — records `02 7F ESTILO` + ASCII pin (Cpu.LYT @0x14e8);
+  tail post-SIGNAL esparso (mayoría ceros, sin tracks ruteados en sample);
+  trío 780/975mm = tamaño hoja. Tracks/vías: encoding TBD (probablemente
+  sample sin rutear).
 
 - `BIN/ISIS.DLL` (PE32, sha256 `e0cec780…`): 3040 procedures, 3108 strings.
   No PDB (`ISIS.pdb` referenced, absent) → recovered names only.
