@@ -195,10 +195,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   ROL (pines OP de terminales POWER), no por nombre — nuestro
   `validate` usa heurística de nombres (`PWRRAILS.INI`); equivalencia
   documentada, no identidad.
-- `NETLIST::addmodel`/`addmodfile` (`?addmodel@NETLIST@@QAEXPAD0@Z`,
+- `NETLIST::addmodel` (`?addmodel@NETLIST@@QAEXPAD0@Z`,
   @0x1000e0f0): tail-call `PROPLIST::add(this+0x9c)` — lista MODELDEFS.
 - `NETLIST::addmodelinstance` (`?addmodelinstance@...`, @0x10012d90):
   crea `NET_MODULE` desde `NET_PART` (link `+0x3c`, copia nombre).
+- `NETLIST::addmodfile` (`?addmodfile@NETLIST@@QAEXPAD@Z`, @0x1000e100):
+  `strdup` + `DIDX::add(+0xc0)` — lista de MODFILE paths.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
