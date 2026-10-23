@@ -87,9 +87,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] cuerpos .LIB: mismo framing 02 xx + scripts {PREFIX=}/{PINDEFAULT}/{PROPDEFS}/{PROGRAM}/{MODDLL} (plib device_props, 8 KiB window) - link device->package->modelo; aengine lo expone en Pick Device.
 - [x] pen block = constante por template (`34...00 02 22 00 00 00 00 60 4f 00 00 00 00 c0 00 01 ff ff ff 00 ff ff ff 00` idéntico en todos los COMPONENT) — el style id basta para render; strokes = orden de vértices (polilínea implícita, TBD verificar).
 - [x] pen styles (siggen.DSN, `Symbol.style`): COMPONENT/GENERATOR=0x22, TERMINAL=0x21, MARKER/VPROBE=0x1f, PORT/TAPE=0x1d, WIRE grueso=0x23; style=0 en records con header bbox-first (pen default o en otro offset).
-- [x] símbolos: directorio completo `02 7F 00 LEN NAME 01 19`
-  (298 records, 11 templates: COMPONENT/WIRE/BUS/TAPE/GENERATOR/
-  TERMINAL/PIN/PORT/MARKER/Panel/VPROBE; 1627 vértices) —
+- [x] símbolos: directorio `02 7F/67/7B/7D/7E` (321 records: 298 refs +
+  23 instancias, 12 templates incl. `2D GRAPHIC`, 1799 vértices) —
   `plib::symbols` generalizado a todos los templates; familias
   `02 22` (primitiva) vs `02 1B-23` (markers/pins/ports); ref `7F`
   vs instancia `67/7B/7D/7E`. Strokes/pen aún TBD.
@@ -97,9 +96,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   tail post-SIGNAL esparso (mayoría ceros, sin tracks ruteados en sample);
   trío 780/975mm = tamaño hoja. Tracks/vías: encoding TBD (probablemente
   sample sin rutear).
-- [ ] tracks/vías: ni Cpu.LYT ni dsPIC33_REC_COMPLETE.LYT guardan
-  pares i32 en grilla tras `SIGNAL` (solo trío tamaño-hoja). Experimento
-  pendiente: rutear placa mínima en ARES bajo Wine y difear antes/después.
+- [x] tracks `02 60 <grupo:3B> <x:i32> ...` + net ASCII `06 23 <num>`
+  (PICDEM LCD 2_r: 40 verts en 29 grupos encadenados; Cpur: 1 segmento
+  `$WR8`; `02 40` = vía + `02 44` pin-ref). Y siempre 0 en samples —
+  encoding del eje Y TBD (experimento ARES pendiente). `plib::lyt_tracks`
+  une vértices consecutivos del mismo grupo; `02 41` = nets del layout.
 - [x] UI declarativa: PDS.EXE/ISIS.DLL/ARES.DLL embeben specs UTF-16
   `=KEY,tipo,...` (534 ISIS + 459 ARES + 114 PDS: `=MENU`, `=PREVIEW`,
   `=ADDPIN`, `=ANGLE`, `=COLOUR`, `=LAYER`...) — ver `docs/uispecs.md`.
@@ -175,8 +176,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   ya documentados). `MODULE`: `+0x08` nombre, `+0x78/+0x7c u32`,
   `+0x80` ptr nullable contado.
   lee props `MODEL`/`MODFILE` y resuelve contra la DB de modelos;
-  usa `CDBCORE` en stack para el walk. Nuestra `asim` hoy rechaza
-  `Q/D/U` (futura vía: resolver `MODEL`/`MODFILE` con `pmodel::modeldefs`).
+  usa `CDBCORE` en stack para el walk. Nuestra `asim` mapea `D`/`Q`/`M`
+  a defaults ngspice con aviso (elementos `R/C/L/V/I/D/Q/M` simulan;
+  `U`/`X` pendientes por macromodelos).
 - Export table (515 exports; RVAs de parse manual NO verificadas —
   el parseo crudo desalinea `AddressOfFunctions`: Ghidra-por-nombre es la
   fuente de verdad). Nombres confirmados por string: `parse_field`,
