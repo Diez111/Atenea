@@ -338,7 +338,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   no función — por eso no hay `parse`/decompile.
 - Accessors (firmas mangled verificadas, semántica por nombre):
   `netptr(NET*,int)`/`scriptptr`/`partptr` (indexados),
-  `addptr(BASE*)`, `addnprop(char*,char*)`,
+  `addptr(BASE*)` (@0x1000e130: envuelve en nodo SLINK → SLIST `+0x1c4`,
+  misma lista staging que `addwire`), `addnprop(char*,char*)`,
   `addmoddata(NET_PART*,MODDATA*)`, `setmodstats`,
   `getnet/getmodule/getscript/getnetprop/getpart/getselector/getsheetid`,
   `netbounds/partbounds/propbounds/scriptbounds/tracebounds` (bboxes),
