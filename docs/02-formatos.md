@@ -18,6 +18,9 @@
 ```bash
 cargo run -p plib --example dsn_dump -- siggen.DSN        # 153 segs, bbox 350.52x147.32 mm
 cargo run -p plib --example corpus_check -- LIBRARY/      # 2374 archivos, 0.16 s, 15.6% con parser
+# Árbol completo Proteus 8 (2026-10-22): 15 unknowns, todos toolchains de
+# terceros (MPASM/ASM11/citf scripts/unins000.dat) — 0 archivos nativos
+# sin parser (DSN/LYT/LIB/IDX/SDF/MDF/SML/LML/pdsprj/CDB/VML/STY).
 cargo run -p pmodel --example sml_dump -- ANALOG.SML     # 4 decks (LM123...)
 cargo run -p pmodel --example lml_dump -- ANALOG.LML     # 41+ decks LISA
 cargo run -p pmodel --example lisa_dump -- 12ce51x.MDF   # 10 nets, 20 pins
