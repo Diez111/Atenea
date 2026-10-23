@@ -67,6 +67,7 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - [x] DSIM.DLL: interfaces `IDSIMCKT`/`IDSIMMODEL`/`IDSIMPIN1`/`IDSIMPIN2`
   (mixed-mode sim kernel, `DSIM creating net`, breakpoints). `asim` cubre
   el flujo batch; kernel interactivo = roadmap.
+- [x] ELECTRA API C (6 exports): `electra_init/load/command/dofile/abort/sethost` — router scripteable por archivo (vía futura: generar dofile desde nuestro LYT). ISIS.DLL/ARES.DLL solo exponen `createmoduleinstance/deletemoduleinstance`.
 - [x] ELECTRA.DLL: autorouter Qt (`Adaptive Shape-Based AutoRouter`,
   `AutoRouteRun/PauseAction`) — router propio = roadmap, formato LYT ya
   parseado (pads/sheets/CLASSES/SIGNAL).
