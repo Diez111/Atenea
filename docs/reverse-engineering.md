@@ -94,10 +94,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_bootstep` (@0x10003938): `boot init...` por callback SIMLOG;
   itera lista de modelos (`+0x35f70`, count `+0x35f6c`) con init
   por modelo.
+- `dsim_resume()` (@0x10003c98): drena cola de callbacks (`+0x35954`
+  lista linkada), limpia flags `+0x35934/+0x35930`, retorna 2/0/-1.
 - `dsim_suspend()` (@0x1000261c): flag `DAT_10035934=1` (resume lo
-  limpia, en batch).
-  itera lista de modelos (`+0x35f70`, count `+0x35f6c`) con init
-  por modelo.
+  limpia).
 - `dsim_initialize(SDF_NETLIST*, IDSIMCKT**)` (@0x1001fc14):
   construye el `IDSIMCKT` singleton (`DAT_100360ec`) desde el
   SDF netlist + resetea estado (`DAT_10035928/20/24/5c`).
