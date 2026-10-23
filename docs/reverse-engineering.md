@@ -59,6 +59,9 @@ Decompiled & applied (loop ledger):
   tail post-SIGNAL esparso (mayoría ceros, sin tracks ruteados en sample);
   trío 780/975mm = tamaño hoja. Tracks/vías: encoding TBD (probablemente
   sample sin rutear).
+- [ ] tracks/vías: ni Cpu.LYT ni dsPIC33_REC_COMPLETE.LYT guardan
+  pares i32 en grilla tras `SIGNAL` (solo trío tamaño-hoja). Experimento
+  pendiente: rutear placa mínima en ARES bajo Wine y difear antes/después.
 - [x] UI declarativa: PDS.EXE/ISIS.DLL/ARES.DLL embeben specs UTF-16
   `=KEY,tipo,...` (534 ISIS + 459 ARES + 114 PDS: `=MENU`, `=PREVIEW`,
   `=ADDPIN`, `=ANGLE`, `=COLOUR`, `=LAYER`...) — ver `docs/uispecs.md`.
