@@ -387,6 +387,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   tiempo en lista `DAT_100360e8` (corte en `DAT_10036098`).
 - `dsim_getbuspin(IINSTANCE*, nombre, ...)` (@0x10004500): busca
   modelo en lista (`+8` == instancia), `FUN_10007594` → `IBUSPIN*`.
+- `getdelay(IINSTANCE*, pin, __int64)` (@0x10007264): devuelve
+  `__int64` (escala ps).
+- `getinitval(IINSTANCE*, pin, long)` (@0x1001fc54): lee prop del
+  pin vía vtable+8; valor `RANDOM` → `srand/rand` con estado
+  `DAT_1003259c` (xorshift) — iniciales aleatorios deterministas.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
