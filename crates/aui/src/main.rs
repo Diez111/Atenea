@@ -97,13 +97,13 @@ fn main() -> Result<(), slint::PlatformError> {
                             std::rc::Rc::new(slint::VecModel::from(nets_of(&snap))).into(),
                         );
                         app.set_erc_text(erc_text_of(&snap).into());
-                        if snap.kind == "lisa" {
-                            if let Ok(text) = std::fs::read_to_string(&path) {
-                                *last_sdf
-                                    .lock()
-                                    .unwrap_or_else(std::sync::PoisonError::into_inner) =
-                                    Some((snap.name.clone(), text));
-                            }
+                        if snap.kind == "lisa"
+                            && let Ok(text) = std::fs::read_to_string(&path)
+                        {
+                            *last_sdf
+                                .lock()
+                                .unwrap_or_else(std::sync::PoisonError::into_inner) =
+                                Some((snap.name.clone(), text));
                         }
                     }
                     Some(Err(e)) => app.set_status(format!("error: {e}").into()),
