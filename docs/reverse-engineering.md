@@ -51,6 +51,10 @@ Decompiled & applied (loop ledger):
   tail post-SIGNAL esparso (mayoría ceros, sin tracks ruteados en sample);
   trío 780/975mm = tamaño hoja. Tracks/vías: encoding TBD (probablemente
   sample sin rutear).
+- [x] UI declarativa: PDS.EXE/ISIS.DLL/ARES.DLL embeben specs UTF-16
+  `=KEY,tipo,...` (534 ISIS + 459 ARES + 114 PDS: `=MENU`, `=PREVIEW`,
+  `=ADDPIN`, `=ANGLE`, `=COLOUR`, `=LAYER`...) — ver `docs/uispecs.md`.
+  Es el spec completo de diálogos/menús para clonar UX en `aui`.
 
 - `BIN/ISIS.DLL` (PE32, sha256 `e0cec780…`): 3040 procedures, 3108 strings.
   No PDB (`ISIS.pdb` referenced, absent) → recovered names only.
