@@ -86,6 +86,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
   `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
+- `dsim_timestep(t, &tref)` (@0x10002914): quantum en picosegundos
+  (`t/1e-12`, `ROUND`, control FPU) — el kernel mixto avanza en ps.
+  Nuestro `vsm-host` pisa en 1000 ps hoy (coherente).
 - `dsim_linknet(nombre, STATE**)` (@0x10004288): resuelve net por
   nombre → `STATE*` en `+0x3c`, 1/0.
 - `dsim_initialize(SDF_NETLIST*, IDSIMCKT**)` (@0x1001fc14):
