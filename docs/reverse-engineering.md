@@ -87,6 +87,10 @@ Decompiled & applied (loop ledger):
 - `NETLIST::gettitle` (`?gettitle@NETLIST@@QAEPBDXZ`, @0x1000e170):
   `PROPLIST[this+0x64]["DSN_TITLE"]` — el título vive en las props
   `DSN_*` que `write()` excluye del SDF.
+- `NETLIST::setdsnprops` (`?setdsnprops@NETLIST@@QAEXPBD00000@Z`, public,
+  @0x10012860): 6 args NULL→`"<NONE>"` → `PROPLIST[this+0x64]` con
+  `DSN_TITLE/DOCNO/AUTHOR/REV/MDATE/CDATE`. Cierra el círculo:
+  `gettitle` lee `DSN_TITLE` de ahí y `write()` las excluye del SDF.
 - `NETLIST::parse_models` (`?parse_models@...`, 0x1bb90, 368 B,
   Ghidra verifica nombre+body): lee líneas hasta EOF o línea que empiece
   con `*`; `getpropname(ptr,buf,':')` + `skipspaces` →
