@@ -137,6 +137,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `STARTUP.ini` = HTML del update manager (anuncio Proteus 9).
 - [x] DSO.DLL = osciloscopio Win32 (`DialogBoxParamA`, `DisplayColorChannel%i`,
   `createactivemodel`) — instrumento con UI nativa, no Qt.
+- [x] motores: `MOTORS.LML` (11 modelos SPICE: 3PHMOTOR, BISTEPPER,
+  BLDC*, DCFAN, DCMOTOR, SERVO, STEPPER...; sondas `RTVPROBE
+  RPM/ANGLE/TORQUE/SPEED`, params `STEP/RPM/OMEGA/LCOIL/VNOM/KTORQUE`);
+  `ROTOR.DLL`/`BLDCanim.dll` animación mecánica.
 - [x] iconos UI reales: ISIS.DLL `.rsrc` trae 11 grupos RT_GROUP_ICON
   (33 imágenes RT_ICON 16–48px: chips, transistor, probes, R/C/D,
   gráficas con ejes, filtros); extraídos a `crates/aui/assets/`
