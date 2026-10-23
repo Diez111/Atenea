@@ -23,6 +23,9 @@ pub const DSN_MAGIC: &[u8] = b"ISIS SCHEMATIC FILE";
 pub const LYT_MAGIC: &[u8] = b"PCB LAYOUT FILE";
 /// ISIS IV circuit magic handled by `DSNCVT40` (same framing family).
 pub const CCT_MAGIC: &[u8] = b"ISIS CIRCUIT FILE";
+/// `DESIGN.SEC` inside `.pdsclip` snippets (same record machinery).
+/// Versioned (`ISIS SNIPPET V8.0`); matched by prefix + terminator scan.
+pub const SNIPPET_MAGIC: &[u8] = b"ISIS SNIPPET V";
 
 /// Internal coordinate units per inch (1 unit = 10 nm).
 ///
@@ -427,8 +430,19 @@ pub fn check_magic(data: &[u8]) -> Result<usize, ParseError> {
             return Ok(magic.len() + 1);
         }
     }
+    // Snippets: `ISIS SNIPPET V8.0\x1a` — version varies, scan terminator.
+    if data.len() > SNIPPET_MAGIC.len() && &data[..SNIPPET_MAGIC.len()] == SNIPPET_MAGIC {
+        if let Some(rel) = data[SNIPPET_MAGIC.len()..]
+            .iter()
+            .position(|&b| b == MAGIC_TERM)
+        {
+            if rel <= 8 {
+                return Ok(SNIPPET_MAGIC.len() + rel + 1);
+            }
+        }
+    }
     Err(ParseError::BadMagic {
-        expected: "ISIS SCHEMATIC FILE, PCB LAYOUT FILE or ISIS CIRCUIT FILE",
+        expected: "ISIS SCHEMATIC FILE, PCB LAYOUT FILE, ISIS CIRCUIT FILE or ISIS SNIPPET",
     })
 }
 
@@ -550,6 +564,15 @@ mod tests {
         w.extend_from_slice(&0xfff4_5f70u32.to_le_bytes());
         w.extend_from_slice(&[0u8; 120]);
         assert_eq!(symbols(&w, None).len(), 1);
+    }
+
+    #[test]
+    fn magic_snippet_versioned() {
+        let v = Vec::from(b"ISIS SNIPPET V8.0\x1a...more...".as_slice());
+        assert!(check_magic(&v).is_ok());
+        // Future versions scan the terminator too.
+        let w = Vec::from(b"ISIS SNIPPET V9.1\x1a...".as_slice());
+        assert!(check_magic(&w).is_ok());
     }
 
     #[test]
