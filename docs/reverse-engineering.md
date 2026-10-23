@@ -253,6 +253,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `repdprop` (@0x1000e0c0) = `remove`+`add` (reemplazo);
   `addsprop` (`?addsprop@...`, @0x10012a40) = nodo `new(0x66)`
   clave+0/valor+0x33 → SLIST `+0x1a0` (igual que `parse_netprop`).
+- `addproductkey`/`addsamplekey` (`?add*@NETLIST@@QAEXK@Z`, @0x1001a700/
+  0x1001a6e0): agregan u32 a tablas fijas (PRODUCT `+0x244`/count
+  `+0x284`, SAMPLE `+0x200`/count `+0x240`, máx 0x10) — las que
+  llena `parse_requires`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
