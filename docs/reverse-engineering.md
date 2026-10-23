@@ -225,6 +225,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `*bounds` (`netbounds` @0x1000e2b0 y familia `part/prop/script/trace`):
   `0<=i<count` → 1/0 (verificado el patrón en `netbounds` vs count
   `+0x194`; el resto es la misma forma).
+- `NETLIST::netcleanup` (`?netcleanup@NETLIST@@QAEXPAUNET@@HHH@Z`,
+  public, @0x10015690): compacta/dedup array de pines (`+0x4`, count
+  `+0x10`), re-enlaza pin→net, `NETLOG::logerror` si hay.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
