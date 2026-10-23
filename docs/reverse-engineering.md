@@ -135,6 +135,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   une vértices consecutivos del mismo grupo; `02 41` = nets del layout.
 - [x] configs: `proteus.ini` (42 B, `[Settings] Program=...`);
   `STARTUP.ini` = HTML del update manager (anuncio Proteus 9).
+- [x] DSO.DLL = osciloscopio Win32 (`DialogBoxParamA`, `DisplayColorChannel%i`,
+  `createactivemodel`) — instrumento con UI nativa, no Qt.
 - [x] iconos UI reales: ISIS.DLL `.rsrc` trae 11 grupos RT_GROUP_ICON
   (33 imágenes RT_ICON 16–48px: chips, transistor, probes, R/C/D,
   gráficas con ejes, filtros); extraídos a `crates/aui/assets/`
