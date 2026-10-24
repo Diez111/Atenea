@@ -555,6 +555,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::writestring` (@0x1000ccf0): `vsprintf` → writer.
   `writexval(double)` (@0x1000cb00): writer con tracking de corrida
   (`+0xa84/+0xa80/+0x760`).
+- `tracemodenames`/`proptypenames`/`mdf_id`: arrays static de datos
+  (`2PAPBDA...`, `3QBDB`), no código.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
