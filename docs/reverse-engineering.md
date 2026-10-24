@@ -53,6 +53,15 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Sistema de propiedades (PROPTEXT, LXLCORE.dll)
+- `getprops(nombre, PROPLIST&, a, b)` (@0x1002d6cc): herencia
+  de props a PROPLIST (STL-heavy) — el mecanismo que resuelve
+  `{PREFIX/MODDLL/PROGRAM}` y `device_props`.
+- `getblock/removeblock(nombre)` (@0x1002a5ac/@0x10026544):
+  bloques de texto (struct TEXT) — split/join de props.
+- `setprops` vive en LXLCORE (externo a NETLIST) — par de
+  `getprops`.
+
 ## Estilos + settings (VGDVC/APPFRAME)
 - `APPLNVARS::load_applnvars(path)` (@0x10029cf0): simétrico
   al save, vía accesor `FUN_1003ce90`. Spec para settings
