@@ -118,6 +118,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
   `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
+- `FUN_10002cdc(t_lo, t_hi)` (@0x10002cdc): dispatcher de la cola
+  de callbacks del kernel (lo llama `timestep`).
+- `FUN_1001f194()` (@0x1001f194): init global previo (lo llama
+  `initialize`).
+- `FUN_10018900(SDF_NETLIST*)` (@0x10018900, 470 líneas, STL):
+  walker que construye la base de simulación (4 `operator_new`)
+  — lo llama `initialize` con el netlist.
 - `FUN_10003fe8` (@0x10003fe8, fastcall): interning de nets —
   cache `DAT_10035900`, si no `FUN_100215f8(&DAT_10035f80, nombre)`
   (pool `35f80`). Lo usan linknet/connect/mergenets.
