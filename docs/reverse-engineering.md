@@ -472,6 +472,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::getdumprun/getdumpvalue` (@0x1000d1d0/@0x1000d0b0):
   lectura del dump vía `CHANNEL_ITERATOR` (`getiterator` + index
   por `simtype`) — cierra el circuito probe→tape→dump.
+- `PROPDEF::getfnargs/getfplimits` (@0x1001ed40/@0x1001eb20):
+  def-string en `+0x8`; args `TRUE/FALSE` + comas; límites
+  `PNZ/POZ/NNZ` (pos/neg-no-cero). Vocabulario de props tipado.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
