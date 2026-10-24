@@ -557,6 +557,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (`+0xa84/+0xa80/+0x760`).
 - `tracemodenames`/`proptypenames`/`mdf_id`: arrays static de datos
   (`2PAPBDA...`, `3QBDB`), no código.
+- `PROPDEF::modetypestring` (@0x1001e8f0): nombre de tipo vía
+  `proptypenames[i]` + prefijo según kind (0=plano, 1=`READONLY %s`...).
+  `PINOUT::getpinnum` (@0x1001d690): strings de número (tabla stride
+  `0x1f` en `+0x4c`, count `+0x48`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
