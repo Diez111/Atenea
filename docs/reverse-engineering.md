@@ -53,6 +53,17 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Runtime interactivo (PROSPICE.DLL, 9 exports)
+- API: `rts_initialize/rts_execute/rts_pausetest/rts_suspend/
+  rts_terminate/rts_event`, `simulate`, `signalabort`,
+  `dumptables`.
+- `rts_initialize(char*,?,HWND)` (@0x100417ec): registra
+  callback `rts_pausetest` + factory `Ordinal_1()`.
+- `rts_execute(int,double*,?)` (@0x100379c0): drive por
+  punteros `DAT_1006c760/750` — el loop interactivo que los
+  botones play/pause/step alimentan.
+  Spec para kernel interactivo propio (fase 2+).
+
 ## Modelos VSM (interfaz por flavor, vía `rizin iE`)
 - Fábricas DSO (`createspicemodel` @0x10017f0c,
   `createactivemodel` @0x10018038): negocian capacidades vía
