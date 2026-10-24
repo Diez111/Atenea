@@ -19,6 +19,24 @@ No Labcenter binaries or data are reproduced here.
 - `Translations/`: 29× Qt `.qm`. `HELP/`: 54× `.chm` (docs, `VSMSDK.chm` most
   relevant for VSM DLL interface — not yet read).
 
+## Iconos/toolbars extraídos del PE (verificado en pixels)
+- Strips RT_BITMAP (`type 2`) en `ISIS.DLL` (98) y `ARES.DLL` (102):
+  toolbars horizontales 24/32px — celdas de 24/32px, fondo gris.
+- ISIS: modo (cursor/play/LBL/gates/sine/cap/curva/probe/línea/caja/
+  círculo/arco/A/S/+), edición (undo/redo/tijera/copiar/flechas/X/
+  mano/wrench/martillo), sim (play/pause/step), 2D, zoom, carpetas.
+- ARES: track/vía/zona/pour/DRC/ratsnest/layers/3D + edición común.
+- Iconos RT_GROUP_ICON (33 en `PDS.EXE`): chip/gráfica/filtro/X/
+  sonda/componente/R/LED/cap/tijera/A — NO hay casa/guardar (esos
+  viven en strips BMP, no en iconos).
+- Splash `PROTEUS DESIGN SUITE / ISIS SCHEMATIC CAPTURE` en strip
+  `ISIS.DLL` (banner rojo/negro, auto + cerebro).
+- Nombres de iconos en uispecs (`=BMP`: `ALIGNBOTTOM`, `PKG_ACW`…)
+  aún sin mapear a IDs de grupo — pendiente tabla comando→icono.
+- Assets en `crates/aui/assets/`: `tool_select/sim_play/lbl/sim_graph/
+  wire/box2d/circle2d/text/chip/folder/terminal/wrench/bug.png`
+  (ISIS) + 50 `ares_*.png` (modo PCB futuro).
+
 ## Frontera verificada (no-SPICE)
 
 - `OA_BIP` (ANALOG.LML, 5106 B) = MAPPINGS de parámetros (`GAIN/CMRR/FT/SR/IB...` por tipo 709/741/LM324...) + PARTLIST de primitivas DSIM (`B`), NO subcircuito SPICE. `U1,CA3140` → `MODFILE=OA_BIP` + `PACKAGE=DIL08`: las funciones de pin (in+/in-/out) viven en el modelo DSIM compilado, no en la librería. Conclusión: `U`/`X` exigen kernel DSIM interactivo (roadmap mayor), no backend ngspice.
