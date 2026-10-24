@@ -124,6 +124,12 @@ No Labcenter binaries or data are reproduced here.
   (`gdf_arc/bezier/bitmap/atrack/box/circle/line/...`).
   Nuestro `sheet_svg` es el 4º backend (SVG) del mismo set.
 
+- `STATUSBAR::setdeftext/sethintcolour/minwidth`
+  (@0x10002750/@0x10001be0/@0x10002e80, APPFRAME): shell de la
+  barra de estado (nuestra status bar ya la implementa).
+- `TREEVIEW::showpath` y resto de widgets lista/árbol: internals
+  cubiertos por widgets Slint.
+
 ## Data-binding de diálogos (WINDIALOG.dll)
 - `FPTEDIT::parseargs(FORM&,char*)` (@0x10017940): parsea
   args float/double del FORM — binding campo↔variable.
