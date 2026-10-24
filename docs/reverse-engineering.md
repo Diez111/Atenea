@@ -115,6 +115,16 @@ No Labcenter binaries or data are reproduced here.
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
 ## Kernel PCB (LXLCORE/PRIMS, vía REA)
+- `SYMBOL::preview(CTS&,SGDVC*,LIBBROWSEINFO*,char*)`
+  (@0x1000d420, PRIMS): render del browser de librerías.
+- `PRIMITIVE::gethandles/resize/setunit` (@0x10007fb0): stubs
+  base (thunk a 0).
+- `PRIMITIVE::usedlist/PR_SYM::usedlist` (@0x100081d0/
+  @0x1000c9a0): colección DIDX de dependencias (vía `this+0x10`
+  y `SYMBOL+0x30` — path BOM/pack).
+- `occa` resuelve a impls compartidas: `VGDVC::textocca` +
+  `LXLCORE::BEZIER::occa`. `MLIB` vive en `XLIB.DLL`
+  (`MLIB::numrdlibs`) — formato lib en búsqueda.
 - `PRIMITIVE::importrgn(RGNFILE*)` (@0x10008070, PRIMS): formato
   RGN = texto ASCII (`fscanf %d`, primitiva en `this+0x24`).
 - `LABEL::drc(IDRCLIST*)` (@0x10006790, PRIMS): occupancy de
