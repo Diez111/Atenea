@@ -119,7 +119,19 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_initialize(SDF_NETLIST*, IDSIMCKT**)` (@0x1001fc14):
   construye el `IDSIMCKT` singleton (`DAT_100360ec`) desde el
   SDF netlist + resetea estado (`DAT_10035928/20/24/5c`).
-- [x] DSIM.DLL ABI completa (29 exports): ciclo `create/initialize/setup/bootstep/timestep/suspend/resume/terminate`, red `linknet/mergenets/connect(SDF_PINTYPE)`, pines `peek/poke`, conversores `createadcs/createdacs/linkadc/linkdac/postadc/polldac`, `getbuspin`, `linkprobe/linktape/writedata`, `signon(SIMLOG)`, `getdelay/getinitval`. Nuestro `vsm` cubre create-level; stepping completo = roadmap.
+- [x] DSIM.DLL ABI completa (29 exports, prototipos exactos vía
+  `rizin iE`): `dsim_create(IINSTANCE*,char*,PROPLIST&,IDSIMMODEL*,
+  void**)` (@0x100046b4) — factory de modelos; `dsim_accept(double,
+  void*,cb)` (@0x1000279c); `dsim_setup()` (@0x10003d24);
+  `dsim_connect(char*,SDF_PINTYPE,char*)` (@0x100045a0) y
+  `dsim_connect(void*,char*,SDF_PINTYPE,char*,IDSIMPIN2**)`
+  (@0x10004630); `dsim_linkadc(char*,void**)` (@0x10004310),
+  `dsim_linkdac(char*,double*,void**)` (@0x100042b8),
+  `dsim_polldac(void*,STATE*,double*)`/`dsim_postadc(void*,STATE)`;
+  `dsim_peekpin/pokepin`, `createadcs/createdacs`, `getbuspin`,
+  `linkprobe/linktape/writedata`, `signon(void*,SIMLOG*,IWATCHPOPUP*)`,
+  `getdelay(IINSTANCE*,char*,i64)`/`getinitval(IINSTANCE*,char*,long)`.
+  Nuestro `vsm` cubre create-level; stepping completo = roadmap.
 - [x] DSIM.DLL: interfaces `IDSIMCKT`/`IDSIMMODEL`/`IDSIMPIN1`/`IDSIMPIN2`
   (mixed-mode sim kernel, `DSIM creating net`, breakpoints). `asim` cubre
   el flujo batch; kernel interactivo = roadmap.
