@@ -47,40 +47,30 @@ export component Atenea inherits Window {
     VerticalBox {
         padding: 0;
         spacing: 0;
-        // Row 0: menu bar (custom, guaranteed visible).
+        // Row 0: single unified toolbar (native buttons, natural sizing).
         Rectangle {
             background: #1c2733;
-            height: 30px;
-            HorizontalBox {
-                alignment: start;
-                padding: 2px;
-                spacing: 0;
-                Button { text: "File"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.open-file(""); } }
-                Button { text: "View"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("view-tables"); } }
-                Button { text: "Edit"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("edit"); } }
-                Button { text: "Design"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("sheet-props"); } }
-                Button { text: "Graph"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("view-sim"); } }
-                Button { text: "Debug"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("debug"); } }
-                Button { text: "Library"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.pick-device(); } }
-                Button { text: "Template"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("template"); } }
-                Button { text: "System"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("system"); } }
-                Button { text: "Help"; height: 26px; horizontal-stretch: 0; width: 86px; clicked => { root.tool-selected("about"); } }
-            }
-        }
-        // Row 1: toolbar with real ISIS icons.
-        Rectangle {
-            background: #dfe6f2;
             height: 34px;
             HorizontalBox {
-                alignment: start;
-                padding: 2px;
-                spacing: 2px;
-                Button { text: "Open"; icon: @image-url("../assets/i1_16x16.png"); height: 28px; width: 84px; horizontal-stretch: 0; clicked => { root.open-file(""); } }
-                Button { text: "Pick"; icon: @image-url("../assets/i11_16x16.png"); height: 28px; width: 84px; horizontal-stretch: 0; clicked => { root.pick-device(); } }
-                Button { text: "ERC"; icon: @image-url("../assets/i13_16x16.png"); height: 28px; width: 84px; horizontal-stretch: 0; clicked => { root.run-erc(); } }
-                Button { text: "Sim"; icon: @image-url("../assets/i15_16x16.png"); height: 28px; width: 84px; horizontal-stretch: 0; clicked => { root.run-sim(); } }
-                Text { text: "  Layer:"; color: #1c2733; font-size: 11px; vertical-alignment: center; }
-                Button { text: root.layer; height: 28px; }
+                padding: 3px;
+                spacing: 3px;
+                Button { text: "File"; clicked => { root.open-file(""); } }
+                Button { text: "View"; clicked => { root.tool-selected("view-tables"); } }
+                Button { text: "Edit"; clicked => { root.tool-selected("edit"); } }
+                Button { text: "Design"; clicked => { root.tool-selected("sheet-props"); } }
+                Button { text: "Graph"; clicked => { root.tool-selected("view-sim"); } }
+                Button { text: "Debug"; clicked => { root.tool-selected("debug"); } }
+                Button { text: "Library"; clicked => { root.pick-device(); } }
+                Button { text: "Template"; clicked => { root.tool-selected("template"); } }
+                Button { text: "System"; clicked => { root.tool-selected("system"); } }
+                Button { text: "Help"; clicked => { root.tool-selected("about"); } }
+                Text { text: " | "; color: #8fa3bf; vertical-alignment: center; }
+                Button { text: "Open"; icon: @image-url("../assets/i1_16x16.png"); clicked => { root.open-file(""); } }
+                Button { text: "Pick"; icon: @image-url("../assets/i11_16x16.png"); clicked => { root.pick-device(); } }
+                Button { text: "ERC"; icon: @image-url("../assets/i13_16x16.png"); clicked => { root.run-erc(); } }
+                Button { text: "Sim"; icon: @image-url("../assets/i15_16x16.png"); clicked => { root.run-sim(); } }
+                Text { text: "  Layer:"; color: #c8d3e0; vertical-alignment: center; }
+                Button { text: root.layer; }
             }
         }
         // Row 2: left panel + center.
