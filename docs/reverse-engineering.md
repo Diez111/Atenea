@@ -54,6 +54,9 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Wiring menú+teclas (APPFRAME.DLL)
+- `CMDINFOTABLE::setmenubitmaps(HMENU,idx,mask)` (@0x10034740):
+  `SetMenuItemBitmaps` vía `MENUITEMINFOA` — iconos del menú
+  desde los strips BMP (cierra menú→icono).
 - `CMDINFOTABLE::appendmenuitem(HMENU,cmd,sub)` (@0x10034700):
   `find()` → `AppendMenuA` con `CMDINFO+2` (id) y `+8` (texto).
 - `translate_and_dispatch(HWND,key,msg)` (@0x10036f10):
