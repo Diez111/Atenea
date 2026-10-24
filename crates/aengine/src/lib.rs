@@ -498,10 +498,18 @@ fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> St
     let mut s = format!(
         "<svg xmlns='http://www.w3.org/2000/svg' width='{width}' height='{height}' viewBox='0 0 {width} {height}'>\n<rect x='0' y='0' width='{width}' height='{height}' fill='{paper}'/>\n"
     );
+    // ISIS snap grid: dots every 2.54 mm over the sheet (SVG pattern).
+    let step = (sc * 2.54).max(4.0);
+    let _ = writeln!(
+        s,
+        "<defs><pattern id='grid' width='{step:.1}' height='{step:.1}' patternUnits='userSpaceOnUse'><circle cx='1' cy='1' r='1' fill='{wire}' opacity='0.35'/></pattern></defs>"
+    );
     // Sheet border (ISIS blue).
     let _ = writeln!(
         s,
-        "<rect x='{ox:.0}' y='{oy:.0}' width='{:.0}' height='{:.0}' fill='{sheet_fill}' stroke='#0f4c9c' stroke-width='2'/>",
+        "<rect x='{ox:.0}' y='{oy:.0}' width='{:.0}' height='{:.0}' fill='url(#grid)'/><rect x='{ox:.0}' y='{oy:.0}' width='{:.0}' height='{:.0}' fill='{sheet_fill}' fill-opacity='0.0' stroke='#0f4c9c' stroke-width='2'/>",
+        (hi_x - lo_x) * sc,
+        (hi_y - lo_y) * sc,
         (hi_x - lo_x) * sc,
         (hi_y - lo_y) * sc
     );

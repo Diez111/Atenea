@@ -96,7 +96,7 @@ component Atenea inherits Window {
             spacing: 0;
             Rectangle {
                 background: #d7e0ec;
-                width: 40px;
+                width: 48px;
                 VerticalBox {
                     padding: 2px;
                     spacing: 2px;
@@ -130,7 +130,7 @@ component Atenea inherits Window {
                             clicked => { root.select-lib(i); }
                             Rectangle {
                                 background: i == root.selected_lib ? #0f4c9c : #00000000;
-                                Text { text: p.reference; color: i == root.selected_lib ? #ffffff : #1c2733; font-size: 11px; }
+                                Text { text: p.reference; color: i == root.selected_lib ? #ffffff : #1c2733; font-size: 11px; horizontal-alignment: left; }
                             }
                         }
                     }
