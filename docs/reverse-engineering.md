@@ -537,6 +537,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `invalidate`.
 - `CDBCORE::tagelement(UID)` (@0x100064b0): lookup en tabla.
   `tidysnippets` (@0x100097b0): itera tabla snippets `+0x2ec`.
+- `PROPDEF::typestring` (@0x10012360): `proptypenames[tipo+0x10]`
+  (tabla global `0x1003025c`). `PINOUT::unpack` (@0x1001d470,
+  virtual): `DPKB::get` + `compile` — path de compilación de package.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
