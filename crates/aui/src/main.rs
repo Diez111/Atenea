@@ -318,13 +318,12 @@ fn main() -> Result<(), slint::PlatformError> {
         app.on_select_lib(move |i| {
             if let Some(app) = app_w.upgrade() {
                 let n = app.get_lib_parts().iter().count();
-                if i >= 0 && (i as usize) < n {
-                    if let Some(row) = app.get_lib_parts().iter().nth(i as usize) {
-                        app.set_selected_lib(i);
-                        app.set_selected_name(
-                            format!("{} — {}", row.reference, row.value).into(),
-                        );
-                    }
+                if i >= 0
+                    && (i as usize) < n
+                    && let Some(row) = app.get_lib_parts().iter().nth(i as usize)
+                {
+                    app.set_selected_lib(i);
+                    app.set_selected_name(format!("{} — {}", row.reference, row.value).into());
                 }
             }
         });
@@ -398,6 +397,14 @@ fn main() -> Result<(), slint::PlatformError> {
                 .into(),
             );
             app.set_status(format!("{reference} colocado en la hoja").into());
+        });
+    }
+    {
+        let app_w = app.as_weak();
+        app.on_show_page(move |p| {
+            if let Some(app) = app_w.upgrade() {
+                app.set_page(p);
+            }
         });
     }
     {

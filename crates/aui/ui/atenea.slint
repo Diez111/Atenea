@@ -1,25 +1,22 @@
-// Atenea shell: flat robust layout, explicit light palette.
-// Row0: menu bar (custom buttons, always visible).
-// Row1: toolbar with real ISIS icons.
-// Row2: left object panel (fixed 200px) + center tabs.
-// Row3: status bar.
-import { HorizontalBox, VerticalBox, TabWidget, ListView, LineEdit, Button } from "std-widgets.slint";
+import { HorizontalBox, VerticalBox, ListView, LineEdit, Button } from "std-widgets.slint";
 
-export struct PartRow {
+struct PartRow {
     reference: string,
     kind: string,
     value: string,
 }
 
-export struct NetRow {
+struct NetRow {
     id: string,
     pins: string,
 }
 
-export component Atenea inherits Window {
+component Atenea inherits Window {
     title: "UNTITLED - Atenea (clon nativo interoperable)";
-    min-width: 1100px;
-    min-height: 700px;
+    preferred-width: 1280px;
+    preferred-height: 800px;
+    min-width: 1000px;
+    min-height: 650px;
     background: #eef2f6;
 
     in-out property <string> status: "listo";
@@ -35,6 +32,7 @@ export component Atenea inherits Window {
     in-out property <string> lib_query: "";
     in-out property <int> selected_lib: -1;
     in-out property <string> selected_name: "";
+    in-out property <int> page: 0;
     in-out property <image> sheet;
     in-out property <image> plot;
 
@@ -47,46 +45,61 @@ export component Atenea inherits Window {
     callback run-erc();
     callback pick-device();
     callback tool-selected(string);
+    callback show-page(int);
 
     VerticalBox {
         padding: 0;
         spacing: 0;
-        // Row 0: single unified toolbar (native buttons, natural sizing).
+        // Row 0: menu bar (ISIS order, dark).
         Rectangle {
             background: #1c2733;
-            height: 34px;
+            height: 30px;
             HorizontalBox {
-                padding: 3px;
-                spacing: 3px;
+                padding-left: 6px;
+                padding-right: 6px;
+                padding-top: 2px;
+                padding-bottom: 2px;
+                spacing: 2px;
                 Button { text: "File"; clicked => { root.open-file(""); } }
-                Button { text: "View"; clicked => { root.tool-selected("view-tables"); } }
+                Button { text: "View"; clicked => { root.show-page(1); } }
                 Button { text: "Edit"; clicked => { root.tool-selected("edit"); } }
                 Button { text: "Design"; clicked => { root.tool-selected("sheet-props"); } }
-                Button { text: "Graph"; clicked => { root.tool-selected("view-sim"); } }
+                Button { text: "Graph"; clicked => { root.show-page(2); } }
                 Button { text: "Debug"; clicked => { root.tool-selected("debug"); } }
                 Button { text: "Library"; clicked => { root.pick-device(); } }
                 Button { text: "Template"; clicked => { root.tool-selected("template"); } }
                 Button { text: "System"; clicked => { root.tool-selected("system"); } }
                 Button { text: "Help"; clicked => { root.tool-selected("about"); } }
-                Text { text: " | "; color: #8fa3bf; vertical-alignment: center; }
+            }
+        }
+        // Row 1: icon toolbar (real ISIS pixels).
+        Rectangle {
+            background: #dfe6f2;
+            height: 38px;
+            HorizontalBox {
+                padding-left: 6px;
+                padding-right: 6px;
+                padding-top: 3px;
+                padding-bottom: 3px;
+                spacing: 4px;
                 Button { text: "Open"; icon: @image-url("../assets/folder.png"); clicked => { root.open-file(""); } }
                 Button { text: "Pick"; icon: @image-url("../assets/chip.png"); clicked => { root.pick-device(); } }
                 Button { text: "ERC"; icon: @image-url("../assets/bug.png"); clicked => { root.run-erc(); } }
                 Button { text: "Sim"; icon: @image-url("../assets/sim_play.png"); clicked => { root.run-sim(); } }
-                Text { text: "  Layer:"; color: #c8d3e0; vertical-alignment: center; }
+                Text { text: "Layer:"; color: #1c2733; font-size: 12px; vertical-alignment: center; }
                 Button { text: root.layer; }
             }
         }
-        // Row 2: icon rail + left panel + center.
+        // Row 2: rail + library panel + center.
         HorizontalBox {
             padding: 0;
             spacing: 0;
             Rectangle {
                 background: #d7e0ec;
-                width: 36px;
+                width: 40px;
                 VerticalBox {
                     padding: 2px;
-                    spacing: 1px;
+                    spacing: 2px;
                     Button { icon: @image-url("../assets/tool_select.png"); clicked => { root.tool-selected("select"); } }
                     Button { icon: @image-url("../assets/chip.png"); clicked => { root.pick-device(); } }
                     Button { icon: @image-url("../assets/terminal.png"); clicked => { root.tool-selected("terminal"); } }
@@ -94,98 +107,96 @@ export component Atenea inherits Window {
                     Button { icon: @image-url("../assets/text.png"); clicked => { root.tool-selected("text"); } }
                     Button { icon: @image-url("../assets/box2d.png"); clicked => { root.tool-selected("box"); } }
                     Button { icon: @image-url("../assets/circle2d.png"); clicked => { root.tool-selected("circle"); } }
-                    Button { icon: @image-url("../assets/sim_graph.png"); clicked => { root.tool-selected("view-sim"); } }
+                    Button { icon: @image-url("../assets/sim_graph.png"); clicked => { root.show-page(2); } }
                     Button { icon: @image-url("../assets/sim_play.png"); clicked => { root.run-sim(); } }
                 }
             }
             Rectangle {
                 background: #e8edf3;
-                width: 200px;
+                width: 220px;
                 VerticalBox {
-                    padding: 3px;
-                    spacing: 2px;
+                    padding: 4px;
+                    spacing: 3px;
                     Text { text: "OVERVIEW"; color: #1c2733; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
                     Rectangle {
                         background: #000000;
-                        height: 130px;
-                        Image { source: root.sheet; }
+                        height: 110px;
+                        Image { source: root.sheet; width: 100%; height: 100%; image-fit: contain; }
                     }
                     Text { text: "P  L  DEVICES"; color: #1c2733; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
                     LineEdit { placeholder-text: "buscar…"; text <=> root.lib_query; edited(q) => { root.filter-lib(q); } }
                     ListView {
                         for p[i] in root.lib_parts: TouchArea {
                             clicked => { root.select-lib(i); }
-                            HorizontalBox {
-                                padding: 1px;
-                                Rectangle {
-                                    background: i == root.selected_lib ? #0f4c9c : transparent;
-                                    HorizontalBox {
-                                        Text { text: p.reference; color: i == root.selected_lib ? #ffffff : #1c2733; font-size: 11px; }
-                                    }
-                                }
+                            Rectangle {
+                                background: i == root.selected_lib ? #0f4c9c : #00000000;
+                                Text { text: p.reference; color: i == root.selected_lib ? #ffffff : #1c2733; font-size: 11px; }
                             }
                         }
                     }
-                    Text { text: root.selected_name; color: #0f4c9c; font-size: 11px; }
+                    Text { text: root.selected_name; color: #0f4c9c; font-size: 11px; wrap: word-wrap; }
                     Button { text: "Place"; clicked => { root.place-selected(); } }
                     Button { text: "Open IDX…"; clicked => { root.open-lib(); } }
                 }
             }
+            // Center: page bar + pages (manual tabs, always visible).
             VerticalBox {
                 padding: 0;
-                TabWidget {
-                    Tab {
-                        title: "Schematic Capture";
-                        Rectangle {
-                            background: #000000;
-                            Image { source: root.sheet; }
-                        }
+                spacing: 0;
+                Rectangle {
+                    background: #c9d4e2;
+                    height: 30px;
+                    HorizontalBox {
+                        padding-left: 6px;
+                        padding-right: 6px;
+                        padding-top: 2px;
+                        padding-bottom: 2px;
+                        spacing: 4px;
+                        Button { text: "Schematic"; clicked => { root.show-page(0); } }
+                        Button { text: "Tables"; clicked => { root.show-page(1); } }
+                        Button { text: "Simulate"; clicked => { root.show-page(2); } }
+                        Button { text: "ERC"; clicked => { root.show-page(3); } }
                     }
-                    Tab {
-                        title: "Tables";
-                        HorizontalBox {
-                            VerticalBox {
-                                Text { text: "Parts"; color: #1c2733; font-weight: 700; }
-                                ListView {
-                                    for p in root.parts: HorizontalBox {
-                                        Text { text: p.reference; color: #1c2733; width: 90px; }
-                                        Text { text: p.kind; color: #1c2733; width: 90px; }
-                                        Text { text: p.value; color: #1c2733; }
-                                    }
-                                }
+                }
+                if root.page == 0: Rectangle {
+                    background: #000000;
+                    Image { source: root.sheet; width: 100%; height: 100%; image-fit: contain; }
+                }
+                if root.page == 1: HorizontalBox {
+                    VerticalBox {
+                        Text { text: "Parts"; color: #1c2733; font-weight: 700; }
+                        ListView {
+                            for p in root.parts: HorizontalBox {
+                                Text { text: p.reference; color: #1c2733; width: 90px; }
+                                Text { text: p.kind; color: #1c2733; width: 90px; }
+                                Text { text: p.value; color: #1c2733; }
                             }
-                            VerticalBox {
-                                Text { text: "Nets"; color: #1c2733; font-weight: 700; }
-                                ListView {
-                                    for n in root.nets: HorizontalBox {
-                                        Text { text: n.id; color: #1c2733; width: 110px; }
-                                        Text { text: n.pins; color: #1c2733; }
-                                    }
-                                }
+                        }
+                    }
+                    VerticalBox {
+                        Text { text: "Nets"; color: #1c2733; font-weight: 700; }
+                        ListView {
+                            for n in root.nets: HorizontalBox {
+                                Text { text: n.id; color: #1c2733; width: 110px; }
+                                Text { text: n.pins; color: #1c2733; }
                             }
                         }
                     }
-                    Tab {
-                        title: "Simulate";
-                        VerticalBox {
-                            HorizontalBox {
-                                Button { text: "Transient"; clicked => { root.tool-selected("graph-transient"); } }
-                                Button { text: "Frequency"; clicked => { root.tool-selected("graph-frequency"); } }
-                                Button { text: "DC Sweep"; clicked => { root.tool-selected("graph-dc"); } }
-                                Button { text: "AC Sweep"; clicked => { root.tool-selected("graph-ac"); } }
-                                Button { text: "Noise"; clicked => { root.tool-selected("graph-noise"); } }
-                                Button { text: "Fourier"; clicked => { root.tool-selected("graph-fourier"); } }
-                            }
-                            Image { source: root.plot; }
-                            Text { text: root.sim_text; color: #1c2733; }
-                        }
+                }
+                if root.page == 2: VerticalBox {
+                    HorizontalBox {
+                        Button { text: "Transient"; clicked => { root.tool-selected("graph-transient"); } }
+                        Button { text: "Frequency"; clicked => { root.tool-selected("graph-frequency"); } }
+                        Button { text: "DC Sweep"; clicked => { root.tool-selected("graph-dc"); } }
+                        Button { text: "AC Sweep"; clicked => { root.tool-selected("graph-ac"); } }
+                        Button { text: "Noise"; clicked => { root.tool-selected("graph-noise"); } }
+                        Button { text: "Fourier"; clicked => { root.tool-selected("graph-fourier"); } }
                     }
-                    Tab {
-                        title: "ERC";
-                        VerticalBox {
-                            Text { text: root.erc_text; color: #1c2733; }
-                        }
-                    }
+                    Image { source: root.plot; }
+                    Text { text: root.sim_text; color: #1c2733; }
+                }
+                if root.page == 3: VerticalBox {
+                    Text { text: root.erc_text; color: #1c2733; }
                 }
             }
         }
@@ -194,8 +205,10 @@ export component Atenea inherits Window {
             background: #dfe6f2;
             height: 24px;
             HorizontalBox {
-                alignment: start;
-                padding: 3px;
+                padding-left: 6px;
+                padding-right: 6px;
+                padding-top: 2px;
+                padding-bottom: 2px;
                 spacing: 12px;
                 Text { text: root.status; color: #1c2733; font-size: 11px; }
                 Text { text: "✓ " + root.drc; color: #1c2733; font-size: 11px; }
