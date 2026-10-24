@@ -407,6 +407,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::getiterator` (@0x1000cee0): `CHANNEL_ITERATOR`
   polimórfico (ANALOG/DIGITAL/FREQUENCY según `simtype`) — el que
   consume `dsim_linktape`.
+- `PINOUT::gethiddenpins` (@0x1001d920): recorre tabla `+0x70`
+  (count `+0x6c`); pines con flag `+0x3c` y rol != `0x11` → DIDX.
+  (`0x11` = rol power oculto: liga con `addlabel` y `validate`
+  hide-common-pins.) PINOUT cerrado: netgen/checkpinswap/gethiddenpins.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
