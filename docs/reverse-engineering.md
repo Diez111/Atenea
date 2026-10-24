@@ -110,6 +110,12 @@ No Labcenter binaries or data are reproduced here.
 - `MENU::bmp_name/tbar_bmpheight/tbar_bmpwidth` confirman el
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
+## Sync ISIS→ARES (validador lado ARES, 37 imports)
+- `beginsyncboard/endsyncboard` (@0x10004ff0/@0x10005110):
+  bracketean el sync de BOARD (flag `+0x340`, barren tabla `+0x2cc`).
+- `NETLIST::getelements` (@0x10016030): delega a
+  `CDBCORE::getpartelements` por link `+0x18`.
+
 ## Frontera verificada (no-SPICE)
 
 - `OA_BIP` (ANALOG.LML, 5106 B) = MAPPINGS de parámetros (`GAIN/CMRR/FT/SR/IB...` por tipo 709/741/LM324...) + PARTLIST de primitivas DSIM (`B`), NO subcircuito SPICE. `U1,CA3140` → `MODFILE=OA_BIP` + `PACKAGE=DIL08`: las funciones de pin (in+/in-/out) viven en el modelo DSIM compilado, no en la librería. Conclusión: `U`/`X` exigen kernel DSIM interactivo (roadmap mayor), no backend ngspice.
