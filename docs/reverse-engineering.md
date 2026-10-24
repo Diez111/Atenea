@@ -469,6 +469,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   count `+0x2ac`) — módulos +0x250, pinouts +0x2d0, boards +0x2b0.
 - `CDBCORE::getcommonparent` (@0x10005b40): hoja común de una
   lista GDPA<ELEMENT>.
+- `PARTITION::getdumprun/getdumpvalue` (@0x1000d1d0/@0x1000d0b0):
+  lectura del dump vía `CHANNEL_ITERATOR` (`getiterator` + index
+  por `simtype`) — cierra el circuito probe→tape→dump.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
