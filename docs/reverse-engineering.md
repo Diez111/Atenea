@@ -418,6 +418,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `SDF_PINTYPE` (`0xd/0xe` = bus → expande bits con `FUN_10021c6c`
   sobre `'_'`); la 2ª usa factory `FUN_10003fe8` + `printf
   "connecting..."` debug.
+- `dsim_linknet` (@0x10004288): `FUN_10003fe8(ecx,0)` lookup →
+  `STATE*` en `+0x3c` (confirma doc previo).
+- `dsim_mergenets` (@0x10003ed8): lookup de ambas nets +
+  resolución por matriz 32x32 `DAT_10035960` indexada por
+  `state&0x1f` (tabla de drive-strength) — spec para `aengine`.
 - `dsim_peekpin(modelo, idx, STATE*)` (@0x10003d90): forward con
   guarda NULL a `FUN_10003da8` (poke simétrico en curso).
 - `dsim_pokepin(modelo, idx, t_segundos, STATE)` (@0x10003de4):
