@@ -54,6 +54,8 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Wiring menú+teclas (APPFRAME.DLL)
+- `SELECTION::checkplacement` (@0x1000c780, APPFRAME): valida
+  placements vía `DPA::inbounds` sobre lista `+0x38`.
 - `CMDINFOTABLE::setuistate(HMENU,cmd,UISTATE&)` (@0x100349a0):
   `EnableMenuItem` + `CheckMenuItem` desde `UISTATE{enabled,
   checked}` (vía `APPLNMODULE::setuistate` +`0x68`, @0x1001d9c0).
