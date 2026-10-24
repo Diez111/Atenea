@@ -53,6 +53,13 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Render DVC (VGDVC.DLL)
+- `VGDVC::drawline(LINE,GSTYLE&,ulong)` (@0x100263bc):
+  convierte a POINTs y forwardea — firma del pipeline.
+- `SGDVC::beginlayer(u8,int)` (@0x10036f2c): dispatch
+  `D2DVC` vs `GLDVC` según flag `+0x2ac` (software vs OpenGL).
+  Nuestro SVG = el path software.
+
 ## Sistema de propiedades (PROPTEXT, LXLCORE.dll)
 - `getprops(nombre, PROPLIST&, a, b)` (@0x1002d6cc): herencia
   de props a PROPLIST (STL-heavy) — el mecanismo que resuelve
