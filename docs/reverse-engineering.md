@@ -118,6 +118,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
   `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
+- `FUN_10003fe8` (@0x10003fe8, fastcall): interning de nets —
+  cache `DAT_10035900`, si no `FUN_100215f8(&DAT_10035f80, nombre)`
+  (pool `35f80`). Lo usan linknet/connect/mergenets.
+- `FUN_100213d0` (@0x100213d0): clasificador de modelos —
+  `FUN_10021690(PROPLIST)` → índice → tabla de strings en
+  `this+0x10` (entries de 2 chars, estilo ELECTYPES) → puntero
+  al tipo. `dsim_create` lo llama con la tabla `0x1002dea0`.
 - `dsim_create` (@0x100046b4): `FUN_100213d0(PROPLIST, str)`
   clasifica el modelo (SPICE vs VSM) y lo instancia en la lista
   `+0x35f70`.
