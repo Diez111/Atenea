@@ -580,6 +580,13 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CDBCORE::getelementproperty` (@0x10006ea0): `PROPTEXT::get`
   en `ELEMENT+0x44`. `getmastersheet` (@0x10003670): primera hoja
   sin módulo (tabla `+0x270`) — hoja raíz.
+- `CDBCORE::newsheet/newboard/newlayout` (@0x100077c0/0x100077f0/
+  0x10003190, privados los 2 primeros): SHEET `new(0x114)`;
+  BOARD `new(8)` con backlink `MODULE+0x80`; layout crea BOARD
+  del raíz si falta.
+- `rebindelement` (@0x10004990): re-resuelve PART vía PINOUT.
+  `setelementproperty` (@0x10006ec0): delega a `setpartproperty`
+  por link `+0x90`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
