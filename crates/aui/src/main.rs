@@ -76,9 +76,13 @@ fn main() -> Result<(), slint::PlatformError> {
     let last_sdf = std::sync::Arc::new(std::sync::Mutex::new(None));
     let lib_cache: std::sync::Arc<std::sync::Mutex<Vec<PartRow>>> =
         std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let last_snap: std::sync::Arc<std::sync::Mutex<Option<aengine::DocSnapshot>>> =
+        std::sync::Arc::new(std::sync::Mutex::new(None));
+    let dark = std::sync::Arc::new(std::sync::Mutex::new(false));
 
     {
         let last_sdf = last_sdf.clone();
+        let last_snap = last_snap.clone();
         let app_w = app.as_weak();
         let eng = engine.clone();
         app.on_open_file(move |path| {
@@ -103,6 +107,10 @@ fn main() -> Result<(), slint::PlatformError> {
                     Duration::from_secs(30),
                 ) {
                     Some(Ok(snap)) => {
+                        *last_snap
+                            .lock()
+                            .unwrap_or_else(std::sync::PoisonError::into_inner) =
+                            Some(snap.clone());
                         app.set_status(
                             format!(
                                 "{} — {} parts, {} nets",
@@ -272,7 +280,47 @@ fn main() -> Result<(), slint::PlatformError> {
         let app_w = app.as_weak();
         app.on_tool_selected(move |t| {
             if let Some(app) = app_w.upgrade() {
-                app.set_status(format!("herramienta: {t}").into());
+                match t.as_str() {
+                    "view-tables" => app.set_page(1),
+                    "view-sim" => app.set_page(2),
+                    "debug" | "template" | "system" | "about" => {
+                        app.set_status(format!("herramienta: {t}").into());
+                    }
+                    _ => {
+                        app.set_status(format!("herramienta: {t}").into());
+                    }
+                }
+            }
+        });
+    }
+    {
+        let app_w = app.as_weak();
+        let last_snap = last_snap.clone();
+        let dark = dark.clone();
+        app.on_toggle_layer(move || {
+            if let Some(app) = app_w.upgrade() {
+                let mut d = dark
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                *d = !*d;
+                let label = if *d { "Board (dark)" } else { "Top Copper" };
+                app.set_layer(label.into());
+                let guard = last_snap
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                if let Some(snap) = guard.clone() {
+                    let svg = if *d {
+                        aengine::sheet_svg_dark(&snap, 1200, 800)
+                    } else {
+                        aengine::sheet_svg(&snap, 1200, 800)
+                    };
+                    let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
+                    if std::fs::write(&svg_path, svg).is_ok()
+                        && let Ok(img) = slint::Image::load_from_path(&svg_path)
+                    {
+                        app.set_sheet(img);
+                    }
+                }
             }
         });
     }
@@ -337,6 +385,8 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let app_w = app.as_weak();
         let session = session.clone();
+        let last_snap = last_snap.clone();
+        let dark = dark.clone();
         app.on_place_selected(move || {
             let Some(app) = app_w.upgrade() else { return };
             let i = app.get_selected_lib();
@@ -384,7 +434,17 @@ fn main() -> Result<(), slint::PlatformError> {
                 }),
                 ..aengine::DocSnapshot::default()
             };
-            let svg = aengine::sheet_svg(&snap, 1200, 800);
+            let svg = if *dark
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+            {
+                aengine::sheet_svg_dark(&snap, 1200, 800)
+            } else {
+                aengine::sheet_svg(&snap, 1200, 800)
+            };
+            *last_snap
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(snap.clone());
             let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
             if std::fs::write(&svg_path, svg).is_ok()
                 && let Ok(img) = slint::Image::load_from_path(&svg_path)

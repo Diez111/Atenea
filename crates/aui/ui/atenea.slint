@@ -46,6 +46,7 @@ component Atenea inherits Window {
     callback pick-device();
     callback tool-selected(string);
     callback show-page(int);
+    callback toggle-layer();
 
     VerticalBox {
         padding: 0;
@@ -87,7 +88,7 @@ component Atenea inherits Window {
                 Button { text: "ERC"; icon: @image-url("../assets/bug.png"); clicked => { root.run-erc(); } }
                 Button { text: "Sim"; icon: @image-url("../assets/sim_play.png"); clicked => { root.run-sim(); } }
                 Text { text: "Layer:"; color: #1c2733; font-size: 12px; vertical-alignment: center; }
-                Button { text: root.layer; }
+                Button { text: root.layer; clicked => { root.toggle-layer(); } }
             }
         }
         // Row 2: rail + library panel + center.

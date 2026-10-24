@@ -533,6 +533,16 @@ fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> St
             py(*y)
         );
     }
+    // ISIS-style title block (bottom-right of the sheet).
+    let tb = doc.name.replace('&', "&amp;").replace('<', "&lt;");
+    let _ = writeln!(
+        s,
+        "<text x='{:.0}' y='{:.0}' font-family='monospace' font-size='12' text-anchor='end' fill='{label}'>{tb}</text><text x='{:.0}' y='{:.0}' font-family='monospace' font-size='10' text-anchor='end' fill='{label}' opacity='0.7'>Atenea native — sheet 1/1</text>",
+        w - 14.0,
+        h - 30.0,
+        w - 14.0,
+        h - 14.0
+    );
     s.push_str("</svg>\n");
     s
 }
