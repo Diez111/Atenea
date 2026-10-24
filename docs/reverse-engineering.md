@@ -497,6 +497,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `buildbranchadb/buildglobaladb/merge` + `CDBCORE::annotate`.
 - `CDBCORE::migratelegacyvariants` (@0x10007610): itera tabla UID
   (`+0x2d0/+0x2cc`) migrando variantes legacy.
+- `FREQUENCY_ITERATOR::mval(t)` (@0x1000db60): interpolación lineal
+  entre `(t0,v0)@+0x28` y `(t1,v1)@+0x30` tras `advance(t)` — así se
+  leen los valores del trace.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
