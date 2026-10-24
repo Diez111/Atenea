@@ -111,6 +111,16 @@ No Labcenter binaries or data are reproduced here.
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
 ## Sync ISIS→ARES (validador lado ARES, 37 imports)
+- `createcdb/releasecdb` (@0x10002d10/@0x10002db0): singleton
+  con refcount (`DAT_10033df0`, instancia `DAT_10033dec` =
+  `getcdb()`).
+- `firstname(NET*)` (@0x1001c530): nombre del net (head o tabla).
+- `NETLOG::logerror(fmt,...)` (@0x10019990): varargs →
+  `writelog(tipo 0x45=ERROR)`.
+- `NETCACHE::setsource` (@0x1000efe0): cambia `INETSERVER`
+  (`+0x29c`) con `invalidate` — cierra validador lado ARES.
+- `CDBCORE::savesheet` (@0x100047c0): writer VFILE de SHEET
+  (el `load` es `LXLCORE::adi_load` — persistencia compartida).
 - `getpart(UID)` (@0x10001120): lookup en tabla parts
   `+0x2d0/+0x2cc` (quinta tabla UID confirmada).
 - `getcommonparent(GDPA)` (@0x10005b40): hoja común subiendo
