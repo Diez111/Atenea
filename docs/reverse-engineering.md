@@ -114,6 +114,15 @@ No Labcenter binaries or data are reproduced here.
 - `MENU::bmp_name/tbar_bmpheight/tbar_bmpwidth` confirman el
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
+## Kernel PCB (LXLCORE/PRIMS, vía REA)
+- `PRIMITIVE::importrgn(RGNFILE*)` (@0x10008070, PRIMS): formato
+  RGN = texto ASCII (`fscanf %d`, primitiva en `this+0x24`).
+- `LABEL::drc(IDRCLIST*)` (@0x10006790, PRIMS): occupancy de
+  texto vía `VGDVC::textocca` + callback `IDRCLIST[4]` (gate
+  `this+0x76&1`).
+- `POLYGON::splitconcave(GSLIST<POLYGON*>&)` (@0x100527cc,
+  LXLCORE): triangulación (SUBPOLYGON) — base del pour/DRC.
+
 ## Sync ISIS→ARES (validador lado ARES, 37 imports)
 - `createcdb/releasecdb` (@0x10002d10/@0x10002db0): singleton
   con refcount (`DAT_10033df0`, instancia `DAT_10033dec` =
