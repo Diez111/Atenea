@@ -108,6 +108,13 @@ No Labcenter binaries or data are reproduced here.
   Nuestro SVG = el path software.
 
 ## Render backends (GDF layer, VGDVC.DLL)
+- Set GDF completo (26 ops, vocabulario del backend): `arc`,
+  `atrack`, `bezier`, `bitmap`, `box`, `drawseg`, `ellipse`,
+  `epad`, `fillbox`, `hole`, `line`, `path`, `pline`, `polygon`,
+  `polyline`, `postpadstack`, `ppad`, `prepadstack`, `rpad`,
+  `slot`, `tjoin`, `tline`, `tristrips`, `truetype`, `vector`.
+  Los `*pad*`/`padstack`/`slot`/`hole`/`tjoin` = render PCB
+  (pads/vías) — spec para modo ARES futuro.
 - `SGDVC::drawcache/gdf_atrack/...` (@0x1001350c/@0x100227fc):
   dispatch virtual a 3 backends: GL (`+0x188`), D2D (`+0x2ac`),
   software (fallthrough). GDF = set de ops vectoriales
