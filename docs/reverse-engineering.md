@@ -505,6 +505,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (módulo raíz primero). `newdesign` similar.
 - `CDBCORE::newpart` (private, @0x100078d0): `PART=new(0x148)`.
   `PARTITION::newrun` (@0x1000c710): nueva corrida vía writer vtable.
+- `CHANNEL_ITERATOR::nextx` (@0x1000b760): `return *(double*)(this+0x30)`
+  (t1 del par de interpolación de `mval`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
