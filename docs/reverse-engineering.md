@@ -54,6 +54,8 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Render DVC (VGDVC.DLL)
+- `VGDVC::drawbox(BOX,CTS&,GSTYLE&,ulong)` (@0x1003ebc0):
+  box → 4 POINTs + transform CTS — el path de primitivas.
 - `VGDVC::drawline(LINE,GSTYLE&,ulong)` (@0x100263bc):
   convierte a POINTs y forwardea — firma del pipeline.
 - `SGDVC::beginlayer(u8,int)` (@0x10036f2c): dispatch
