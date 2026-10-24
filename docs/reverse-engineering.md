@@ -54,6 +54,9 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Wiring menú+teclas (APPFRAME.DLL)
+- `translate_and_dispatch(HWND,key,msg)` (@0x10036f10):
+  `TranslateAccelerator` + dispatch vía `find_cmd` (+ helpers
+  `FUN_10038dd0/38e10`).
 - `KEYTRANSLATOR::find_cmd(key,shift)` (@0x10037640):
   `bsearch` sobre tabla `KEYCMD` ordenada (máscara `0xfff0`) —
   atajo → comando.
