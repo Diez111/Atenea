@@ -484,6 +484,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::getpmd(i)` (@0x1000b380): `base+0x424 + i`.
   `CDBCORE::getrootboard` (@0x10001010): módulo raíz `+0x300` →
   `BOARD*` en `+0x80`.
+- `PINOUT::hasgateswap` = flag `+0x58`. `CDBCORE::invariant(ELEMENT)`:
+  recursivo vía link `+0x90` (PART).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
