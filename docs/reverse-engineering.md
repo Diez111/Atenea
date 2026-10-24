@@ -519,6 +519,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   carga snippets vía VFILE.
 - `CDBCORE::removemodule/removesheet` (@0x10003920/@0x10003ab0):
   teardown con flag (inverso de addmodule/addsheet).
+- `CDBCORE::removevariant(char)` (@0x10007430): máscara de bits
+  por variante (`'b'` especial). `renamepart` (@0x10004a90): vía
+  link PART `+0x90`, si no `updatefrompart`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
