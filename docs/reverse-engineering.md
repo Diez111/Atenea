@@ -115,6 +115,17 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_timestep(t, &tref)` (@0x10002914): quantum en picosegundos
   (`t/1e-12`, `ROUND`, control FPU) — el kernel mixto avanza en ps.
   Nuestro `vsm-host` pisa en 1000 ps hoy (coherente).
+- `dsim_accept(t, ctx, cb)` (@0x1000279c): `t/1e-12 → ROUND` a ps;
+  registra callback de aceptación de paso.
+- `dsim_timestep(t, &tnext)` (@0x10002914, kernel loop):
+  1. `*(360c4+0x2c)=0`, `360e4=360e8`, estado `35928=0x10`;
+  2. por modelo en `35f70[i]`: `vtable[2]` (=simulate) con
+  `(t, estado)`, `vtable[8]` para delay;
+  3. tiempo 64-bit ps en `3593c:35938`; cola de delays `360c8`;
+  callbacks vía `FUN_10002cdc`; flag suspend `35934`;
+  4. `*tnext = tiempo*1e-12 - local` (próximo quantum).
+  Slots vtable modelo: `[1]`=setup, `[2]`=simulate(t,state),
+  `[8]`=delay — spec para `vsm-host` (roadmap kernel interactivo).
 - `dsim_linknet(nombre, STATE**)` (@0x10004288): resuelve net por
   nombre → `STATE*` en `+0x3c`, 1/0.
 - `dsim_bootstep` (@0x10003938): `boot init...` por callback SIMLOG;
