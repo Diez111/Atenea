@@ -72,6 +72,10 @@ No Labcenter binaries or data are reproduced here.
   Spec para kernel interactivo propio (fase 2+).
 
 ## Scripting de modelos (VSMLUA.DLL, 11 exports)
+- 4 flavors completos (SETPOINT/DUALSET/COLORLED exponen los 6):
+  `active` (analógico), `dsim` (primitiva digital),
+  `spice` (wrapper subckt), `mixed` (MCU). DSO = active+spice.
+  Taxonomía cerrada para `vsm-host`.
 - `createmixedmodel/deletemixedmodel` + `hostif_*`:
   `open/read/write/lseek/close`, `malloc/realloc/free`,
   `debug` — sandbox POSIX para modelos Lua.
