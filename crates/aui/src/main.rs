@@ -276,16 +276,25 @@ fn main() -> Result<(), slint::PlatformError> {
             }
         });
     }
+    let doc_name: std::sync::Arc<std::sync::Mutex<String>> =
+        std::sync::Arc::new(std::sync::Mutex::new("UNTITLED".to_owned()));
     {
         let app_w = app.as_weak();
+        let doc_name = doc_name.clone();
         app.on_tool_selected(move |t| {
             if let Some(app) = app_w.upgrade() {
                 match t.as_str() {
                     "view-tables" => app.set_page(1),
                     "view-sim" => app.set_page(2),
-                    "debug" | "template" | "system" | "about" => {
-                        app.set_status(format!("herramienta: {t}").into());
+                    "sheet-props" => {
+                        let n = doc_name
+                            .lock()
+                            .unwrap_or_else(std::sync::PoisonError::into_inner)
+                            .clone();
+                        app.set_doc_name(n.into());
+                        app.set_show_props(true);
                     }
+                    "props-cancel" => app.set_show_props(false),
                     _ => {
                         app.set_status(format!("herramienta: {t}").into());
                     }
@@ -387,6 +396,7 @@ fn main() -> Result<(), slint::PlatformError> {
         let session = session.clone();
         let last_snap = last_snap.clone();
         let dark = dark.clone();
+        let doc_name = doc_name.clone();
         app.on_place_selected(move || {
             let Some(app) = app_w.upgrade() else { return };
             let i = app.get_selected_lib();
@@ -420,8 +430,12 @@ fn main() -> Result<(), slint::PlatformError> {
             });
             placements.push((reference.clone(), *cursor_x, 0.0));
             *cursor_x += 25.4;
+            let title = doc_name
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .clone();
             let snap = aengine::DocSnapshot {
-                name: "UNTITLED".to_owned(),
+                name: title,
                 kind: "dsn".to_owned(),
                 parts: parts.clone(),
                 placements: placements.clone(),
@@ -463,6 +477,62 @@ fn main() -> Result<(), slint::PlatformError> {
                 .into(),
             );
             app.set_status(format!("{reference} colocado en la hoja").into());
+        });
+    }
+    {
+        let app_w = app.as_weak();
+        let session = session.clone();
+        let last_snap = last_snap.clone();
+        let dark = dark.clone();
+        let doc_name = doc_name.clone();
+        app.on_rename_sheet(move |name| {
+            if let Some(app) = app_w.upgrade() {
+                let title = name.trim().to_string();
+                *doc_name
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner) =
+                    title.clone();
+                app.set_show_props(false);
+                let guard = session
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                let (parts, placements, _, _) = &*guard;
+                let snap = aengine::DocSnapshot {
+                    name: if title.is_empty() {
+                        "UNTITLED".to_owned()
+                    } else {
+                        title.clone()
+                    },
+                    kind: "dsn".to_owned(),
+                    parts: parts.clone(),
+                    placements: placements.clone(),
+                    erc: aengine::erc_of(&aengine::DocSnapshot {
+                        parts: parts.clone(),
+                        placements: placements.clone(),
+                        ..aengine::DocSnapshot::default()
+                    }),
+                    ..aengine::DocSnapshot::default()
+                };
+                drop(guard);
+                let is_dark = *dark
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner);
+                let svg = if is_dark {
+                    aengine::sheet_svg_dark(&snap, 1200, 800)
+                } else {
+                    aengine::sheet_svg(&snap, 1200, 800)
+                };
+                *last_snap
+                    .lock()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(snap);
+                let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
+                if std::fs::write(&svg_path, svg).is_ok()
+                    && let Ok(img) = slint::Image::load_from_path(&svg_path)
+                {
+                    app.set_sheet(img);
+                }
+                app.set_status(format!("hoja: {title}").into());
+            }
         });
     }
     {
