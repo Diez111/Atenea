@@ -458,6 +458,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   comparador de strings con buffers locales.
 - `CDBCORE::deleteelement/deletepart` (privados, @0x10007c20/0x10007d30):
   baja por UID validado en tablas `+0x290/+0x28c` y `+0x2d0/+0x2cc`.
+- `CDBCORE::detachelement` (@0x10004fc0): inverso de attach
+  (decrementa refcount `PART+300`, nullea `+0x90`).
+- `PARTITION::enddump` (@0x1000cc40): cierra corrida de dump vía
+  writer vtable `+0x414`, contadores `+0x760/+0x440/+0xa80`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
