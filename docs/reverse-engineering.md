@@ -20,6 +20,16 @@ No Labcenter binaries or data are reproduced here.
   relevant for VSM DLL interface — not yet read).
 
 ## Iconos/toolbars extraídos del PE (verificado en pixels)
+- Tabla comando→icono CERRADA: `docs/icons/` con los 63 gifs del
+  `Icon_Reference_Chart` del CHM + `CHART.txt` (gif => comando):
+  New/Open/Save/Import/Export/Print/Refresh/Grid/FalseOrigin/Pan/
+  Zoom×4/Undo/Redo/Cut/Copy/Paste/Block×4/Pick/Make/Packaging/
+  Decompose/WireAutorouter/SearchTag/PAT/Explorer/NewSheet/Parent/
+  BOM/ERC/ARES/Select/Component/Junction/WireLabel/Script/Bus/
+  Subcircuit/Pins/Graphs/Tape/Generator/VProbe/IProbe/VInstruments/
+  2D×7/Rotate×2/Mirror/Flip.
+  Cruce con strips: cursor/play/LBL/gates/sine/cap/línea/caja/
+  círculo/arco/A/S/+ verificados en pixels (`aui/assets`).
 - Strips RT_BITMAP (`type 2`) en `ISIS.DLL` (98) y `ARES.DLL` (102):
   toolbars horizontales 24/32px — celdas de 24/32px, fondo gris.
 - ISIS: modo (cursor/play/LBL/gates/sine/cap/curva/probe/línea/caja/
