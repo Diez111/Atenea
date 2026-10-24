@@ -53,6 +53,19 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Framework de diálogos (WINDIALOG.dll, 825 mangled)
+- Kit Win32 propio detrás de TODOS los diálogos: `FORM`
+  (`arg_bool/cptr/double/int/ptr`, `msghlr`, `takefocus`),
+  `LISTVIEW`, `TREEVIEW`, `SELECTOR`, `CONTROL`, `COMBOBOX`,
+  `BUTTON`, `EDITBOX` (`parsevalidchar`), `TABCONTROL`,
+  `STATICWIN`, `PTEXT`, `TEXTVIEWER`, `FILESELECTOR`
+  (`getloadname/getsavename`), `GRAPHICBTN` (`bmpname`,
+  `islatched`, `paintbutton` — botones con icono BMP).
+- Mapeo a Slint para diálogos nativos futuros: FORM→Window,
+  LISTVIEW/TREEVIEW/SELECTOR→ListView, COMBOBOX→ComboBox,
+  EDITBOX→LineEdit, TABCONTROL→páginas manuales (ya hecho),
+  GRAPHICBTN→Button+icon, FILESELECTOR→rfd (ya hecho).
+
 ## Router (ELECTRA, shape-based)
 - `ELECTRA.DLL` (4.4 MB, ABI C): `Adaptive Shape-based
   AutoRouter` (linaje Specctra). Vocabulario DO/costos extraído
