@@ -428,6 +428,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `buildglobaladb` + `CDBCORE::annotate`.
 - `PINOUT::getpinname` (@0x1001d610): scan tabla `+0x70`
   (`_stricmp` en nombres `+0x4c`, count `+0x54`).
+- `PINOUT::getswappedpins` (@0x1001d860): lista nombres de pines
+  swap por id (`+0x50`, `stpcpy` con chequeo, -1 si desborda).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
