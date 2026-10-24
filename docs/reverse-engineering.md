@@ -68,6 +68,16 @@ No Labcenter binaries or data are reproduced here.
   Confirma linaje Berkeley SPICE3f5 (nuestro backend ngspice
   es el reemplazo nativo correcto).
 
+- Satélites: `DXP.dll` = shell puro (BOM vive en SDF/`*PARTLIST*`,
+  ya parseado); `FLOWCHART.DLL` = 7 métodos lógicos (solo
+  `ColourCombo` — la lógica de gráficas está en ISIS/NETLIST);
+  `GVIEW.dll` reusa el stack `VGDVC/PRIMITIVE/LXLCORE` (mismo
+  render que ARES) + `UNZIPARCHIVE/APPLNVARS/SELECTION`;
+  `VSMSTUDIO` = editor QScintilla + shell.
+- Resto (~300 variantes `VGDVC::draw*` + shells Qt + diálogos
+  `WINDIALOG`) = bajo valor para Atenea (render propio vía SVG,
+  diálogos nativos Slint) — documentado, no decompilado 1×1.
+
 ## FUSIÓN SimulIDE (fuente última versión, `/tmp/simuide-src`)
 - Arquitectura SimulIDE: `Circuit` (documento: componentes +
   conectores + nodos, XML `.simu`, undo/redo) + `CircuitView`
