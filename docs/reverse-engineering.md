@@ -514,6 +514,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLOG::push*ctx` (@0x10019730/@0x10019850/@0x100197c0): nodos
   ctx `0x28` con tag (1=módulo, 2=elemento, 3=objeto) — pila de
   contexto para errores con ubicación.
+- `PARTITION::readpmd` (@0x1000c5f0): dispatch por modo vía
+  writer vtable `+0x414`. `CDBCORE::readsnippet` (@0x10009e70):
+  carga snippets vía VFILE.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
