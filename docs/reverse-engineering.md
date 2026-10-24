@@ -53,6 +53,13 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Firmware loaders (LOADERS.DLL, 13 + `setcodelimit`)
+- `load_hex(path,...)` (@0x10002c00): Intel HEX con validación
+  de checksum (`CR or CR/LF expected after checksum`), log vía
+  `LOADERS.HLP`, records vía `FUN_10003720/36b0` (+ فرمato
+  `OMF51/S19/UBROF/COD/CDB/BIN/ELF/COFF/OBJ/EXE/BASIC`).
+  Nuestro parser HEX ya cubre el formato (validación cruzada).
+
 ## Runtime interactivo (PROSPICE.DLL, 9 exports)
 - API: `rts_initialize/rts_execute/rts_pausetest/rts_suspend/
   rts_terminate/rts_event`, `simulate`, `signalabort`,
