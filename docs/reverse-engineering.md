@@ -107,6 +107,10 @@ No Labcenter binaries or data are reproduced here.
   `SGDVC::setlayercolour`);
   `APPFRAME.DLL` = shell (`MENU::bmp_name`,
   `INPUTHANDLER::snapfunc`).
+- `TOOLBAR::getbitmap(i)` (@0x10006220, APPFRAME):
+  `SendMessageA(HWND, TB_GETBITMAP=0x42c, i, 0)` — API Win32
+  estándar: los botones referencian índices del strip BMP.
+  Cierra el mecanismo toolbar→icono.
 - `MENU::bmp_name/tbar_bmpheight/tbar_bmpwidth` confirman el
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
