@@ -54,6 +54,10 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Wiring menú+teclas (APPFRAME.DLL)
+- `CMDINFOTABLE::setuistate(HMENU,cmd,UISTATE&)` (@0x100349a0):
+  `EnableMenuItem` + `CheckMenuItem` desde `UISTATE{enabled,
+  checked}` (vía `APPLNMODULE::setuistate` +`0x68`, @0x1001d9c0).
+  Wiring menú completo: find/append/bitmaps/state/accel.
 - `CMDINFOTABLE::setmenubitmaps(HMENU,idx,mask)` (@0x10034740):
   `SetMenuItemBitmaps` vía `MENUITEMINFOA` — iconos del menú
   desde los strips BMP (cierra menú→icono).
