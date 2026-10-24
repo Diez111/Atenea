@@ -104,6 +104,14 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `P  VER IPC-D-356A`; drill Excellon (`NC Drill Setup`,
   `Drill, %s, %u-%u` + flag `Unplated`, `$DRILL%02d`); stackup
   `Surface|Signal|Plane|Core|Prepreg`; zonas (`Zone: Net/Layer/Style`).
+- `dsim_create` (@0x100046b4): `FUN_100213d0(PROPLIST, str)`
+  clasifica el modelo (SPICE vs VSM) y lo instancia en la lista
+  `+0x35f70`.
+- `dsim_initialize` (@0x1001fc14, 10 instr): `FUN_1001f194()` +
+  `FUN_10018900(netlist)` + flags `35928/20/24/5c` + singleton
+  `&DAT_100360ec`.
+- `dsim_setup` (@0x10003d24): itera modelos llamando `vtable[1]`
+  (setup); -1/0 según `DAT_100360c4+0x2c`.
 - `dsim_timestep(t, &tref)` (@0x10002914): quantum en picosegundos
   (`t/1e-12`, `ROUND`, control FPU) — el kernel mixto avanza en ps.
   Nuestro `vsm-host` pisa en 1000 ps hoy (coherente).
