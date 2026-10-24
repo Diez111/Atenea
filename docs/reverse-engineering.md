@@ -54,6 +54,12 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Modelos VSM (interfaz por flavor, vía `rizin iE`)
+- Fábricas DSO (`createspicemodel` @0x10017f0c,
+  `createactivemodel` @0x10018038): negocian capacidades vía
+  vtable `(*param_2)(id, 0xa3)` — op `0xa3` = query-interface,
+  ids `0x80808081`, `0x10000500`, `0xe7d34571` (tipos de modelo).
+  Spec del ABI VSM para `vsm-host` (fase 2: implementar el
+  dispatch `0xa3` en nuestros modelos).
 - MCU/mixtos (`PIC16EX`, `AVR`): `createmixedmodel` /
   `deletemixedmodel` — ya cubierto en `vsm`.
 - Analógicos activos (`SPEAKER`): `createactivemodel` /
