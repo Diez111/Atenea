@@ -124,6 +124,15 @@ No Labcenter binaries or data are reproduced here.
   (`gdf_arc/bezier/bitmap/atrack/box/circle/line/...`).
   Nuestro `sheet_svg` es el 4º backend (SVG) del mismo set.
 
+## Data-binding de diálogos (WINDIALOG.dll)
+- `FPTEDIT::parseargs(FORM&,char*)` (@0x10017940): parsea
+  args float/double del FORM — binding campo↔variable.
+- `SPINFPTEDIT::setfpt(double,char*)` (@0x10004c50): setter
+  vía `vtable+0x44` (spinner + unidades).
+- `TEXTEDIT::setlimits(min,max)` (@0x10016230): guarda en
+  `+0x3c/+0x40` + `EM_SETLIMITTEXT` — validación de campos.
+  Patrón para validar nuestros LineEdit (longitud/unidades).
+
 ## Sistema de propiedades (PROPTEXT, LXLCORE.dll)
 - `getprops(nombre, PROPLIST&, a, b)` (@0x1002d6cc): herencia
   de props a PROPLIST (STL-heavy) — el mecanismo que resuelve
