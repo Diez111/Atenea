@@ -603,6 +603,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `removeelement/removesnippet` (@0x10003c40/@0x10003d30): bajas con flag.
 - `PARTITION::runsize(i)` (@0x1000b3d0): `tabla+0x760[i]`.
   `pushmodulectx/pushobjectctx` confirman tags 1/3 del nodo ctx `0x28`.
+- `NETLOG::setsheet` (@0x10002aa0): `*(NETLOG*) = SHEET*`.
+- `NETLOG::writecontext/writelog` (@0x10019df0/@0x100199d0):
+  vuelcan el stack ctx a ostream (MSGTYPES/NETCONTEXT) — cierra NETLOG.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
