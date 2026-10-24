@@ -5,6 +5,7 @@
 
 slint::include_modules!();
 
+use slint::Model as _;
 use std::sync::mpsc::Receiver;
 use std::time::Duration;
 
@@ -275,11 +276,135 @@ fn main() -> Result<(), slint::PlatformError> {
             }
         });
     }
+    // Session schematic (SimulIDE-style: palette -> place -> simulate).
+    // Parts placed here render on the sheet, list in Tables and feed ERC.
+    let session: std::sync::Arc<
+        std::sync::Mutex<(
+            Vec<aengine::PartView>,
+            Vec<(String, f64, f64)>,
+            std::collections::HashMap<String, usize>,
+            f64,
+        )>,
+    > = std::sync::Arc::new(std::sync::Mutex::new((
+        Vec::new(),
+        Vec::new(),
+        std::collections::HashMap::new(),
+        25.4,
+    )));
+    // Autoload the bundled Proteus library: the palette is never empty.
+    {
+        let home = std::env::var("HOME").unwrap_or_else(|_| "/home/diez".to_owned());
+        let idx = std::path::PathBuf::from(format!(
+            "{home}/.wine-proteus/drive_c/Program Files (x86)/Labcenter Electronics/Proteus 8 Professional/LIBRARY/ArduinoTEP.IDX"
+        ));
+        if idx.exists() {
+            match poll(&engine.open(&idx), Duration::from_secs(30)) {
+                Some(Ok(snap)) => {
+                    let rows = parts_of(&snap);
+                    *lib_cache
+                        .lock()
+                        .unwrap_or_else(std::sync::PoisonError::into_inner) = rows.clone();
+                    app.set_lib_parts(std::rc::Rc::new(slint::VecModel::from(rows)).into());
+                    app.set_status(
+                        format!("{} dispositivos listos — elegí y Place", snap.parts.len()).into(),
+                    );
+                }
+                _ => app.set_status("no se pudo autocargar IDX".into()),
+            }
+        }
+    }
+    {
+        let app_w = app.as_weak();
+        app.on_select_lib(move |i| {
+            if let Some(app) = app_w.upgrade() {
+                let n = app.get_lib_parts().iter().count();
+                if i >= 0 && (i as usize) < n {
+                    if let Some(row) = app.get_lib_parts().iter().nth(i as usize) {
+                        app.set_selected_lib(i);
+                        app.set_selected_name(
+                            format!("{} — {}", row.reference, row.value).into(),
+                        );
+                    }
+                }
+            }
+        });
+    }
+    {
+        let app_w = app.as_weak();
+        let session = session.clone();
+        app.on_place_selected(move || {
+            let Some(app) = app_w.upgrade() else { return };
+            let i = app.get_selected_lib();
+            let Some(row) = app.get_lib_parts().iter().nth(i.max(0) as usize) else {
+                app.set_status("elegí un dispositivo primero".into());
+                return;
+            };
+            let prefix: String = row
+                .kind
+                .chars()
+                .filter(|c| c.is_ascii_alphabetic())
+                .take(2)
+                .collect();
+            let prefix = if prefix.is_empty() {
+                "U".to_owned()
+            } else {
+                prefix.to_uppercase()
+            };
+            let mut guard = session
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            let (parts, placements, counters, cursor_x) = &mut *guard;
+            let n = counters.entry(prefix.clone()).or_insert(0);
+            *n += 1;
+            let reference = format!("{prefix}{n}");
+            parts.push(aengine::PartView {
+                reference: reference.clone(),
+                kind: row.kind.to_string(),
+                value: row.value.to_string(),
+                rest: Vec::new(),
+            });
+            placements.push((reference.clone(), *cursor_x, 0.0));
+            *cursor_x += 25.4;
+            let snap = aengine::DocSnapshot {
+                name: "UNTITLED".to_owned(),
+                kind: "dsn".to_owned(),
+                parts: parts.clone(),
+                placements: placements.clone(),
+                erc: aengine::erc_of(&aengine::DocSnapshot {
+                    name: "UNTITLED".to_owned(),
+                    kind: "dsn".to_owned(),
+                    parts: parts.clone(),
+                    placements: placements.clone(),
+                    ..aengine::DocSnapshot::default()
+                }),
+                ..aengine::DocSnapshot::default()
+            };
+            let svg = aengine::sheet_svg(&snap, 1200, 800);
+            let svg_path = std::env::temp_dir().join("atenea-sheet.svg");
+            if std::fs::write(&svg_path, svg).is_ok()
+                && let Ok(img) = slint::Image::load_from_path(&svg_path)
+            {
+                app.set_sheet(img);
+            }
+            app.set_parts(std::rc::Rc::new(slint::VecModel::from(parts_of(&snap))).into());
+            app.set_erc_text(erc_text_of(&snap).into());
+            let errs = snap.erc.iter().filter(|(s, _)| *s == 'E').count();
+            app.set_drc(
+                if errs == 0 {
+                    "No ERC errors".to_owned()
+                } else {
+                    format!("{errs} errors")
+                }
+                .into(),
+            );
+            app.set_status(format!("{reference} colocado en la hoja").into());
+        });
+    }
     {
         let app_w = app.as_weak();
         app.on_pick_device(move || {
             if let Some(app) = app_w.upgrade() {
-                app.set_status("Pick Device: elegí en la pestaña Library".into());
+                app.set_status("Pick Device: elegí en la lista y Place".into());
             }
         });
     }

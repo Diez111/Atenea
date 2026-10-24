@@ -33,12 +33,16 @@ export component Atenea inherits Window {
     in-out property <string> sim_text: "";
     in-out property <[PartRow]> lib_parts;
     in-out property <string> lib_query: "";
+    in-out property <int> selected_lib: -1;
+    in-out property <string> selected_name: "";
     in-out property <image> sheet;
     in-out property <image> plot;
 
     callback open-file(string);
     callback open-lib();
     callback filter-lib(string);
+    callback select-lib(int);
+    callback place-selected();
     callback run-sim();
     callback run-erc();
     callback pick-device();
@@ -109,10 +113,21 @@ export component Atenea inherits Window {
                     Text { text: "P  L  DEVICES"; color: #1c2733; font-size: 10px; font-weight: 700; horizontal-alignment: center; }
                     LineEdit { placeholder-text: "buscar…"; text <=> root.lib_query; edited(q) => { root.filter-lib(q); } }
                     ListView {
-                        for p in root.lib_parts: HorizontalBox {
-                            Text { text: p.reference; color: #1c2733; font-size: 11px; }
+                        for p[i] in root.lib_parts: TouchArea {
+                            clicked => { root.select-lib(i); }
+                            HorizontalBox {
+                                padding: 1px;
+                                Rectangle {
+                                    background: i == root.selected_lib ? #0f4c9c : transparent;
+                                    HorizontalBox {
+                                        Text { text: p.reference; color: i == root.selected_lib ? #ffffff : #1c2733; font-size: 11px; }
+                                    }
+                                }
+                            }
                         }
                     }
+                    Text { text: root.selected_name; color: #0f4c9c; font-size: 11px; }
+                    Button { text: "Place"; clicked => { root.place-selected(); } }
                     Button { text: "Open IDX…"; clicked => { root.open-lib(); } }
                 }
             }
