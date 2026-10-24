@@ -462,6 +462,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (decrementa refcount `PART+300`, nullea `+0x90`).
 - `PARTITION::enddump` (@0x1000cc40): cierra corrida de dump vía
   writer vtable `+0x414`, contadores `+0x760/+0x440/+0xa80`.
+- `CDBCORE::endsyncsheet` (@0x10004370): máquina de sync de hoja
+  (requiere estado `+0x334==4`, itera módulos).
+- `CHANNEL_ITERATOR::eof` (@0x1000b740): flag `+0x24`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
