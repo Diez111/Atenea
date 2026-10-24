@@ -411,6 +411,18 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (count `+0x6c`); pines con flag `+0x3c` y rol != `0x11` → DIDX.
   (`0x11` = rol power oculto: liga con `addlabel` y `validate`
   hide-common-pins.) PINOUT cerrado: netgen/checkpinswap/gethiddenpins.
+- Roles por clase (inventario completo de métodos, semántica por
+  nombre + miembros decompilados): `CDBCORE` = DB de diseño
+  (sheets/snippets/módulos/elementos, variants, sync, bind);
+  `PARTITION` = corrida sim batch (`begindump/endrun/flush`,
+  `CHANNEL_ITERATOR` con `ANALOG/DIGITAL/FREQUENCY`);
+  `PINOUT` = mapeo pines↔package (netgen/checkpinswap/gethiddenpins,
+  `getpin*/getnetinfo` pendientes); `NETLOG`/`SIMLOG` = logging con
+  contexto (push/pop, `logerror/logwarning/loginfo`);
+  `NETCACHE` = caché de compilación (`autorecompile/rebuild/invalidate`);
+  `PROPDEF`/`PROPTEXT`/`PROPLIST` = vocabulario+texto de props
+  (viven en `LXLCORE.DLL`); `DPA`/`GDPA`/`SLIST` = arrays dinámicos;
+  `VFILE` = I/O virtual (vfgetstr/vfputstr, Pascal strings).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
