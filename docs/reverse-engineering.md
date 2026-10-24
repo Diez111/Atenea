@@ -601,6 +601,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   SHEET→MODULE(`+0x8`)→SHEET(`+0x4`) buscando el módulo.
   `killorphans` (@0x10003500): barre tabla de módulos.
   `removeelement/removesnippet` (@0x10003c40/@0x10003d30): bajas con flag.
+- `PARTITION::runsize(i)` (@0x1000b3d0): `tabla+0x760[i]`.
+  `pushmodulectx/pushobjectctx` confirman tags 1/3 del nodo ctx `0x28`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
