@@ -30,6 +30,11 @@ No Labcenter binaries or data are reproduced here.
   + `NETLIST` (motor netlist, compartido ISIS+ARES) + `DSIM`
   (sim) + `ELECTRA` (router). Nuestro RE de NETLIST cubre el
   netlisting de ambas apps.
+- `NETLIST::addnet` (@0x10014b90): crea el NET en curso
+  (3 `operator_new` + append SLIST + `NETLOG`).
+- `NETLIST::netptr(i)/scriptptr(i)` (@0x1000e2d0/@0x1000e210):
+  `tabla_nets+0x198[i]` / `tabla_scripts+0x150[i]`.
+- `getcdb()` (@0x10002d00): singleton `DAT_10033dec`.
 - Validador de cobertura: los 44 imports NETLIST que usa ISIS
   → gaps reales `addnet/netptr/reset/scriptptr/zap/getcdb/
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
