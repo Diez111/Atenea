@@ -590,6 +590,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::runstart(i)` (@0x1000b3d0): `tabla+0x440[i]`.
   `setdatatype` (@0x1000c6a0, virtual): tipo de canal.
   `NETCACHE::showlog` (static, @0x1000f2c0): registry `VSMDEBUG`.
+- `CDBCORE::readelement/readpart/writepart` (privados, @0x100098f0/
+  @0x10009c50/@0x10009d80): trío de serialización VFILE (load/save
+  de ELEMENT/PART) — cierra el I/O de CDBCORE.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
