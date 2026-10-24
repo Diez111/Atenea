@@ -71,6 +71,13 @@ No Labcenter binaries or data are reproduced here.
   botones play/pause/step alimentan.
   Spec para kernel interactivo propio (fase 2+).
 
+## Scripting de modelos (VSMLUA.DLL, 11 exports)
+- `createmixedmodel/deletemixedmodel` + `hostif_*`:
+  `open/read/write/lseek/close`, `malloc/realloc/free`,
+  `debug` — sandbox POSIX para modelos Lua.
+  Spec directa para scripting propio (rhai/mlua) en fase 2+:
+  exponer el mismo `hostif_*` a scripts de usuario.
+
 ## Modelos VSM (interfaz por flavor, vía `rizin iE`)
 - Fábricas DSO (`createspicemodel` @0x10017f0c,
   `createactivemodel` @0x10018038): negocian capacidades vía
