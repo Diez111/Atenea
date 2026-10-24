@@ -493,6 +493,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::isvalid` (@0x1000ce10, compartido NETCACHE): abre
   `DISKFILE+0x414` con path `+0x209`, valida magic vs
   `DAT_10030420`.
+- `ANNOTATOR::mergelocaladb` (@0x10002440): merge de ADB local vía
+  `buildbranchadb/buildglobaladb/merge` + `CDBCORE::annotate`.
+- `CDBCORE::migratelegacyvariants` (@0x10007610): itera tabla UID
+  (`+0x2d0/+0x2cc`) migrando variantes legacy.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
