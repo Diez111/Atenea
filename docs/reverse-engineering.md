@@ -30,6 +30,11 @@ No Labcenter binaries or data are reproduced here.
   + `NETLIST` (motor netlist, compartido ISIS+ARES) + `DSIM`
   (sim) + `ELECTRA` (router). Nuestro RE de NETLIST cubre el
   netlisting de ambas apps.
+- `CDBCORE::newdesign` (@0x100030c0): resetea barriendo hojas del
+  módulo raíz (`+0x300`, tabla `+0x270`).
+- `CDBCORE::cleartags` (@0x10006280): pone a 0 los tag-fields en
+  tabla módulos (`+0x290`, campo `+0x98`) y tabla `+0x2d0`
+  (campo `+0x138`) — cierra los gaps del validador de imports.
 - `NETLIST::addnet` (@0x10014b90): crea el NET en curso
   (3 `operator_new` + append SLIST + `NETLOG`).
 - `NETLIST::netptr(i)/scriptptr(i)` (@0x1000e2d0/@0x1000e210):
