@@ -572,6 +572,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `prevx` = t0 (`+0x28`).
 - `ANNOTATOR::getnextname` (@0x100020d0): allocator de nombres
   (`+0x48/+0x4c/+0x50`).
+- `ANNOTATOR::setcount` (@0x10001c80): camina cadena SHEET
+  (`+0x8/+0x4`), lee contador `+0x110`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
