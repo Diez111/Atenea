@@ -448,6 +448,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CHANNEL_ITERATOR::{aval,ival,mval,pval,rval}` (todos en
   @0x1000d6b0 = `FLDZ; RET`, return 0.0): base virtual, las
   subclases ANALOG/DIGITAL/FREQUENCY los overridean.
+- `CDBCORE::bindmodule/bindpart` (@0x100041f0/@0x100050a0): bindean
+  UID 1-based (tabla `+0x2d0`/count `+0x2cc`, igual que getmodule/
+  getpinout) vía interfaces `ICDBMODULE`/`ICDBPART`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
