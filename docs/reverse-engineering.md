@@ -30,6 +30,14 @@ No Labcenter binaries or data are reproduced here.
   + `NETLIST` (motor netlist, compartido ISIS+ARES) + `DSIM`
   (sim) + `ELECTRA` (router). Nuestro RE de NETLIST cubre el
   netlisting de ambas apps.
+- `varianttomask(c)` (@0x1000a710): `'b'→0`, si no
+  `1<<((c-0x41)&0x1f)` (letra de variante → bitmask).
+- `GPAVIEWER::autosize` (@0x1000af30): sizing Win32 del viewer
+  (`GetWindowRect/SetWindowPos`).
+- Data (sin código): `net_nc`, `sdf_pintypes`, `library_locale`,
+  `library_paths/module_paths/template_paths`, enums
+  `CDBSYNCMODES/TRACEMODEFLAGS` — documentados por uso.
+  Validador de imports ISIS→NETLIST: 0 gaps de código.
 - `CDBCORE::newdesign` (@0x100030c0): resetea barriendo hojas del
   módulo raíz (`+0x300`, tabla `+0x270`).
 - `CDBCORE::cleartags` (@0x10006280): pone a 0 los tag-fields en
