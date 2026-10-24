@@ -396,6 +396,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   de `char const*` (dato, como `mdf_id`) — vocabulario de tipos.
   `PROPTEXT`/`PROPLIST` (`putblock`/`addpair`) viven en `LXLCORE.DLL`
   (imports, no código NETLIST).
+- `PINOUT::checkpinswap` (`?checkpinswap@PINOUT@@QAEHPBD@Z`, public,
+  @0x1001dc00): valida swaps parseando listas `;` + `, `
+  (`getnzstr`, buffer 8K, `_stricmp`) — formato PINSWAP.
+- `CDBCORE::addrootsheet` (@0x100036c0): `addsheet` sobre módulo
+  raíz (`+0x300`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
