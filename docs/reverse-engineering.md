@@ -53,6 +53,24 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## FUSIÓN SimulIDE (fuente última versión, `/tmp/simuide-src`)
+- Arquitectura SimulIDE: `Circuit` (documento: componentes +
+  conectores + nodos, XML `.simu`, undo/redo) + `CircuitView`
+  (canvas) + `ItemLibrary`/`ComponentSelector` (paleta con
+  búsqueda) + `Component` (id+tipo+props+pines+visual) +
+  `MainWindow` (paleta izq, props der, canvas centro, consola abajo).
+- Mapeo a Atenea (100% Rust/Slint, sin Qt): `DocSnapshot` =
+  `Circuit`; `sheet_svg` = `CircuitView`; panel izq + filtro =
+  `ComponentSelector`; `PartView`+`device_props` = `Component`;
+  tabs Sim/ERC/consola = docks inferiores.
+- Fase 1 hecha (`f984927`): autoload `ArduinoTEP.IDX` al arrancar
+  (paleta nunca vacía), click en fila = select (highlight azul),
+  `Place` = append a schematic en memoria (ref auto `XX+n`,
+  cursor grilla 25.4mm) → re-render hoja + Parts + ERC live.
+- Fase 2 (roadmap): props editables a la derecha, drag en hoja,
+  conectores+nodos (wire entre placements), sim del schematic
+  en memoria vía `to_cir_with_subs`.
+
 ## Iconos/toolbars extraídos del PE (verificado en pixels)
 - Tabla comando→icono CERRADA: `docs/icons/` con los 63 gifs del
   `Icon_Reference_Chart` del CHM + `CHART.txt` (gif => comando):
