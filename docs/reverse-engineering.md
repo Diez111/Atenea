@@ -53,7 +53,10 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
-## Framework de diálogos (WINDIALOG.dll, 825 mangled)
+## Wiring menú+teclas (APPFRAME.DLL)
+- `KEYTRANSLATOR::find_cmd(key,shift)` (@0x10037640):
+  `bsearch` sobre tabla `KEYCMD` ordenada (máscara `0xfff0`) —
+  atajo → comando.
 - Kit Win32 propio detrás de TODOS los diálogos: `FORM`
   (`arg_bool/cptr/double/int/ptr`, `msghlr`, `takefocus`),
   `LISTVIEW`, `TREEVIEW`, `SELECTOR`, `CONTROL`, `COMBOBOX`,
