@@ -526,11 +526,16 @@ fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> St
     }
     for (text, x, y) in &doc.placements {
         let esc = text.replace('&', "&amp;").replace('<', "&lt;");
+        // Generic component body: box + ref (real symbols come from LIB parse).
         let _ = writeln!(
             s,
-            "<text x='{:.1}' y='{:.1}' font-family='monospace' font-size='11' fill='{label}'>{esc}</text>",
+            "<rect x='{:.1}' y='{:.1}' width='{:.1}' height='{:.1}' fill='none' stroke='{wire}' stroke-width='1.2'/><text x='{:.1}' y='{:.1}' font-family='monospace' font-size='11' fill='{label}'>{esc}</text>",
+            px(*x) - 6.0 * sc,
+            py(*y) - 4.0 * sc,
+            12.0 * sc,
+            8.0 * sc,
             px(*x),
-            py(*y)
+            py(*y) - 5.0 * sc
         );
     }
     // ISIS-style title block (bottom-right of the sheet).
