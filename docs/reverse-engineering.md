@@ -120,6 +120,9 @@ No Labcenter binaries or data are reproduced here.
 - `LABEL::drc(IDRCLIST*)` (@0x10006790, PRIMS): occupancy de
   texto vía `VGDVC::textocca` + callback `IDRCLIST[4]` (gate
   `this+0x76&1`).
+- `POINT::snapup(grid)` (@0x10056050): `ceil()` (snap a grilla).
+- `LINE::nearest_point(POINT)` (@0x10045f58): proyección en
+  doble precisión (snap de ruteo).
 - `POLYGON::splitconcave(GSLIST<POLYGON*>&)` (@0x100527cc,
   LXLCORE): triangulación (SUBPOLYGON) — base del pour/DRC.
 
