@@ -54,6 +54,8 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Wiring menú+teclas (APPFRAME.DLL)
+- `CMDINFOTABLE::appendmenuitem(HMENU,cmd,sub)` (@0x10034700):
+  `find()` → `AppendMenuA` con `CMDINFO+2` (id) y `+8` (texto).
 - `translate_and_dispatch(HWND,key,msg)` (@0x10036f10):
   `TranslateAccelerator` + dispatch vía `find_cmd` (+ helpers
   `FUN_10038dd0/38e10`).
