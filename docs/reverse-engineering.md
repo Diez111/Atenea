@@ -456,6 +456,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   de tabla `+0x290`/count `+0x28c`. `NETLOG::clearctx` (@0x10002ab0):
   cero en `+0x4/+0x8`. `ANNOTATOR::compare` (@0x100026e0, static):
   comparador de strings con buffers locales.
+- `CDBCORE::deleteelement/deletepart` (privados, @0x10007c20/0x10007d30):
+  baja por UID validado en tablas `+0x290/+0x28c` y `+0x2d0/+0x2cc`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
