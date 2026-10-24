@@ -597,6 +597,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `deleteboard/deletesheet/deletesnippet` (privados): bajas por UID
   en boards `+0x2b0/+0x2ac`, sheets `+0x270/+0x26c`, snippets
   `+0x2f0/+0x2ec` (cuarta tabla UID).
+- `CDBCORE::isancestor` (@0x10005c50): sube cadena
+  SHEET→MODULE(`+0x8`)→SHEET(`+0x4`) buscando el módulo.
+  `killorphans` (@0x10003500): barre tabla de módulos.
+  `removeelement/removesnippet` (@0x10003c40/@0x10003d30): bajas con flag.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
