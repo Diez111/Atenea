@@ -61,6 +61,21 @@ No Labcenter binaries or data are reproduced here.
   slots vtable documentados, router propio, tabla comando→icono,
   U/X con macromodelos, verificación visual `aui` con usuario.
 
+## ARES/PCB — arquitectura real (vía REA cross-DLL)
+- `ARES.DLL` es cáscara fina: la lógica vive en DLLs compartidas:
+  `LXLCORE.DLL` = kernel geométrico (`POINT::rotate`,
+  `POLYGON::isclockwise`, `GPC_POLYGON::touches`,
+  `OCTAGON::collidesclosed`, `LINE::parallel`);
+  `PRIMS.DLL` = primitivas PCB (`PRIMITIVE::normalise/makesym`,
+  `PR_BOX::makepath`, `LABEL::drc` — el `drc` reportado como
+  `PR_SYM::drc`/`PR_PATH::drc` resuelve a `LABEL::drc`);
+  `VGDVC.DLL` = render (`VGDVC::drawcpad/drawhole`,
+  `SGDVC::setlayercolour`);
+  `APPFRAME.DLL` = shell (`MENU::bmp_name`,
+  `INPUTHANDLER::snapfunc`).
+- `MENU::bmp_name/tbar_bmpheight/tbar_bmpwidth` confirman el
+  mecanismo toolbar-BMP (strips `type 2` ya extraídos).
+
 ## Frontera verificada (no-SPICE)
 
 - `OA_BIP` (ANALOG.LML, 5106 B) = MAPPINGS de parámetros (`GAIN/CMRR/FT/SR/IB...` por tipo 709/741/LM324...) + PARTLIST de primitivas DSIM (`B`), NO subcircuito SPICE. `U1,CA3140` → `MODFILE=OA_BIP` + `PACKAGE=DIL08`: las funciones de pin (in+/in-/out) viven en el modelo DSIM compilado, no en la librería. Conclusión: `U`/`X` exigen kernel DSIM interactivo (roadmap mayor), no backend ngspice.
