@@ -436,6 +436,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CDBCORE::getpinout` (@0x10006d80): índice 1-based a tabla UID
   (`+0x2d0`, count `+0x2cc`), `PINOUT*` en `+0x128` (espejo de
   `getmodule` +0x250/+0x24c).
+- Triviales verificados por muestra (`numelements`=`this+0x54`,
+  `isempty`=`!(flags+0x24&3)` — getters de 1 instrucción): los ~150
+  restantes (`is*/get*/set*/has*/clone/close/detach/flush/...`)
+  son accessors/predicados de igual forma; cubiertos por firma +
+  patrón, sin pseudocódigo individual (ruido, no señal).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
