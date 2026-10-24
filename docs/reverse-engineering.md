@@ -587,6 +587,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `rebindelement` (@0x10004990): re-resuelve PART vía PINOUT.
   `setelementproperty` (@0x10006ec0): delega a `setpartproperty`
   por link `+0x90`.
+- `PARTITION::runstart(i)` (@0x1000b3d0): `tabla+0x440[i]`.
+  `setdatatype` (@0x1000c6a0, virtual): tipo de canal.
+  `NETCACHE::showlog` (static, @0x1000f2c0): registry `VSMDEBUG`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
