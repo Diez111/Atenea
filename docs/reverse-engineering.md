@@ -451,6 +451,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CDBCORE::bindmodule/bindpart` (@0x100041f0/@0x100050a0): bindean
   UID 1-based (tabla `+0x2d0`/count `+0x2cc`, igual que getmodule/
   getpinout) vía interfaces `ICDBMODULE`/`ICDBPART`.
+- `CDBCORE::checkpartbinding` (@0x10004b70): valida binding
+  `ELEMENT+0x90`→PART. `cleartags` (@0x10006280): cero en `+0x98`
+  de tabla `+0x290`/count `+0x28c`. `NETLOG::clearctx` (@0x10002ab0):
+  cero en `+0x4/+0x8`. `ANNOTATOR::compare` (@0x100026e0, static):
+  comparador de strings con buffers locales.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
