@@ -479,6 +479,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `PROPLIST::addkwdlist` — el mecanismo de keywords (`INDEXED STRING`).
 - `PARTITION::getlabel` (@0x1000b3a0): `index()` + array `+0x43c`,
   label en `+10`.
+- Triviales confirmados: `getmaxmoduleuid`=`+0x24c`, `getmaxruns`=
+  max(`+0xa80`) — getters de 1 instrucción.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
