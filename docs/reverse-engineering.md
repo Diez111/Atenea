@@ -552,6 +552,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::writepmd` (@0x1000c5b0): writer vtable `+0x414`,
   contador bytes `+0x428`. `CDBCORE::writesnippet` (@0x10009fd0):
   serializa SNIPPET vía VFILE (save path).
+- `PARTITION::writestring` (@0x1000ccf0): `vsprintf` → writer.
+  `writexval(double)` (@0x1000cb00): writer con tracking de corrida
+  (`+0xa84/+0xa80/+0x760`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
