@@ -500,6 +500,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `FREQUENCY_ITERATOR::mval(t)` (@0x1000db60): interpolación lineal
   entre `(t0,v0)@+0x28` y `(t1,v1)@+0x30` tras `advance(t)` — así se
   leen los valores del trace.
+- `CDBCORE::newdocument(path)` (@0x10003020): `zap` + set nombre +
+  `newmodule(NULL)` como raíz (`+0x300`) — confirma ROOT.CDB
+  (módulo raíz primero). `newdesign` similar.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
