@@ -111,6 +111,9 @@ No Labcenter binaries or data are reproduced here.
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
 ## Sync ISIS→ARES (validador lado ARES, 37 imports)
+- `getpartelements/getswapgroups` (@0x10006710/@0x10006dc0):
+  colectores GDPA sobre tabla de elementos (part→elements,
+  pinout→swapgroups para gateswap en PCB).
 - `beginsyncboard/endsyncboard` (@0x10004ff0/@0x10005110):
   bracketean el sync de BOARD (flag `+0x340`, barren tabla `+0x2cc`).
 - `NETLIST::getelements` (@0x10016030): delega a
