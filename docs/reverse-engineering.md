@@ -54,6 +54,9 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Estilos + settings (VGDVC/APPFRAME)
+- `APPLNVARS::load_applnvars(path)` (@0x10029cf0): simétrico
+  al save, vía accesor `FUN_1003ce90`. Spec para settings
+  propios (TOML en `~/.config/atenea`).
 - `APPLNVARS::save_applnvars(path)` (@0x10029f10): itera
   registro DPA y vuelca settings (persistencia Proteus).
 - `GSTYLE::setpencolour/setpenwidth` (@0x10035a60/@0x10035a94):
