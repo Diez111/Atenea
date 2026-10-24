@@ -107,6 +107,11 @@ No Labcenter binaries or data are reproduced here.
   `SGDVC::setlayercolour`);
   `APPFRAME.DLL` = shell (`MENU::bmp_name`,
   `INPUTHANDLER::snapfunc`).
+- `TOOLBAR::addbuttons(n0,n1,n)` (@0x10053630): arma array
+  `TBBUTTON` (stride `0x14`) — creación Win32 del toolbar.
+- `TOOLBAR::setactvcmds(cmds[],n)` (@0x100537b0): recorre
+  botones vía `FUN_10055a30/55a50` (count/por-botón) y setea
+  comandos activos — el wiring comando→botón.
 - `TOOLBAR::getbitmap(i)` (@0x10006220, APPFRAME):
   `SendMessageA(HWND, TB_GETBITMAP=0x42c, i, 0)` — API Win32
   estándar: los botones referencian índices del strip BMP.
