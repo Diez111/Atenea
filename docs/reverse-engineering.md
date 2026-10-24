@@ -570,6 +570,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   0x1001ee90/0x1001e9f0): parsean args/límites del def (`TRUE/FALSE`,
   `PNZ/NNZ`...). `CHANNEL_ITERATOR::bval` = stub base (NULL),
   `prevx` = t0 (`+0x28`).
+- `ANNOTATOR::getnextname` (@0x100020d0): allocator de nombres
+  (`+0x48/+0x4c/+0x50`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
