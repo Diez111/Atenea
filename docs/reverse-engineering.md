@@ -475,6 +475,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PROPDEF::getfnargs/getfplimits` (@0x1001ed40/@0x1001eb20):
   def-string en `+0x8`; args `TRUE/FALSE` + comas; límites
   `PNZ/POZ/NNZ` (pos/neg-no-cero). Vocabulario de props tipado.
+- `PROPDEF::getkwdprops` (@0x1001ef20): parsea `N,keywords` →
+  `PROPLIST::addkwdlist` — el mecanismo de keywords (`INDEXED STRING`).
+- `PARTITION::getlabel` (@0x1000b3a0): `index()` + array `+0x43c`,
+  label en `+10`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
