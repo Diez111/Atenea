@@ -115,6 +115,10 @@ No Labcenter binaries or data are reproduced here.
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
 ## Kernel PCB (LXLCORE/PRIMS, vía REA)
+- `MLIB` (XLIB.DLL): `rdlibnames`=`+0x40`, `wrlibnames`=`+0x54`
+  (listas de librerías read/write; `num*` adyacentes).
+  Nuestro `libdir` ya parsea el stride-80 — MLIB es el lado
+  templates/footprints (ver `LML`/`MDF` en formatos).
 - `SYMBOL::preview(CTS&,SGDVC*,LIBBROWSEINFO*,char*)`
   (@0x1000d420, PRIMS): render del browser de librerías.
 - `PRIMITIVE::gethandles/resize/setunit` (@0x10007fb0): stubs
