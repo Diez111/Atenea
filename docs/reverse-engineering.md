@@ -111,6 +111,12 @@ No Labcenter binaries or data are reproduced here.
   mecanismo toolbar-BMP (strips `type 2` ya extraídos).
 
 ## Sync ISIS→ARES (validador lado ARES, 37 imports)
+- `getpart(UID)` (@0x10001120): lookup en tabla parts
+  `+0x2d0/+0x2cc` (quinta tabla UID confirmada).
+- `getcommonparent(GDPA)` (@0x10005b40): hoja común subiendo
+  la cadena (usa `isancestor`).
+- `updatefrompart` (@0x10004ec0): copia ELEMENT (52B) — aplica
+  cambios del PART al elemento.
 - `getpartelements/getswapgroups` (@0x10006710/@0x10006dc0):
   colectores GDPA sobre tabla de elementos (part→elements,
   pinout→swapgroups para gateswap en PCB).
