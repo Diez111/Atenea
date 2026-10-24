@@ -528,6 +528,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CHANNEL_ITERATOR::setedgetimes` (@0x1000d460): stub base
   (`return 0`, override en subclases). `ANNOTATOR::setdvctype`
   (@0x10001ed0): setea tipo de device (detalle en cuerpo).
+- `PROPDEF::setkwdargs` (@0x10001ee10): reconstruye def como
+  `"N,keywords"`. `CDBCORE::setpartproperty` (@0x10006f60): setter
+  de props de PART vía PROPTEXT.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
