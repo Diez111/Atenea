@@ -107,6 +107,8 @@ No Labcenter binaries or data are reproduced here.
   `SGDVC::setlayercolour`);
   `APPFRAME.DLL` = shell (`MENU::bmp_name`,
   `INPUTHANDLER::snapfunc`).
+- `ORNTBAR::setornt(CTS)` (@0x10054f90): barra de orientación
+  desde `CTS::isorthogonal` (estado de rotación).
 - `TOOLBAR::addbuttons(n0,n1,n)` (@0x10053630): arma array
   `TBBUTTON` (stride `0x14`) — creación Win32 del toolbar.
 - `TOOLBAR::setactvcmds(cmds[],n)` (@0x100537b0): recorre
