@@ -606,6 +606,15 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `NETLOG::setsheet` (@0x10002aa0): `*(NETLOG*) = SHEET*`.
 - `NETLOG::writecontext/writelog` (@0x10019df0/@0x100199d0):
   vuelcan el stack ctx a ostream (MSGTYPES/NETCONTEXT) — cierra NETLOG.
+- Resto verificado por patrón (getters/predicados de 1 instrucción,
+  setters triviales, nodos ctx `0x28`): `PROPDEF::isadvanced/isnormal/
+  isreadonly/isvalue`, `PINOUT::errjmp/errmsg/ncpins`,
+  `CHANNEL_ITERATOR::getdatawidth/getmaxapoints/getmaxdpoints`,
+  `DPA::grow` (realloc, en LXLCORE), `NETLOG::clearerrors/popctx/
+  pushlabelctx`, `CDBCORE::beginsyncsheet/getexactsibling/
+  getmoduledepth/getrootmodule/setunpopulated/walknextmodule`,
+  `PARTITION::endobject/pdfver` — documentados por firma; sin
+  pseudocódigo individual (idénticos en forma a los decompilados).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
