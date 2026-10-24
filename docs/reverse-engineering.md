@@ -53,6 +53,18 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Router (ELECTRA, shape-based)
+- `ELECTRA.DLL` (4.4 MB, ABI C): `Adaptive Shape-based
+  AutoRouter` (linaje Specctra). Vocabulario DO/costos extraído
+  de strings: `autoroute/autorouteSetup`, `cost`, `fanout` +
+  `fanout_dir/dist/passes`, `recorner(+diagonal)`, `route`,
+  `protect/unprotect`, `via_*` (`at_smd/fit/grid`, `keepout`,
+  `number`, `on_pin`, `share`, `testpoint`, `via_same_net`),
+  `limit_bends/crossings/vias`, `pair`, `bus diagonal`,
+  `Bus Router (colinear pins)`.
+  Spec para router propio: DO-file con estos comandos + tabla
+  de costos + matriz de capas (ver `LYTCVT`/stackup docs).
+
 ## Auditoría total de binarios (`docs/binarios-audit.txt`, 82 DLL/EXE)
 - Por mangled (sin Qt): APPFRAME 1703, VSMSTUDIO 1467, FLOWCHART 1161,
   ARES 1184, ISIS 988, GVIEW 905, PDS 893, WINDIALOG 825, VGDVC 732,
