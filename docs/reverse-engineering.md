@@ -53,6 +53,16 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Modelos VSM (interfaz por flavor, vía `rizin iE`)
+- MCU/mixtos (`PIC16EX`, `AVR`): `createmixedmodel` /
+  `deletemixedmodel` — ya cubierto en `vsm`.
+- Analógicos activos (`SPEAKER`): `createactivemodel` /
+  `deleteactivemodel`.
+- Instrumentos mixtos (`DSO.DLL`): AMBOS +
+  `createspicemodel/deletespicemodel` (canal analógico +
+  lógica digital) — el modelo a imitar para plot/probe.
+- Mayoría de DLLs: 4-6 exports (create/delete + variantes).
+
 ## Render DVC (VGDVC.DLL)
 - `VGDVC::drawbox(BOX,CTS&,GSTYLE&,ulong)` (@0x1003ebc0):
   box → 4 POINTs + transform CTS — el path de primitivas.
