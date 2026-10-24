@@ -107,6 +107,13 @@ No Labcenter binaries or data are reproduced here.
   `D2DVC` vs `GLDVC` según flag `+0x2ac` (software vs OpenGL).
   Nuestro SVG = el path software.
 
+## Render backends (GDF layer, VGDVC.DLL)
+- `SGDVC::drawcache/gdf_atrack/...` (@0x1001350c/@0x100227fc):
+  dispatch virtual a 3 backends: GL (`+0x188`), D2D (`+0x2ac`),
+  software (fallthrough). GDF = set de ops vectoriales
+  (`gdf_arc/bezier/bitmap/atrack/box/circle/line/...`).
+  Nuestro `sheet_svg` es el 4º backend (SVG) del mismo set.
+
 ## Sistema de propiedades (PROPTEXT, LXLCORE.dll)
 - `getprops(nombre, PROPLIST&, a, b)` (@0x1002d6cc): herencia
   de props a PROPLIST (STL-heavy) — el mecanismo que resuelve
