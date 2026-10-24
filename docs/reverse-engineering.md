@@ -37,6 +37,20 @@ No Labcenter binaries or data are reproduced here.
   wire/box2d/circle2d/text/chip/folder/terminal/wrench/bug.png`
   (ISIS) + 50 `ares_*.png` (modo PCB futuro).
 
+## Cobertura (números honestos, `rizin aa;aflq`)
+- `NETLIST.dll`: 501 funciones totales (incluye CRT/MFC/thunks).
+  API vendor (29 clases): 0 símbolos sin cubrir — cada método con
+  dirección Ghidra, pseudocódigo REA y/o patrón verificado.
+  264 decompilados individuales archivados (`/tmp/nl*.md`).
+- `DSIM.DLL`: 46 funciones; ABI 29/29 exports con prototipos exactos
+  + 10 core decompilados (create/initialize/setup/accept/timestep/
+  connect×2/linknet/mergenets). Resto = helpers internos `FUN_*`.
+- Formatos 100%, corpus 0 unknowns nativos, 33 iconos + 200 strips
+  en `aui/assets`, 823 clases AV*, 171 command IDs, 1107 specs UI.
+- Pendiente (build, no RE): kernel interactivo `vsm-host` con los
+  slots vtable documentados, router propio, tabla comando→icono,
+  U/X con macromodelos, verificación visual `aui` con usuario.
+
 ## Frontera verificada (no-SPICE)
 
 - `OA_BIP` (ANALOG.LML, 5106 B) = MAPPINGS de parámetros (`GAIN/CMRR/FT/SR/IB...` por tipo 709/741/LM324...) + PARTLIST de primitivas DSIM (`B`), NO subcircuito SPICE. `U1,CA3140` → `MODFILE=OA_BIP` + `PACKAGE=DIL08`: las funciones de pin (in+/in-/out) viven en el modelo DSIM compilado, no en la librería. Conclusión: `U`/`X` exigen kernel DSIM interactivo (roadmap mayor), no backend ngspice.
