@@ -733,4 +733,24 @@ C1,PS,1
         assert!(dark.contains("fill='#000000'"));
         assert!(dark.contains("stroke='#c8ccd4'"));
     }
+
+    #[test]
+    fn svg_has_grid_bodies_titleblock() {
+        let mut snap = DocSnapshot {
+            name: "UNTITLED".to_owned(),
+            kind: "dsn".to_owned(),
+            ..DocSnapshot::default()
+        };
+        snap.placements.push(("AR1".to_owned(), 25.4, 0.0));
+        let svg = sheet_svg(&snap, 1200, 800);
+        // Snap grid pattern.
+        assert!(svg.contains("id='grid'"));
+        assert!(svg.contains("patternUnits='userSpaceOnUse'"));
+        // Component body: rect + ref above it.
+        assert!(svg.contains(">AR1</text>"));
+        assert!(svg.matches("<rect").count() >= 3);
+        // Title block bottom-right.
+        assert!(svg.contains("text-anchor='end'"));
+        assert!(svg.contains("Atenea native"));
+    }
 }
