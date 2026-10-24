@@ -19,6 +19,22 @@ No Labcenter binaries or data are reproduced here.
 - `Translations/`: 29× Qt `.qm`. `HELP/`: 54× `.chm` (docs, `VSMSDK.chm` most
   relevant for VSM DLL interface — not yet read).
 
+## Dependencias (mapa vía `rizin ii`, guardado en `docs/imports/`)
+- `ARES.DLL` (2081 imports): `LXLCORE` 392, `APPFRAME` 375,
+  `QtGui4` 329, `PRIMS` 179, `WINDIALOG` 160, `VGDVC` 142,
+  `NETLIST` 37, `electra` 6.
+- `ISIS.DLL` (1776 imports): `APPFRAME` 343, `WINDIALOG` 269,
+  `LXLCORE` 264, `PRIMS` 182, `NETLIST` 158, `VGDVC` 130.
+- Conclusión: todo Proteus = `LXLCORE` (núcleo) + `PRIMS`
+  (primitivas) + `VGDVC` (render) + `APPFRAME`/`WINDIALOG` (shell)
+  + `NETLIST` (motor netlist, compartido ISIS+ARES) + `DSIM`
+  (sim) + `ELECTRA` (router). Nuestro RE de NETLIST cubre el
+  netlisting de ambas apps.
+- Validador de cobertura: los 44 imports NETLIST que usa ISIS
+  → gaps reales `addnet/netptr/reset/scriptptr/zap/getcdb/
+  newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
+  en decompilación.
+
 ## Iconos/toolbars extraídos del PE (verificado en pixels)
 - Tabla comando→icono CERRADA: `docs/icons/` con los 63 gifs del
   `Icon_Reference_Chart` del CHM + `CHART.txt` (gif => comando):
