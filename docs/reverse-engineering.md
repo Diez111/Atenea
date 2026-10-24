@@ -566,6 +566,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (`new 0x60`, default `simtype`); crea objeto vía vtable.
 - `NETCACHE::updateclients` (@0x1000f280, private): notifica
   lista clientes (`+0x298/+0x294`) vía vtable+8.
+- `PROPDEF::getkwdargs/setfnargs/getintlimits` (@0x1001ec40/
+  0x1001ee90/0x1001e9f0): parsean args/límites del def (`TRUE/FALSE`,
+  `PNZ/NNZ`...). `CHANNEL_ITERATOR::bval` = stub base (NULL),
+  `prevx` = t0 (`+0x28`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
