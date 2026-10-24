@@ -488,6 +488,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   recursivo vía link `+0x90` (PART).
 - `PINOUT::iscommon` (@0x10001d800): `getpin` → flag `+0x40` del POPIN.
   `CDBCORE::isexactsibling` (@0x10005e10): identidad de hoja por walk.
+- `PROPDEF` type enum en `+0x14`: 3=HIDDEN, 4=INDEXED (`ishidden`/
+  `isindexed` @0x100123b0/@0x100123e0, `==const`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
