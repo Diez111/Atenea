@@ -161,6 +161,10 @@ No Labcenter binaries or data are reproduced here.
 ## Wiring menú+teclas (APPFRAME.DLL)
 - `SELECTION::checkplacement` (@0x1000c780, APPFRAME): valida
   placements vía `DPA::inbounds` sobre lista `+0x38`.
+- `APPLNVARS::register_applnvar(nombre,APPLNVARTYPES,ptr,size)`
+  (@0x10029c20): registro tipado de settings (el schema).
+  `restore_applnvars` (@0x1002a0e0): aplica valores guardados
+  barriendo el DPA. Spec para settings propios.
 - `CMDINFOTABLE::setuistate(HMENU,cmd,UISTATE&)` (@0x100349a0):
   `EnableMenuItem` + `CheckMenuItem` desde `UISTATE{enabled,
   checked}` (vía `APPLNMODULE::setuistate` +`0x68`, @0x1001d9c0).
