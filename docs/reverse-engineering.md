@@ -53,6 +53,11 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Estilos + settings (VGDVC/APPFRAME)
+- `GSTYLE::setpencolour/setpenwidth` (@0x10035a60/@0x10035a94):
+  flag dirty bit `0x200` en `+0x16`, cache en `+0x1a`/`+0x26`.
+  Nuestros estilos SVG usan la misma semántica (color+ancho).
+
 ## Wiring menú+teclas (APPFRAME.DLL)
 - `SELECTION::checkplacement` (@0x1000c780, APPFRAME): valida
   placements vía `DPA::inbounds` sobre lista `+0x38`.
