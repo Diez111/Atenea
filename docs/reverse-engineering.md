@@ -525,6 +525,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CDBCORE::selectvariant` (@0x100073a0): fija variante activa
   (`+0x344`). `NETCACHE::setcontext` (@0x1000f010): compara flags
   y setea ctx `+0x2a0/+0x2a4` + `invalidate`.
+- `CHANNEL_ITERATOR::setedgetimes` (@0x1000d460): stub base
+  (`return 0`, override en subclases). `ANNOTATOR::setdvctype`
+  (@0x10001ed0): setea tipo de device (detalle en cuerpo).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
