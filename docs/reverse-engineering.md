@@ -53,6 +53,21 @@ No Labcenter binaries or data are reproduced here.
   newdesign/cleartags` (+ data `net_nc/sdf_pintypes/..._paths`)
   en decompilación.
 
+## Auditoría total de binarios (`docs/binarios-audit.txt`, 82 DLL/EXE)
+- Por mangled (sin Qt): APPFRAME 1703, VSMSTUDIO 1467, FLOWCHART 1161,
+  ARES 1184, ISIS 988, GVIEW 905, PDS 893, WINDIALOG 825, VGDVC 732,
+  DXP 719, VSMDEBUG 546, NETLIST 427 (0 gaps), VIEWDATA 392,
+  IMPORTER 375, PRIMS 339, LIBMAN 205, XLIB 121, LOADERS 14.
+- Cero mangled (ABI C o stripped): ELECTRA (API `dofile`, ya doc),
+  CONSOLE, SPICEINP, GETSPICE/PUTSPICE, PROSPICE, EASYHDL, SDFGEN.
+- `SPICESIM.DLL` (1 MB): 17 exports C — el fork SPICE3F5 al
+  desnudo: `spice_initialize(SDF_NETLIST*,SIMLOG*,ISPICECKT*)`,
+  `spice_terminate`, `CKTdltMod/dltNNum/fndDev/fndNode/free/
+  mkCur/mkVolt/setBreak/terr`, `DCtran`, `NIintegrate`,
+  `SMPmakeElt`, `simerrmsg/simerrrtn/siminit`.
+  Confirma linaje Berkeley SPICE3f5 (nuestro backend ngspice
+  es el reemplazo nativo correcto).
+
 ## FUSIÓN SimulIDE (fuente última versión, `/tmp/simuide-src`)
 - Arquitectura SimulIDE: `Circuit` (documento: componentes +
   conectores + nodos, XML `.simu`, undo/redo) + `CircuitView`
