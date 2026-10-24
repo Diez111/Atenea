@@ -543,6 +543,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CDBCORE::walkfirstmodule/walkfirstsheet` (@0x10005190/@0x10005370):
   inician `CDBWALKQ` (flag `+0x18`, módulo `+0x10` default raíz `+0x300`,
   índice `+0x14`) — el walk que usa `setdsnstats`.
+- `PARTITION::writeanalog` (virtual, @0x1000c820): writer de trace
+  analógico (array `+0x43c`, estado `+0x2c`).
+  `walknextsheet` = continuación del walker.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
