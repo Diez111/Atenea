@@ -108,6 +108,9 @@ No Labcenter binaries or data are reproduced here.
   Nuestro SVG = el path software.
 
 ## Render backends (GDF layer, VGDVC.DLL)
+- `LISTVIEW::hittest/gettext/...` (WINDIALOG): internals del
+  widget lista — cubiertos por `Slint ListView` (TouchArea por
+  fila ya implementado en el panel).
 - Set GDF completo (26 ops, vocabulario del backend): `arc`,
   `atrack`, `bezier`, `bitmap`, `box`, `drawseg`, `ellipse`,
   `epad`, `fillbox`, `hole`, `line`, `path`, `pline`, `polygon`,
