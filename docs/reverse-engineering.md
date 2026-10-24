@@ -165,6 +165,8 @@ No Labcenter binaries or data are reproduced here.
   (@0x10029c20): registro tipado de settings (el schema).
   `restore_applnvars` (@0x1002a0e0): aplica valores guardados
   barriendo el DPA. Spec para settings propios.
+- `VGDVC::drawpolygon(POINT*,n,GSTYLE&,ulong)` (@0x100256b0):
+  polígono por array de vértices (path de zones/pours).
 - `CMDINFOTABLE::setuistate(HMENU,cmd,UISTATE&)` (@0x100349a0):
   `EnableMenuItem` + `CheckMenuItem` desde `UISTATE{enabled,
   checked}` (vía `APPLNMODULE::setuistate` +`0x68`, @0x1001d9c0).
