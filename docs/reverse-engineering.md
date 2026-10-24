@@ -54,6 +54,8 @@ No Labcenter binaries or data are reproduced here.
   en decompilación.
 
 ## Estilos + settings (VGDVC/APPFRAME)
+- `APPLNVARS::save_applnvars(path)` (@0x10029f10): itera
+  registro DPA y vuelca settings (persistencia Proteus).
 - `GSTYLE::setpencolour/setpenwidth` (@0x10035a60/@0x10035a94):
   flag dirty bit `0x200` en `+0x16`, cache en `+0x1a`/`+0x26`.
   Nuestros estilos SVG usan la misma semántica (color+ancho).
