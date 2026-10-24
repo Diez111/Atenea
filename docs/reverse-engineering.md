@@ -561,6 +561,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `proptypenames[i]` + prefijo según kind (0=plano, 1=`READONLY %s`...).
   `PINOUT::getpinnum` (@0x1001d690): strings de número (tabla stride
   `0x1f` en `+0x4c`, count `+0x48`).
+- `PARTITION::getdatastats/newchannel/newobject` (@0x1000d260/
+  0x1000c610/@0x1000cc90): junta canales en DPA; crea canal
+  (`new 0x60`, default `simtype`); crea objeto vía vtable.
+- `NETCACHE::updateclients` (@0x1000f280, private): notifica
+  lista clientes (`+0x298/+0x294`) vía vtable+8.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
