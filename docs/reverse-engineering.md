@@ -517,6 +517,8 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `PARTITION::readpmd` (@0x1000c5f0): dispatch por modo vía
   writer vtable `+0x414`. `CDBCORE::readsnippet` (@0x10009e70):
   carga snippets vía VFILE.
+- `CDBCORE::removemodule/removesheet` (@0x10003920/@0x10003ab0):
+  teardown con flag (inverso de addmodule/addsheet).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
