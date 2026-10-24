@@ -414,6 +414,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `dsim_connect` ×2 (@0x100045a0/@0x10004630): string parte por
   `_` + `bsearch` (solo OP 0xd/IP 0xe); instancia crea
   `IDSIMPIN2`, linkea y loguea `connecting pin %s:%s`.
+- `dsim_connect` ×2 (@0x100045a0/@0x10004630): string parte por
+  `SDF_PINTYPE` (`0xd/0xe` = bus → expande bits con `FUN_10021c6c`
+  sobre `'_'`); la 2ª usa factory `FUN_10003fe8` + `printf
+  "connecting..."` debug.
 - `dsim_peekpin(modelo, idx, STATE*)` (@0x10003d90): forward con
   guarda NULL a `FUN_10003da8` (poke simétrico en curso).
 - `dsim_pokepin(modelo, idx, t_segundos, STATE)` (@0x10003de4):
