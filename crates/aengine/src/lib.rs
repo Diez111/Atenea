@@ -46,8 +46,8 @@ pub struct DocSnapshot {
     pub nets: Vec<NetView>,
     /// Wire segments in mm: `(x1, y1, x2, y2, bus)`.
     pub wires: Vec<(f64, f64, f64, f64, bool)>,
-    /// Placed labels in mm: `(text, x, y)`.
-    pub placements: Vec<(String, f64, f64)>,
+    /// Placed parts in mm: `(ref, kind, x, y)` (`kind` empty when unknown).
+    pub placements: Vec<(String, String, f64, f64)>,
     /// ERC issues: `(severity 'E'|'W', message)`.
     pub erc: Vec<(char, String)>,
 }
@@ -268,7 +268,7 @@ fn load_dsn(path: &Path, snap: &mut DocSnapshot) -> Result<(), String> {
         .push(("placements".to_owned(), placed.len().to_string()));
     for p in &placed {
         snap.placements
-            .push((p.text.clone(), plib::dsn::to_mm(p.x), plib::dsn::to_mm(p.y)));
+            .push((p.text.clone(), String::new(), plib::dsn::to_mm(p.x), plib::dsn::to_mm(p.y)));
     }
     Ok(())
 }
@@ -460,6 +460,112 @@ pub fn sheet_svg_dark(doc: &DocSnapshot, width: u32, height: u32) -> String {
     sheet_svg_inner(doc, width, height, true)
 }
 
+/// Real EDA symbols for the common two-terminal kinds (12 mm body).
+/// Falls back to a generic box. Coordinates are SVG pixels.
+fn symbol_svg(kind: &str, cx: f64, cy: f64, sc: f64, wire: &str) -> String {
+    use std::fmt::Write as _;
+    let k = kind.to_ascii_uppercase();
+    let hw = 6.0 * sc; // half width
+    let mut s = String::new();
+    // Leads.
+    let _ = writeln!(
+        s,
+        "<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='1.2'/>\n<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='1.2'/>",
+        cx - hw - 4.0 * sc,
+        cy,
+        cx - hw,
+        cy,
+        cx + hw,
+        cy,
+        cx + hw + 4.0 * sc,
+        cy
+    );
+    if k.starts_with("RES") || k == "R" {
+        // Zigzag: 6 peaks.
+        let mut pts = String::new();
+        for i in 0..=6 {
+            let x = cx - hw + 2.0 * hw * f64::from(i) / 6.0;
+            let y = if i == 0 || i == 6 {
+                cy
+            } else if i % 2 == 1 {
+                cy - 3.0 * sc
+            } else {
+                cy + 3.0 * sc
+            };
+            let _ = write!(pts, "{x:.1},{y:.1} ");
+        }
+        let _ = writeln!(
+            s,
+            "<polyline points='{pts}' fill='none' stroke='{wire}' stroke-width='1.4'/>"
+        );
+    } else if k.starts_with("CAP") || k.starts_with("ELECTRO") || k == "C" {
+        // Two plates with a gap.
+        let _ = writeln!(
+            s,
+            "<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='1.6'/>\n<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='1.6'/>",
+            cx - 0.8 * sc,
+            cy - 4.0 * sc,
+            cx - 0.8 * sc,
+            cy + 4.0 * sc,
+            cx + 0.8 * sc,
+            cy - 4.0 * sc,
+            cx + 0.8 * sc,
+            cy + 4.0 * sc
+        );
+    } else if k.starts_with("IND") || k == "L" {
+        // Four semicircle coils.
+        let mut d = String::new();
+        for i in 0..4 {
+            let x0 = cx - hw + 2.0 * hw * f64::from(i) / 4.0;
+            let x1 = cx - hw + 2.0 * hw * f64::from(i + 1) / 4.0;
+            let r = (x1 - x0) / 2.0;
+            let _ = write!(d, "M{x0:.1},{cy:.1} A{r:.1},{r:.1} 0 0 1 {x1:.1},{cy:.1} ");
+        }
+        let _ = writeln!(s, "<path d='{d}' fill='none' stroke='{wire}' stroke-width='1.4'/>");
+    } else if k.starts_with("DIO") || k.starts_with("LED") || k == "D" {
+        // Triangle + cathode bar (+ light arrows for LED).
+        let _ = writeln!(
+            s,
+            "<polygon points='{:.1},{:.1} {:.1},{:.1} {:.1},{:.1}' fill='none' stroke='{wire}' stroke-width='1.4'/>\n<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='1.6'/>",
+            cx - hw,
+            cy - 3.5 * sc,
+            cx - hw,
+            cy + 3.5 * sc,
+            cx + hw - 2.0 * sc,
+            cy,
+            cx + hw - 2.0 * sc,
+            cy - 3.5 * sc,
+            cx + hw - 2.0 * sc,
+            cy + 3.5 * sc
+        );
+        if k.starts_with("LED") {
+            let _ = writeln!(
+                s,
+                "<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='1'/>\n<line x1='{:.1}' y1='{:.1}' x2='{:.1}' y2='{:.1}' stroke='{wire}' stroke-width='1'/>",
+                cx + 1.0 * sc,
+                cy - 5.0 * sc,
+                cx + 3.0 * sc,
+                cy - 7.0 * sc,
+                cx + 4.0 * sc,
+                cy - 5.0 * sc,
+                cx + 6.0 * sc,
+                cy - 7.0 * sc
+            );
+        }
+    } else {
+        // Generic body: box.
+        let _ = writeln!(
+            s,
+            "<rect x='{:.1}' y='{:.1}' width='{:.1}' height='{:.1}' fill='none' stroke='{wire}' stroke-width='1.2'/>",
+            cx - hw,
+            cy - 4.0 * sc,
+            2.0 * hw,
+            8.0 * sc
+        );
+    }
+    s
+}
+
 fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> String {
     let mut xs = Vec::new();
     let mut ys = Vec::new();
@@ -467,7 +573,7 @@ fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> St
         xs.extend_from_slice(&[*x1, *x2]);
         ys.extend_from_slice(&[*y1, *y2]);
     }
-    for (_, x, y) in &doc.placements {
+    for (_, _, x, y) in &doc.placements {
         xs.push(*x);
         ys.push(*y);
     }
@@ -524,18 +630,15 @@ fn sheet_svg_inner(doc: &DocSnapshot, width: u32, height: u32, dark: bool) -> St
             py(*y2)
         );
     }
-    for (text, x, y) in &doc.placements {
+    for (text, kind, x, y) in &doc.placements {
         let esc = text.replace('&', "&amp;").replace('<', "&lt;");
-        // Generic component body: box + ref (real symbols come from LIB parse).
+        // Real symbol by kind + ref above it.
         let _ = writeln!(
             s,
-            "<rect x='{:.1}' y='{:.1}' width='{:.1}' height='{:.1}' fill='none' stroke='{wire}' stroke-width='1.2'/><text x='{:.1}' y='{:.1}' font-family='monospace' font-size='11' fill='{label}'>{esc}</text>",
-            px(*x) - 6.0 * sc,
-            py(*y) - 4.0 * sc,
-            12.0 * sc,
-            8.0 * sc,
+            "{}<text x='{:.1}' y='{:.1}' font-family='monospace' font-size='11' fill='{label}'>{esc}</text>",
+            symbol_svg(kind, px(*x), py(*y), sc, wire),
             px(*x),
-            py(*y) - 5.0 * sc
+            py(*y) - 6.0 * sc
         );
     }
     // ISIS-style title block (bottom-right of the sheet).
@@ -722,10 +825,11 @@ C1,PS,1
         };
         snap.wires.push((0.0, 0.0, 10.0, 0.0, false));
         snap.wires.push((0.0, 0.0, 0.0, 5.0, true));
-        snap.placements.push(("VCC".to_owned(), 10.0, 0.0));
+        snap.placements.push(("VCC".to_owned(), String::new(), 10.0, 0.0));
         let svg = sheet_svg(&snap, 800, 600);
         assert!(svg.starts_with("<svg"));
-        assert_eq!(svg.matches("<line").count(), 2);
+        // 2 wire segments + 2 symbol leads for the VCC placement.
+        assert_eq!(svg.matches("<line").count(), 4);
         assert!(svg.contains("stroke-width='3'"));
         assert!(svg.contains(">VCC</text>"));
         assert!(svg.contains("#0f4c9c"));
@@ -741,14 +845,15 @@ C1,PS,1
             kind: "dsn".to_owned(),
             ..DocSnapshot::default()
         };
-        snap.placements.push(("AR1".to_owned(), 25.4, 0.0));
+        snap.placements.push(("R7".to_owned(), "RES".to_owned(), 25.4, 0.0));
         let svg = sheet_svg(&snap, 1200, 800);
         // Snap grid pattern.
         assert!(svg.contains("id='grid'"));
         assert!(svg.contains("patternUnits='userSpaceOnUse'"));
-        // Component body: rect + ref above it.
-        assert!(svg.contains(">AR1</text>"));
-        assert!(svg.matches("<rect").count() >= 3);
+        // RES zigzag as polyline + ref above it.
+        assert!(svg.contains("<polyline"));
+        assert!(svg.contains(">R7</text>"));
+        assert!(svg.matches("<rect").count() >= 2);
         // Title block bottom-right.
         assert!(svg.contains("text-anchor='end'"));
         assert!(svg.contains("Atenea native"));

@@ -338,7 +338,7 @@ fn main() -> Result<(), slint::PlatformError> {
     let session: std::sync::Arc<
         std::sync::Mutex<(
             Vec<aengine::PartView>,
-            Vec<(String, f64, f64)>,
+            Vec<(String, String, f64, f64)>,
             std::collections::HashMap<String, usize>,
             f64,
         )>,
@@ -348,30 +348,45 @@ fn main() -> Result<(), slint::PlatformError> {
         std::collections::HashMap::new(),
         25.4,
     )));
-    // Autoload the bundled Proteus library: the palette is never empty.
+    // Autoload ALL bundled Proteus libraries: the full palette.
     {
         let home = std::env::var("HOME").unwrap_or_else(|_| "/home/diez".to_owned());
-        let idx = std::path::PathBuf::from(format!(
-            "{home}/.wine-proteus/drive_c/Program Files (x86)/Labcenter Electronics/Proteus 8 Professional/LIBRARY/ArduinoTEP.IDX"
+        let dir = std::path::PathBuf::from(format!(
+            "{home}/.wine-proteus/drive_c/Program Files (x86)/Labcenter Electronics/Proteus 8 Professional/LIBRARY"
         ));
-        if idx.exists() {
-            match poll(&engine.open(&idx), Duration::from_secs(30)) {
-                Some(Ok(snap)) => {
-                    let rows = parts_of(&snap);
-                    *lib_cache
-                        .lock()
-                        .unwrap_or_else(std::sync::PoisonError::into_inner) = rows.clone();
-                    app.set_lib_parts(std::rc::Rc::new(slint::VecModel::from(rows)).into());
-                    if let Some(first) = snap.parts.first() {
-                        app.set_selected_lib(0);
-                        app.set_selected_name(format!("{} — {}", first.kind, first.value).into());
-                    }
-                    app.set_status(
-                        format!("{} dispositivos listos — elegí y Place", snap.parts.len()).into(),
-                    );
-                }
-                _ => app.set_status("no se pudo autocargar IDX".into()),
+        let mut files: Vec<std::path::PathBuf> = std::fs::read_dir(&dir)
+            .map(|rd| {
+                rd.filter_map(|e| {
+                    let p = e.ok()?.path();
+                    (p.extension().and_then(|x| x.to_str()) == Some("IDX")).then_some(p)
+                })
+                .collect()
+            })
+            .unwrap_or_default();
+        files.sort();
+        let mut all: Vec<PartRow> = Vec::new();
+        for idx in &files {
+            if let Some(Ok(snap)) = poll(&engine.open(idx), Duration::from_secs(10)) {
+                all.extend(parts_of(&snap));
             }
+        }
+        if !all.is_empty() {
+            *lib_cache
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner) = all.clone();
+            app.set_lib_parts(std::rc::Rc::new(slint::VecModel::from(all.clone())).into());
+            if let Some(first) = all.first() {
+                app.set_selected_lib(0);
+                app.set_selected_name(
+                    format!("{} — {}", first.kind, first.value).into(),
+                );
+            }
+            app.set_status(
+                format!("{} dispositivos en {} librerías — elegí y Place", all.len(), files.len())
+                    .into(),
+            );
+        } else {
+            app.set_status("no se pudo autocargar IDX".into());
         }
     }
     {
@@ -426,7 +441,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 value: row.value.to_string(),
                 rest: Vec::new(),
             });
-            placements.push((reference.clone(), *cursor_x, 0.0));
+            placements.push((reference.clone(), row.kind.to_string(), *cursor_x, 0.0));
             *cursor_x += 25.4;
             let title = doc_name
                 .lock()
