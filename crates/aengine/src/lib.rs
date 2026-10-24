@@ -267,8 +267,12 @@ fn load_dsn(path: &Path, snap: &mut DocSnapshot) -> Result<(), String> {
     snap.summary
         .push(("placements".to_owned(), placed.len().to_string()));
     for p in &placed {
-        snap.placements
-            .push((p.text.clone(), String::new(), plib::dsn::to_mm(p.x), plib::dsn::to_mm(p.y)));
+        snap.placements.push((
+            p.text.clone(),
+            String::new(),
+            plib::dsn::to_mm(p.x),
+            plib::dsn::to_mm(p.y),
+        ));
     }
     Ok(())
 }
@@ -521,7 +525,10 @@ fn symbol_svg(kind: &str, cx: f64, cy: f64, sc: f64, wire: &str) -> String {
             let r = (x1 - x0) / 2.0;
             let _ = write!(d, "M{x0:.1},{cy:.1} A{r:.1},{r:.1} 0 0 1 {x1:.1},{cy:.1} ");
         }
-        let _ = writeln!(s, "<path d='{d}' fill='none' stroke='{wire}' stroke-width='1.4'/>");
+        let _ = writeln!(
+            s,
+            "<path d='{d}' fill='none' stroke='{wire}' stroke-width='1.4'/>"
+        );
     } else if k.starts_with("DIO") || k.starts_with("LED") || k == "D" {
         // Triangle + cathode bar (+ light arrows for LED).
         let _ = writeln!(
@@ -825,7 +832,8 @@ C1,PS,1
         };
         snap.wires.push((0.0, 0.0, 10.0, 0.0, false));
         snap.wires.push((0.0, 0.0, 0.0, 5.0, true));
-        snap.placements.push(("VCC".to_owned(), String::new(), 10.0, 0.0));
+        snap.placements
+            .push(("VCC".to_owned(), String::new(), 10.0, 0.0));
         let svg = sheet_svg(&snap, 800, 600);
         assert!(svg.starts_with("<svg"));
         // 2 wire segments + 2 symbol leads for the VCC placement.
@@ -845,7 +853,8 @@ C1,PS,1
             kind: "dsn".to_owned(),
             ..DocSnapshot::default()
         };
-        snap.placements.push(("R7".to_owned(), "RES".to_owned(), 25.4, 0.0));
+        snap.placements
+            .push(("R7".to_owned(), "RES".to_owned(), 25.4, 0.0));
         let svg = sheet_svg(&snap, 1200, 800);
         // Snap grid pattern.
         assert!(svg.contains("id='grid'"));

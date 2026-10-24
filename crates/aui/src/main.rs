@@ -377,13 +377,15 @@ fn main() -> Result<(), slint::PlatformError> {
             app.set_lib_parts(std::rc::Rc::new(slint::VecModel::from(all.clone())).into());
             if let Some(first) = all.first() {
                 app.set_selected_lib(0);
-                app.set_selected_name(
-                    format!("{} — {}", first.kind, first.value).into(),
-                );
+                app.set_selected_name(format!("{} — {}", first.kind, first.value).into());
             }
             app.set_status(
-                format!("{} dispositivos en {} librerías — elegí y Place", all.len(), files.len())
-                    .into(),
+                format!(
+                    "{} dispositivos en {} librerías — elegí y Place",
+                    all.len(),
+                    files.len()
+                )
+                .into(),
             );
         } else {
             app.set_status("no se pudo autocargar IDX".into());
