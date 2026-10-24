@@ -401,6 +401,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (`getnzstr`, buffer 8K, `_stricmp`) — formato PINSWAP.
 - `CDBCORE::addrootsheet` (@0x100036c0): `addsheet` sobre módulo
   raíz (`+0x300`).
+- `CDBCORE::addsheet` (@0x100036e0): `SHEET=new(0x114)`, `+0x8`=MODULE,
+  `+0x4`=UID, nombre `strnzstr 0x32` en `+0xc`, conteos `+0x10c/+0x110`.
+  Estructura hoja confirmada (nuestro `pproj::cdb` sheets ROOT).
+- `PARTITION::getiterator` (@0x1000cee0): `CHANNEL_ITERATOR`
+  polimórfico (ANALOG/DIGITAL/FREQUENCY según `simtype`) — el que
+  consume `dsim_linktape`.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
