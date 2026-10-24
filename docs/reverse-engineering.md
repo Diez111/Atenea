@@ -593,6 +593,10 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
 - `CDBCORE::readelement/readpart/writepart` (privados, @0x100098f0/
   @0x10009c50/@0x10009d80): trío de serialización VFILE (load/save
   de ELEMENT/PART) — cierra el I/O de CDBCORE.
+- `CDBCORE::currentvariant` (@0x10001160): byte `+0x344`.
+  `deleteboard/deletesheet/deletesnippet` (privados): bajas por UID
+  en boards `+0x2b0/+0x2ac`, sheets `+0x270/+0x26c`, snippets
+  `+0x2f0/+0x2ec` (cuarta tabla UID).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
