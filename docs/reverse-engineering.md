@@ -511,6 +511,9 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   anotación por elemento vía vtable `+0x24`.
 - `NETLOG::pushelementctx` (@0x100197c0): apila nodo ctx `0x28`
   con ELEMENT (logging con contexto de elemento).
+- `NETLOG::push*ctx` (@0x10019730/@0x10019850/@0x100197c0): nodos
+  ctx `0x28` con tag (1=módulo, 2=elemento, 3=objeto) — pila de
+  contexto para errores con ubicación.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
