@@ -423,6 +423,11 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   `PROPDEF`/`PROPTEXT`/`PROPLIST` = vocabulario+texto de props
   (viven en `LXLCORE.DLL`); `DPA`/`GDPA`/`SLIST` = arrays dinámicos;
   `VFILE` = I/O virtual (vfgetstr/vfputstr, Pascal strings).
+- `ANNOTATOR::globalannotate/localannotate` (@0x10001940/@0x10001bb0):
+  global por MODULE, local por SHEET (vía `+0x8`); `reset` +
+  `buildglobaladb` + `CDBCORE::annotate`.
+- `PINOUT::getpinname` (@0x1001d610): scan tabla `+0x70`
+  (`_stricmp` en nombres `+0x4c`, count `+0x54`).
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
