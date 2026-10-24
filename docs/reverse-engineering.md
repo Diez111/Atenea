@@ -574,6 +574,12 @@ directo, elección validada. SPICEINP.DLL parsea tarjetas
   (`+0x48/+0x4c/+0x50`).
 - `ANNOTATOR::setcount` (@0x10001c80): camina cadena SHEET
   (`+0x8/+0x4`), lee contador `+0x110`.
+- `CDBCORE::bindelement/findelement` (@0x10004100/@0x10006340):
+  bind por UID vía `ICDBELEMENT` (gate `+0x334==4`); find por nombre
+  en tabla `+0x290`.
+- `CDBCORE::getelementproperty` (@0x10006ea0): `PROPTEXT::get`
+  en `ELEMENT+0x44`. `getmastersheet` (@0x10003670): primera hoja
+  sin módulo (tabla `+0x270`) — hoja raíz.
 - `NETLIST::parse_map` (`?parse_map@NETLIST@@QAEXAAV?$basic_istream...`,
   public, @0x1001b9b0): `MAP ON <nombre>` → `newmaptable`; líneas
   hasta `*` (`getpropname(':')`); error `Property name(s) expected
