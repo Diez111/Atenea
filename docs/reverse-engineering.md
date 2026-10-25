@@ -196,6 +196,10 @@ No Labcenter binaries or data are reproduced here.
   colectores `SWAPGROUP` (pinswap/gateswap para PCB).
 - `NETLOG::setlogstream(ostream*,?)` (@0x10002a60): hook del
   stream de log.
+- `CDBCORE::bindsnippet(SNIPPET*,int,int,ostream&)`
+  (@0x100094c0): bindea un project-clip con log — cierra el
+  último gap real de NETLIST (rizin: 403 reales, 0 pendientes
+  salvo `_destructor`×10 y sufijos `char[31]` ya documentados).
 - `authorize_crc6/authorize_crc7`: licenciamiento — fuera de
   alcance (Atenea es GPL sin activación).
 - `GPAVIEWER::onnotify` (@0x1000b210): hook del viewer
