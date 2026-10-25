@@ -178,6 +178,9 @@ No Labcenter binaries or data are reproduced here.
   net + `ELECTYPES` + arrays `char[31]`.
 - `NETLIST::getpropdefs(NET_PART*,GDIDX<PROPDEF>&)`
   (@0x10015d60): llena defs de props por parte.
+- `ANALOG_ITERATOR::readdata()` (@0x1000d700, privado,
+  virtual): avanza muestra (`+0x44→+0x3c` + refill vía
+  `vtable+0xc`) — el stepping analógico.
 - `CHANNEL_ITERATOR::dval(t)` (@0x1000d690, virtual): base
   retorna constante `2` (STATE por defecto; `ANALOG_/
   DIGITAL_ITERATOR` la overridean).
