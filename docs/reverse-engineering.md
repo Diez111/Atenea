@@ -190,6 +190,12 @@ No Labcenter binaries or data are reproduced here.
   VCC/VDD/GND/VSS/VEE (conecta con `PWRRAILS.INI`).
 - `getsiblings(SHEET*,UID,GDPA<ELEMENT>&)` (@0x10005820):
   instancias hermanas multi-hoja.
+- `PINOUT::getpintype(nombre)` (@0x1001d7c0): `POPIN→ELECTYPES`
+  en `+0x38` (`0xffffffff` si no existe).
+- `getpinswaps/getgateswaps` (@0x1001dd80/@0x1001dfd0):
+  colectores `SWAPGROUP` (pinswap/gateswap para PCB).
+- `NETLOG::setlogstream(ostream*,?)` (@0x10002a60): hook del
+  stream de log.
 - Familia `get*(GDPA&)` (@0x100067d0/@0x10006b20/@0x10006950/
   @0x10006cf0): colectores GDPA — `childmodules(SHEET*)`,
   `deviceinstances(ICDBDEVICE*)`, `isiscomponents()`,
