@@ -178,6 +178,12 @@ No Labcenter binaries or data are reproduced here.
   net + `ELECTYPES` + arrays `char[31]`.
 - `NETLIST::getpropdefs(NET_PART*,GDIDX<PROPDEF>&)`
   (@0x10015d60): llena defs de props por parte.
+- PSM = análisis de power-nets (`PCS` structs): `psmmulti/
+  psmsingle/psmtidy/psm_analyse` (@0x10019e70/@0x1001a4a0/
+  @0x1001a690/@0x1001ab50, `psm_analyse` privado) — rails
+  VCC/VDD/GND/VSS/VEE (conecta con `PWRRAILS.INI`).
+- `getsiblings(SHEET*,UID,GDPA<ELEMENT>&)` (@0x10005820):
+  instancias hermanas multi-hoja.
 - Familia `get*(GDPA&)` (@0x100067d0/@0x10006b20/@0x10006950/
   @0x10006cf0): colectores GDPA — `childmodules(SHEET*)`,
   `deviceinstances(ICDBDEVICE*)`, `isiscomponents()`,
