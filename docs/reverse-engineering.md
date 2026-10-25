@@ -178,6 +178,9 @@ No Labcenter binaries or data are reproduced here.
   net + `ELECTYPES` + arrays `char[31]`.
 - `NETLIST::getpropdefs(NET_PART*,GDIDX<PROPDEF>&)`
   (@0x10015d60): llena defs de props por parte.
+- `CHANNEL_ITERATOR::dval(t)` (@0x1000d690, virtual): base
+  retorna constante `2` (STATE por defecto; `ANALOG_/
+  DIGITAL_ITERATOR` la overridean).
 - PSM = análisis de power-nets (`PCS` structs): `psmmulti/
   psmsingle/psmtidy/psm_analyse` (@0x10019e70/@0x1001a4a0/
   @0x1001a690/@0x1001ab50, `psm_analyse` privado) — rails
