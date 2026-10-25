@@ -190,6 +190,10 @@ No Labcenter binaries or data are reproduced here.
   VCC/VDD/GND/VSS/VEE (conecta con `PWRRAILS.INI`).
 - `getsiblings(SHEET*,UID,GDPA<ELEMENT>&)` (@0x10005820):
   instancias hermanas multi-hoja.
+- `getchildsheets/getplacedelements/getplacedparts/
+  getarescomponents/getsnippetelements` (@0x10006860/@0x10006a00/
+  @0x10006c60/@0x10006bb0/@0x10006a90): misma forma — sweep
+  con filtro por tabla (módulo/placed/ARES/snippets).
 - `PINOUT::getpintype(nombre)` (@0x1001d7c0): `POPIN→ELECTYPES`
   en `+0x38` (`0xffffffff` si no existe).
 - `getpinswaps/getgateswaps` (@0x1001dd80/@0x1001dfd0):
