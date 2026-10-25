@@ -139,6 +139,15 @@ No Labcenter binaries or data are reproduced here.
   `+0x3c/+0x40` + `EM_SETLIMITTEXT` — validación de campos.
   Patrón para validar nuestros LineEdit (longitud/unidades).
 
+## Modelos (212 DLLs, `docs/models-audit.txt`, 189 C-ABI + casos)
+- Mayoría: 2 exports C puros (`create*/delete*`) — ABI mínima.
+- 4-6 exports: instrumentos digitales/analógicos (DLA, DSO,
+  KEYPAD, SCOPE, SIGGEN, LOGAN, I2CDEBUG, SPIDEBUG...).
+- `SETPOINT.DLL`: 46 mangled, clases `SPDOUT/SPVOUT`
+  (salidas setpoint analógicas) — estímulo programable.
+- `NETSHIELD.DLL`: 95 mangled, `QTcpServer/QAbstractSocket`
+  (TCP real) — el modelo de red.
+
 ## Sistema de propiedades (PROPTEXT, LXLCORE.dll)
 - `getprops(nombre, PROPLIST&, a, b)` (@0x1002d6cc): herencia
   de props a PROPLIST (STL-heavy) — el mecanismo que resuelve
