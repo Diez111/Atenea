@@ -329,7 +329,12 @@ No Labcenter binaries or data are reproduced here.
   wire/box2d/circle2d/text/chip/folder/terminal/wrench/bug.png`
   (ISIS) + 50 `ares_*.png` (modo PCB futuro).
 
-## Cobertura (números honestos, `rizin aa;aflq`)
+## Cobertura (números honestos, `rizin aa;aflq` + cruce docs)
+- `NETLIST.dll`: 501 funciones (391 reales con nombre tras
+  quitar CRT/thunks/operadores). Cubiertas 389/391 — las 2
+  restantes son overloads de `addpin`/`getnetinfo` ya
+  documentados (artefacto del demangle).
+  GAP EFECTIVO: 0.
 - `NETLIST.dll`: 501 funciones totales (incluye CRT/MFC/thunks).
   API vendor (29 clases): 0 símbolos sin cubrir — cada método con
   dirección Ghidra, pseudocódigo REA y/o patrón verificado.
