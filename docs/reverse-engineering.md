@@ -168,6 +168,16 @@ No Labcenter binaries or data are reproduced here.
   Nuestros estilos SVG usan la misma semántica (color+ancho).
 
 ## Wiring menú+teclas (APPFRAME.DLL)
+- `replicatebranch(MODULE*,MODULE*,IDMAP*)` (@0x10005e70):
+  replica jerárquica con remapeo de PARTs.
+- `cachemodel(nombre,istream&)` (@0x100174a0, privado): cachea
+  modelos parseados.
+- `PARTITION::writefrequency(f,i,complex)` (@0x1000ca70,
+  virtual): vuelca dato complejo de frecuencia.
+- `PINOUT::getnetinfo(...)` (@0x100162c0): resuelve POPIN →
+  net + `ELECTYPES` + arrays `char[31]`.
+- `NETLIST::getpropdefs(NET_PART*,GDIDX<PROPDEF>&)`
+  (@0x10015d60): llena defs de props por parte.
 - Familia `get*(GDPA&)` (@0x100067d0/@0x10006b20/@0x10006950/
   @0x10006cf0): colectores GDPA — `childmodules(SHEET*)`,
   `deviceinstances(ICDBDEVICE*)`, `isiscomponents()`,
