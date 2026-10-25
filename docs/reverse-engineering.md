@@ -168,6 +168,10 @@ No Labcenter binaries or data are reproduced here.
   Nuestros estilos SVG usan la misma semántica (color+ancho).
 
 ## Wiring menú+teclas (APPFRAME.DLL)
+- Familia `get*(GDPA&)` (@0x100067d0/@0x10006b20/@0x10006950/
+  @0x10006cf0): colectores GDPA — `childmodules(SHEET*)`,
+  `deviceinstances(ICDBDEVICE*)`, `isiscomponents()`,
+  `packageinstances(ICDBPACKAGE*)` — el API de query del CDB.
 - `SELECTION::checkplacement` (@0x1000c780, APPFRAME): valida
   placements vía `DPA::inbounds` sobre lista `+0x38`.
 - `APPLNVARS::register_applnvar(nombre,APPLNVARTYPES,ptr,size)`
