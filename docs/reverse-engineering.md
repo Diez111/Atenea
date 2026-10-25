@@ -190,20 +190,23 @@ No Labcenter binaries or data are reproduced here.
   VCC/VDD/GND/VSS/VEE (conecta con `PWRRAILS.INI`).
 - `getsiblings(SHEET*,UID,GDPA<ELEMENT>&)` (@0x10005820):
   instancias hermanas multi-hoja.
-- `getchildsheets/getplacedelements/getplacedparts/
-  getarescomponents/getsnippetelements` (@0x10006860/@0x10006a00/
-  @0x10006c60/@0x10006bb0/@0x10006a90): misma forma — sweep
-  con filtro por tabla (módulo/placed/ARES/snippets).
 - `PINOUT::getpintype(nombre)` (@0x1001d7c0): `POPIN→ELECTYPES`
   en `+0x38` (`0xffffffff` si no existe).
 - `getpinswaps/getgateswaps` (@0x1001dd80/@0x1001dfd0):
   colectores `SWAPGROUP` (pinswap/gateswap para PCB).
 - `NETLOG::setlogstream(ostream*,?)` (@0x10002a60): hook del
   stream de log.
-- Familia `get*(GDPA&)` (@0x100067d0/@0x10006b20/@0x10006950/
-  @0x10006cf0): colectores GDPA — `childmodules(SHEET*)`,
-  `deviceinstances(ICDBDEVICE*)`, `isiscomponents()`,
-  `packageinstances(ICDBPACKAGE*)` — el API de query del CDB.
+- `authorize_crc6/authorize_crc7`: licenciamiento — fuera de
+  alcance (Atenea es GPL sin activación).
+- `GPAVIEWER::onnotify` (@0x1000b210): hook del viewer
+  (notificaciones UI) — cubierto por callbacks Slint.
+- Familia `getchildmodules/getdeviceinstances/getisiscomponents/
+  getpackageinstances/getchildsheets/getplacedelements/
+  getplacedparts/getarescomponents/getsnippetelements`
+  (@0x100067d0/@0x10006b20/@0x10006950/@0x10006cf0/@0x10006860/
+  @0x10006a00/@0x10006c60/@0x10006bb0/@0x10006a90): colectores
+  GDPA — el API de query del CDB (módulos, devices, ISIS,
+  packages, child-sheets, placed, ARES, snippets).
 - `SELECTION::checkplacement` (@0x1000c780, APPFRAME): valida
   placements vía `DPA::inbounds` sobre lista `+0x38`.
 - `APPLNVARS::register_applnvar(nombre,APPLNVARTYPES,ptr,size)`
